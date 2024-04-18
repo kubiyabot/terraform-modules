@@ -1,3 +1,9 @@
+variable "KUBIYA_API_KEY" {
+  type        = string
+  description = "API key for Kubiya provider"
+}
+
+
 terraform {
   required_providers {
     kubiya = {
@@ -6,10 +12,9 @@ terraform {
     }
   }
 }
-#
 
 provider "kubiya" {
-  user_key = env("KUBIYA_API_KEY")
+  user_key = var.KUBIYA_API_KEY
 }
 
 resource "kubiya_agent" "agent" {

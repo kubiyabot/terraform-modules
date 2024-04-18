@@ -66,12 +66,15 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Set Terraform Variables
+        run: echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY }}" >> $GITHUB_ENV
+
       - name: Plan and Apply Terraform
-        env:
-          KUBIYA_API_KEY: ${{ secrets.KUBIYA_API_KEY }}
+        # env:
+        #   KUBIYA_API_KEY: ${{ secrets.KUBIYA_API_KEY }}
         run: |
           cd ${{ matrix.dir }}
           terraform init
           terraform plan -out=tfplan
-          terraform apply -auto-approve tfplan
+          # terraform apply -auto-approve tfplan
           
