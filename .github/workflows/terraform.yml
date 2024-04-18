@@ -67,19 +67,8 @@ jobs:
         run: sudo apt-get install -y jq
 
       - name: Plan and Apply Terraform
-      
-      #   if: steps.changed-files.outputs.all_modified_files != ''
-      #   run: |
-      #     IFS=$'\n' read -d '' -r -a dirs < <(echo '${{ steps.changed-files.outputs.all_modified_files }}' | jq -r '.[]')
-      #     for dir in "${dirs[@]}"
-      #     do
-      #       echo "Running Terraform in directory $dir"
-      #       cd $dir
-      #       terraform init
-      #       terraform plan -out=tfplan
-      #       terraform apply -auto-approve tfplan
-      #       cd -
-      #     done
+        env:
+          KUBIYA_API_KEY: ${{ secrets.KUBIYA_API_KEY }}
         run: |
           cd ${{ matrix.dir }}
           terraform init
