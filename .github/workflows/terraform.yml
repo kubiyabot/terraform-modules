@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - '**'
-
 jobs:
   terraform:
     name: Plan and Apply on Changed Terraform Module
@@ -43,11 +42,14 @@ jobs:
       - name: List all changed files
         run: echo '${{ steps.changed-files.outputs.all_modified_files }}'
 
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
       - name: Plan and Apply Terraform
         if: steps.changed-files.outputs.all_modified_files != ''
         run: |
-          for dir in ${{ steps.changed-files.outputs.all_modified_files }}
+          IFS=$'\n' read -d '' -r -a dirs < <(echo '${{ steps.changed-files.outputs.all_modified_files }}' | jq -r '.[]')
+          for dir in "${dirs[@]}"
           do
             echo "Running Terraform in directory $dir"
             cd $dir
