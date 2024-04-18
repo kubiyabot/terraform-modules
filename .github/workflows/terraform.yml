@@ -15,7 +15,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetches all history for all branches and tags
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -32,12 +34,14 @@ jobs:
         id: changes
         run: |
           echo "Fetching list of changed files..."
-          changed_files=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
+          git fetch --depth=1 origin ${{ github.base_ref }}
+          changed_files=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} | grep '^terraform/')
           echo "Changed files: $changed_files"
           
-          changed_dirs=$(echo "$changed_files" | grep 'terraform/' | awk 'BEGIN {FS="/"} {print $1"/"$2}' | uniq)
+          changed_dirs=$(echo "$changed_files" | awk -F'/' '{print $1"/"$2}' | uniq)
           echo "Changed directories: $changed_dirs"
-          echo "::set-output name=dir::$(echo $changed_dirs)"
+          echo "::set-output name=dir::$(echo $changed_dirs | xargs)"
+
 
       - name: Plan and Apply Terraform
         if: steps.changes.outputs.dir != ''
