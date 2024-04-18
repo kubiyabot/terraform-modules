@@ -8,9 +8,13 @@ jobs:
   changed-files:
     name: Get changes files
     runs-on: ubuntu-latest
+
     permissions:
       id-token: write
       contents: read
+
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
       - name: Checkout code
