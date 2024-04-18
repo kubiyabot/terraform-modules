@@ -30,23 +30,24 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: arn:aws:iam::564407622114:role/github-action-role
 
-      - name: Detect Changed Directories
-        id: changes
-        run: |
-          echo "Fetching list of changed files..."
-          git fetch --depth=1 origin ${{ github.base_ref }}
-          changed_files=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} | grep '^terraform/')
-          echo "Changed files: $changed_files"
-          
-          changed_dirs=$(echo "$changed_files" | awk -F'/' '{print $1"/"$2}' | uniq)
-          echo "Changed directories: $changed_dirs"
-          echo "::set-output name=dir::$(echo $changed_dirs | xargs)"
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+        with:
+          json: true
+          dir_names: true
+          dir_names_max_depth: 1
+          files_ignore: |
+            {.github,.git}/**
+            
+      - name: List all changed files
+        run: echo '${{ steps.changed-files.outputs.all_modified_files }}'
 
 
       - name: Plan and Apply Terraform
-        if: steps.changes.outputs.dir != ''
+        if: steps.changed-files.outputs.all_modified_files != ''
         run: |
-          for dir in ${{ steps.changes.outputs.dir }}
+          for dir in ${{ steps.changed-files.outputs.all_modified_files }}
           do
             echo "Running Terraform in directory $dir"
             cd $dir
