@@ -31,7 +31,7 @@ jobs:
           dir_names_max_depth: 1
           files_ignore: |
             {.github,.git}/**
-            
+
       - name: List all changed files
         run: echo '${{ steps.changed-files.outputs.all_modified_files }}'
 
@@ -70,8 +70,6 @@ jobs:
         run: |
           echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY }}" >> $GITHUB_ENV
           echo "ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY_TFSTATE }}" >> $GITHUB_ENV
-          
-
 
       - name: Az CLI login
         uses: azure/login@v2.1.0
@@ -79,15 +77,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID_TERRAFORM }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_STAGING }}
-
-      # - name: Retrieve storage account key
-      #   id: get-storage-key
-      #   run: |
-      #     az storage account keys list --account-name yourstorageaccount --query '[0].value' --output tsv
-      #   env:
-      #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      #     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID_STAGING }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -97,7 +86,6 @@ jobs:
       - name: Terraform Init and Apply
         run: |
           cd ${{ matrix.dir }}
-          export TF_VAR_access_key=${{ steps.get-storage-key.outputs.value }}
           terraform init
           terraform plan -out=tfplan
-          # terraform apply -auto-approve tfplan
+          terraform apply -auto-approve tfplan
