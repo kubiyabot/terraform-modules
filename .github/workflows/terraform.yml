@@ -68,7 +68,7 @@ jobs:
 
       - name: Set Terraform Variables
         run: |
-          echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY }}" >> $GITHUB_ENV
+          echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY_RUNNER_DEPLOY }}" >> $GITHUB_ENV
           echo "ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY_TFSTATE }}" >> $GITHUB_ENV
 
       - name: Az CLI login
