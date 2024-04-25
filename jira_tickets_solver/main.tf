@@ -3,20 +3,6 @@ variable "KUBIYA_API_KEY" {
   description = "API key for Kubiya provider"
 }
 
-
-terraform {
-  required_providers {
-    kubiya = {
-      source  = "kubiya-terraform/kubiya"
-      version = "0.1.5"
-    }
-  }
-}
-
-provider "kubiya" {
-  user_key = var.KUBIYA_API_KEY
-}
-
 resource "kubiya_agent" "agent" {
   secrets = [""]
 
@@ -35,7 +21,7 @@ resource "kubiya_agent" "agent" {
   llm_model       = "azure/gpt-4"
   name            = "Complex Terraform Agent"
   description     = "This agent can deal with complex terraform configurations and uses local embeddings to understand how to deploy them"
-  runners         = ["aks-dev-tunnel"]
+  runners         = ["vadim-dont-delete"]
   image           = "kubiya/base-agent:latest"
   ai_instructions = <<EOF
 Your primary task is to generate Terraform scripts utilizing in-house Terraform modules and execute the `terraform plan` command. You must refrain from executing the `terraform apply` command under any circumstances.
