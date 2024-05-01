@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Terraform Plan CI/CD
 
 on:
   push:
