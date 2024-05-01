@@ -1,0 +1,75 @@
+name: Terraform Plan CI/CD
+
+on:
+  push:
+    branches-ignore:
+      - main
+jobs:
+  changed-files:
+    name: Get changes files
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1  # Fetches all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+        with:
+          json: true
+          dir_names: true
+          dir_names_max_depth: 1
+          files_ignore: |
+            {.github,.git}/**
+
+      - name: List all changed files
+        run: echo '${{ steps.changed-files.outputs.all_modified_files }}'
+
+      - name: Set matrix
+        id: set-matrix
+        run: echo "matrix={\"dir\":${{ steps.changed-files.outputs.all_modified_files }}}" >> "$GITHUB_OUTPUT"
+
+  terraform:
+    name: Plan and Apply on Changed Terraform Module
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    needs: [changed-files]
+    strategy:
+      matrix: ${{ fromJSON(needs.changed-files.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.0.0'
+
+      - name: Set Terraform Variables
+        run: |
+          echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY_RUNNER_DEPLOY }}" >> $GITHUB_ENV
+          echo "ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY_TFSTATE }}" >> $GITHUB_ENV
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.0.0'
+
+      - name: Terraform Init and Plan
+        run: |
+          cd ${{ matrix.dir }}
+          terraform init
+          terraform validate
+          terraform plan

@@ -3,7 +3,7 @@ name: Terraform CI/CD
 on:
   push:
     branches:
-      - '**'
+      - main
 jobs:
   changed-files:
     name: Get changes files
@@ -31,7 +31,7 @@ jobs:
           dir_names_max_depth: 1
           files_ignore: |
             {.github,.git}/**
-            
+
       - name: List all changed files
         run: echo '${{ steps.changed-files.outputs.all_modified_files }}'
 
@@ -57,24 +57,20 @@ jobs:
         with:
           terraform_version: '1.0.0'
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::564407622114:role/github-action-role
-
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
       - name: Set Terraform Variables
-        run: echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY }}" >> $GITHUB_ENV
+        run: |
+          echo "TF_VAR_KUBIYA_API_KEY=${{ secrets.KUBIYA_API_KEY_RUNNER_DEPLOY }}" >> $GITHUB_ENV
+          echo "ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY_TFSTATE }}" >> $GITHUB_ENV
 
-      - name: Plan and Apply Terraform
-        # env:
-        #   KUBIYA_API_KEY: ${{ secrets.KUBIYA_API_KEY }}
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.0.0'
+
+      - name: Terraform Init and Apply
         run: |
           cd ${{ matrix.dir }}
           terraform init
+          terraform state list
           terraform plan -out=tfplan
-          # terraform apply -auto-approve tfplan
-          
+          terraform apply -auto-approve tfplan
