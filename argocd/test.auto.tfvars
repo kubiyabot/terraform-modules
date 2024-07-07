@@ -7,8 +7,9 @@ agent_integrations = ["slack"]
 agent_environment_variables = {
     DEBUG           = "1"
     LOG_LEVEL       = "INFO"
-    ARGOCD_SERVER   = "argocd-server.argocd"
+    ARGOCD_SERVER = "argocd-server.argocd"
     ARGOCD_USERNAME = "admin"
+    KUBIYA_TOOL_CONFIG_URLS = "https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/c2b123215855471068a7d680bb0e0f4b4353a4fc/argocd-tool-diff-gist.yaml"
 }
 
 agent_ai_instructions = <<EOF

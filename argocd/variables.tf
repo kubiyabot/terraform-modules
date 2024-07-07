@@ -44,11 +44,7 @@ variable "agent_environment_variables" {
   type        = map(string)
   description = "Environment variables to be set for the agent"
   default     = {
-    ARGOCD_SERVER = "argocd-server.argocd"
-    ARGOCD_USERNAME = "admin"
     LOG_LEVEL = "INFO"
-    KUBIYA_TOOL_CONFIG_URLS = "https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/c2b123215855471068a7d680bb0e0f4b4353a4fc/argocd-tool-diff-gist.yaml"
-
   }
 }
 
