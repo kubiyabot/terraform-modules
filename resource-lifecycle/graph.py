@@ -7,16 +7,16 @@ G = nx.DiGraph()
 # Define the steps as nodes
 steps = [
     "User Requests Resource",
-    "Estimate Cost using LiteLLM",
-    "Compare with Average Monthly Cost using Boto3",
+    "Estimate Cost",
+    "Compare with Average Monthly Cost",
     "Request Approval if >= 10%",
     "Create Resource if < 10%",
     "Schedule Follow-up in a Week",
     "Ask Developer to Keep or Delete Resource",
     "Keep Resource and Schedule Next Follow-up",
     "Delete Resource",
-    "Communicate Decision to Developer via Slack",
-    "Suggest Better-Fit Resources/Services using LiteLLM"
+    "Communicate Decision to Developer",
+    "Suggest Better-Fit Resources/Services"
 ]
 
 # Add the nodes to the graph
@@ -25,18 +25,18 @@ for step in steps:
 
 # Define the edges with operations
 edges = [
-    ("User Requests Resource", "Estimate Cost using LiteLLM"),
-    ("Estimate Cost using LiteLLM", "Compare with Average Monthly Cost using Boto3"),
-    ("Compare with Average Monthly Cost using Boto3", "Request Approval if >= 10%"),
-    ("Compare with Average Monthly Cost using Boto3", "Create Resource if < 10%"),
+    ("User Requests Resource", "Estimate Cost"),
+    ("Estimate Cost", "Compare with Average Monthly Cost"),
+    ("Compare with Average Monthly Cost", "Request Approval if >= 10%"),
+    ("Compare with Average Monthly Cost", "Create Resource if < 10%"),
     ("Create Resource if < 10%", "Schedule Follow-up in a Week"),
     ("Schedule Follow-up in a Week", "Ask Developer to Keep or Delete Resource"),
     ("Ask Developer to Keep or Delete Resource", "Keep Resource and Schedule Next Follow-up"),
     ("Ask Developer to Keep or Delete Resource", "Delete Resource"),
     ("Keep Resource and Schedule Next Follow-up", "Schedule Follow-up in a Week"),
-    ("Create Resource if < 10%", "Communicate Decision to Developer via Slack"),
-    ("Estimate Cost using LiteLLM", "Suggest Better-Fit Resources/Services using LiteLLM"),
-    ("Suggest Better-Fit Resources/Services using LiteLLM", "Communicate Decision to Developer via Slack")
+    ("Create Resource if < 10%", "Communicate Decision to Developer"),
+    ("Estimate Cost", "Suggest Better-Fit Resources/Services"),
+    ("Suggest Better-Fit Resources/Services", "Communicate Decision to Developer")
 ]
 
 # Add the edges to the graph
@@ -46,16 +46,16 @@ for edge in edges:
 # Manually define the positions for the nodes with more spacing
 pos = {
     "User Requests Resource": (0, 10),
-    "Estimate Cost using LiteLLM": (2, 10),
-    "Compare with Average Monthly Cost using Boto3": (4, 10),
+    "Estimate Cost": (2, 10),
+    "Compare with Average Monthly Cost": (4, 10),
     "Request Approval if >= 10%": (6, 12),
     "Create Resource if < 10%": (6, 8),
     "Schedule Follow-up in a Week": (8, 8),
     "Ask Developer to Keep or Delete Resource": (10, 8),
     "Keep Resource and Schedule Next Follow-up": (12, 10),
     "Delete Resource": (12, 6),
-    "Communicate Decision to Developer via Slack": (8, 4),
-    "Suggest Better-Fit Resources/Services using LiteLLM": (4, 4)
+    "Communicate Decision to Developer": (8, 4),
+    "Suggest Better-Fit Resources/Services": (4, 4)
 }
 
 # Adjust the figure size
@@ -72,18 +72,18 @@ nx.draw_networkx_labels(G, pos, font_size=12, font_color='black', font_weight='b
 
 # Draw the edge labels with simplified text
 edge_labels = {
-    ("User Requests Resource", "Estimate Cost using LiteLLM"): "Start",
-    ("Estimate Cost using LiteLLM", "Compare with Average Monthly Cost using Boto3"): "",
-    ("Compare with Average Monthly Cost using Boto3", "Request Approval if >= 10%"): ">= 10%",
-    ("Compare with Average Monthly Cost using Boto3", "Create Resource if < 10%"): "< 10%",
+    ("User Requests Resource", "Estimate Cost"): "Start",
+    ("Estimate Cost", "Compare with Average Monthly Cost"): "",
+    ("Compare with Average Monthly Cost", "Request Approval if >= 10%"): ">= 10%",
+    ("Compare with Average Monthly Cost", "Create Resource if < 10%"): "< 10%",
     ("Create Resource if < 10%", "Schedule Follow-up in a Week"): "",
     ("Schedule Follow-up in a Week", "Ask Developer to Keep or Delete Resource"): "",
     ("Ask Developer to Keep or Delete Resource", "Keep Resource and Schedule Next Follow-up"): "Keep",
     ("Ask Developer to Keep or Delete Resource", "Delete Resource"): "Delete",
     ("Keep Resource and Schedule Next Follow-up", "Schedule Follow-up in a Week"): "Repeat",
-    ("Create Resource if < 10%", "Communicate Decision to Developer via Slack"): "",
-    ("Estimate Cost using LiteLLM", "Suggest Better-Fit Resources/Services using LiteLLM"): "Alternative",
-    ("Suggest Better-Fit Resources/Services using LiteLLM", "Communicate Decision to Developer via Slack"): ""
+    ("Create Resource if < 10%", "Communicate Decision to Developer"): "",
+    ("Estimate Cost", "Suggest Better-Fit Resources/Services"): "Alternative",
+    ("Suggest Better-Fit Resources/Services", "Communicate Decision to Developer"): ""
 }
 
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')

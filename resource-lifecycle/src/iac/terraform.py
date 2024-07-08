@@ -33,19 +33,23 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
     os.environ["TF_IN_AUTOMATION"] = "true"
     os.environ["TF_CLI_ARGS"] = "-no-color"
 
-    success, output = run_terraform_command(['terraform', 'init'])
-    if not success:
-        return False, output, None
+    try:
+        success, output = run_terraform_command(['terraform', 'init'])
+        if not success:
+            return False, output, None
 
-    success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'])
-    if not success:
-        return False, plan_output, None
+        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'])
+        if not success:
+            return False, plan_output, None
 
-    success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'])
-    if not success:
-        return False, plan_json, None
+        success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'])
+        if not success:
+            return False, plan_json, None
 
-    return True, plan_output, plan_json
+        return True, plan_output, plan_json
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error creating Terraform plan: {e.stderr.decode('utf-8')}")
+        return False, f"Error creating Terraform plan: {e.stderr.decode('utf-8')}", None
 
 def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = False) -> Tuple[str, str]:
     plan_path = prepare_plan_path(request_id)

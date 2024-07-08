@@ -6,7 +6,7 @@ class SlackMessage:
         self.channel = channel
         self.thread_ts = thread_ts
         self.blocks = []
-        self.api_key = os.getenv('SLACK_API_TOKEN')
+        self.api_key = os.getenv('SLACK_API_KEY')
 
     def send_initial_message(self, text):
         self.blocks = [

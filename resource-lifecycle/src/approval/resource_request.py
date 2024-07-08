@@ -18,6 +18,9 @@ from iac.terraform import apply_terraform, create_terraform_plan
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Maximum number of retries for Terraform plan creation
+MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
+
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
     SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
@@ -54,7 +57,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     c.execute('''CREATE TABLE IF NOT EXISTS approvals
                  (request_id text, user_email text, purpose text, cost real, requested_at text, ttl text, expiry_time text, slack_channel_id text, slack_thread_ts text, approved text)''')
 
-    c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
               (approval_request.request_id, approval_request.user_email, approval_request.purpose, approval_request.cost, approval_request.requested_at.isoformat(), approval_request.ttl, approval_request.expiry_time.isoformat(), approval_request.slack_channel_id, approval_request.slack_thread_ts, approval_request.approved))
     conn.commit()
 
@@ -133,7 +136,7 @@ def manage_resource_request(user_input, purpose, ttl):
         request_id = uuid.uuid4().hex
 
         # Print request details
-        print(f"📝 Request ID: {request_id}")
+        print(f"📝 Created request entry with ID: {request_id}")
 
         # Step 2: Generate Terraform code
         print("🔧 Generating Terraform code for the specified resource...")
@@ -141,22 +144,28 @@ def manage_resource_request(user_input, purpose, ttl):
         resource_details["tf_files"] = tf_code_details.tf_files
         resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
 
-        # Step 3: Attempt to create Terraform plan
+        # Step 3: Attempt to create Terraform plan with retries
         print(f"🔧 Creating Terraform plan for the specified resource...")
-        plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
+        plan_success = False
+        attempts = 0
 
-        if not plan_success:
-            print("❌ Terraform plan failed. Attempting to fix the code...")
+        while not plan_success and attempts < MAX_TERRAFORM_RETRIES:
+            attempts += 1
+            print(f"Attempt {attempts}/{MAX_TERRAFORM_RETRIES} to create Terraform plan...")
+            plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
+
+            if plan_success:
+                print(f"✅ Terraform plan created successfully on attempt {attempts}.")
+                break
+
+            print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
             fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
             resource_details["tf_files"] = fixed_tf_code_details.tf_files
             resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
 
-            # Retry creating the Terraform plan
-            plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
-
-            if not plan_success:
-                print("❌ Terraform plan still failed after fixing. Please contact your administrator.")
-                return
+        if not plan_success:
+            print(f"❌ Terraform plan still failed after {MAX_TERRAFORM_RETRIES} attempts. Please contact your administrator.")
+            return
 
         # Step 4: Estimate cost
         print(f"💰 Estimating costs for the specified resources...")
@@ -182,7 +191,7 @@ def manage_resource_request(user_input, purpose, ttl):
             # Step 6: Apply Terraform
             if os.getenv('DRY_RUN_ENABLED'):
                 print("🚀 Dry run mode enabled. Skipping Terraform apply.")
-                apply_output, tf_state = apply_terraform(resource_details["tf_files"], request_id)
+                apply_output, tf_state = apply_terraform(resource_details["tf_files"], request_id, apply=False)
             else:
                 apply_output, tf_state = apply_terraform(resource_details["tf_files"], request_id, apply=True)
             store_resource_in_db(request_id, resource_details, tf_state, ttl)
