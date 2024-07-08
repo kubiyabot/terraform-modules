@@ -97,6 +97,7 @@ tools:
       - SLACK_CHANNEL_ID # Slack channel ID for notifications
       - SLACK_THREAD_TS # Slack thread timestamp for notifications
       - SLACK_API_TOKEN # Slack API token, injected by Kubiya
+      - APPROVING_USERS # List of users who can approve requests
       - APPROVAL_SLACK_CHANNEL # Slack channel for approval notifications
       - MAX_TTL # Maximum TTL for a request
       - EXTENSION_PERIOD # Extension period for resource TTL
