@@ -9,7 +9,7 @@ resource "kubiya_agent" "agent" {
   //Optional fields, String
   model = var.agent_llm_model // If not provided, Defaults to "azure/gpt-4"
   //If not provided, Defaults to "ghcr.io/kubiyabot/kubiya-agent:stable"
-  image = "ghcr.io/kubiyabot/kubiya-agent:stable"
+  image = var.agent_image
 
   //Optional Fields (omitting will retain the current values): 
   secrets      = ["ARGOCD_PASSWORD"]
@@ -17,6 +17,7 @@ resource "kubiya_agent" "agent" {
   users        = ["evgeniy.reichelson@kubiya.ai"]
   groups       = ["Admin"]
   links        = []
+  tool_sources = var.agent_tool_sources
 
   //Objects
   # starters = [

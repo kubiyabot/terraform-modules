@@ -19,7 +19,7 @@ variable "agent_description" {
 variable "agent_image" {
   type        = string
   description = "Docker image for the agent"
-  default     = "kubiya/base-agent:latest"
+  default     = "kubiya/base-agent:tools-v4"
 }
 
 variable "agent_runners" {
@@ -66,3 +66,9 @@ variable "agent_ai_instructions" {
   default     = ""
 }
 
+variable "agent_tool_sources" {
+  description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
+  type        = list(string)
+  default     = ["https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/840d04733a1eb53857d2d4b376c76e8458c21e60/argocd-tool-diff-gist.yaml"
+]
+}
