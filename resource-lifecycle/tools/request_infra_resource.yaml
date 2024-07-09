@@ -7,15 +7,10 @@ tools:
       # Set default values for environment variables
       REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
       REPO_NAME="${REPO_NAME:-terraform-modules}"
-      SOURCE_CODE_DIR="${SOURCE_CODE_DIR:-resource-lifecycle}"
+      SOURCE_CODE_DIR="${SOURCE_CODE_DIR:-resource-lifecycle/src}"
       REPO_BRANCH="${REPO_BRANCH:-main}"
       REPO_DIR="${REPO_DIR:-$REPO_NAME}"
       
-      # Caching runtime dependencies to speed up the execution
-      APT_CACHE_DIR="${APT_CACHE_DIR:-/sqlite_data/apt/cache}"
-      BIN_DIR="${BIN_DIR:-/sqlite_data/bin}"
-      PIP_CACHE_DIR="${PIP_CACHE_DIR:-/sqlite_data/pip/cache}"
-
       # Create cache directories
       mkdir -p "$APT_CACHE_DIR"
       mkdir -p "$BIN_DIR"
@@ -50,7 +45,6 @@ tools:
         ln -sf "$BIN_DIR/infracost" /usr/local/bin/infracost
       }
 
-      # Function to install Git so we could clone repositories from within the tool execution
       install_git() {
         apt-get update -qq > /dev/null && apt-get install -y -qq git > /dev/null
       }
@@ -72,7 +66,15 @@ tools:
 
       # Clone repository if not already cloned
       if [ ! -d "$REPO_DIR" ]; then
-        git clone --branch "$REPO_BRANCH" "$REPO_URL" "$REPO_DIR" > /dev/null
+        if [ -n "$GH_TOKEN" ]; then
+          GIT_ASKPASS_ENV=$(mktemp)
+          chmod +x "$GIT_ASKPASS_ENV"
+          echo -e "#!/bin/sh\nexec echo \$GH_TOKEN" > "$GIT_ASKPASS_ENV"
+          GIT_ASKPASS="$GIT_ASKPASS_ENV" git clone --branch "$REPO_BRANCH" "https://$GH_TOKEN@$(echo $REPO_URL | sed 's|https://||')" "$REPO_DIR" > /dev/null
+          rm "$GIT_ASKPASS_ENV"
+        else
+          git clone --branch "$REPO_BRANCH" "$REPO_URL" "$REPO_DIR" > /dev/null
+        fi
       fi
 
       # cd into the cloned repo
@@ -81,8 +83,8 @@ tools:
       # Install pip dependencies
       install_pip_dependencies
 
-      # Run the relevant script
-      export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
+      # Run the script
+      export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
       - name: user_input
@@ -111,6 +113,7 @@ tools:
       - EXTENSION_PERIOD # Extension period for resource TTL
       - GRACE_PERIOD # Grace period for nagging reminders
       - INFRACOST_API_KEY # API key for Infracost
+      - GH_TOKEN # GitHub token for cloning private repositories
     with_volumes:
       - name: sqlite_data
         path: /sqlite_data
