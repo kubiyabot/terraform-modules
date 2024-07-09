@@ -6,15 +6,12 @@ tools:
     alias: destroy-infra-resources-by-request-id
     content: |
       # Set default values for environment variables
-      REPO_URL="${REPO_URL:-https://github.com/Kubiya-Barak/mend}"
-      REPO_NAME="${REPO_NAME:-mend}"
+      REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
+      REPO_NAME="${REPO_NAME:-terraform-modules}"
+      SOURCE_CODE_DIR="${SOURCE_CODE_DIR:-resource-lifecycle/src}"
       REPO_BRANCH="${REPO_BRANCH:-main}"
       REPO_DIR="${REPO_DIR:-$REPO_NAME}"
-      # Caching runtime dependencies to speed up the execution
-      APT_CACHE_DIR="${APT_CACHE_DIR:-/sqlite_data/apt/cache}"
-      BIN_DIR="${BIN_DIR:-/sqlite_data/bin}"
-      PIP_CACHE_DIR="${PIP_CACHE_DIR:-/sqlite_data/pip/cache}"
-
+      
       # Create cache directories
       mkdir -p "$APT_CACHE_DIR"
       mkdir -p "$BIN_DIR"
@@ -56,7 +53,7 @@ tools:
       # Function to install pip dependencies if not cached
       install_pip_dependencies() {
         export PIP_CACHE_DIR="$PIP_CACHE_DIR"
-        pip install -r requirements.txt --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
+        pip install -r "${REPO_DIR}/src/requirements.txt" --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
       }
 
       # Install git
@@ -69,18 +66,26 @@ tools:
       install_infracost
 
       # Clone repository if not already cloned
-      if [ ! -d mend ]; then
-        git clone "$REPO_URL" > /dev/null
+      if [ ! -d "$REPO_DIR" ]; then
+        if [ -n "$GH_TOKEN" ]; then
+          GIT_ASKPASS_ENV=$(mktemp)
+          chmod +x "$GIT_ASKPASS_ENV"
+          echo -e "#!/bin/sh\nexec echo \$GH_TOKEN" > "$GIT_ASKPASS_ENV"
+          GIT_ASKPASS="$GIT_ASKPASS_ENV" git clone --branch "$REPO_BRANCH" "https://$GH_TOKEN@$(echo $REPO_URL | sed 's|https://||')" "$REPO_DIR" > /dev/null
+          rm "$GIT_ASKPASS_ENV"
+        else
+          git clone --branch "$REPO_BRANCH" "$REPO_URL" "$REPO_DIR" > /dev/null
+        fi
       fi
 
       # cd into the cloned repo
-      cd "${REPO_DIR}/src"
+      cd "${REPO_DIR}/${SOURCE_CODE_DIR}/src"
 
       # Install pip dependencies
       install_pip_dependencies
 
       # Run the script
-      export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
+      export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
       exec python approval/destroy_resources.py --request_id "{{ .request_id }}"
     args:
         - name: request_id
