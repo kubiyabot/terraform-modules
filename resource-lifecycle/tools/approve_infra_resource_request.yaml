@@ -55,7 +55,7 @@ tools:
       # Function to install pip dependencies if not cached
       install_pip_dependencies() {
         export PIP_CACHE_DIR="$PIP_CACHE_DIR"
-        pip install -r "${REPO_DIR}/src/requirements.txt" --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
+        pip install -r "${REPO_DIR}/${SOURCE_CODE_DIR}/requirements.txt" --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
       }
 
       # Install git
@@ -81,7 +81,7 @@ tools:
       fi
 
       # cd into the cloned repo
-      cd "${REPO_DIR}/${SOURCE_CODE_DIR}/src"
+      cd "${REPO_DIR}/${SOURCE_CODE_DIR}"
 
       # Install pip dependencies
       install_pip_dependencies
