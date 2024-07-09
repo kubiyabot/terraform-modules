@@ -5,7 +5,7 @@ agent_llm_model = "azure/gpt-4"
 agent_image = "kubiya/base-agent:tools-v4"
 
 agent_tool_sources = [
-    "https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/840d04733a1eb53857d2d4b376c76e8458c21e60/argocd-tool-diff-gist.yaml"
+    "https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/918a17894ac82427360a6c88d259ada520eb49ff/argocd-tool-diff-gist.yaml"
 ]
 agent_integrations = ["slack"]
 agent_environment_variables = {

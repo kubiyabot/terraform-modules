@@ -69,6 +69,5 @@ variable "agent_ai_instructions" {
 variable "agent_tool_sources" {
   description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
   type        = list(string)
-  default     = ["https://gist.githubusercontent.com/EvgeniyReich/24865746c00a1eaf1a87044465f0ecf1/raw/840d04733a1eb53857d2d4b376c76e8458c21e60/argocd-tool-diff-gist.yaml"
-]
+  default     = [""]
 }
