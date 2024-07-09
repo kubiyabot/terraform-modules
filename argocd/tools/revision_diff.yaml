@@ -17,11 +17,11 @@ tools:
     fi
     return 0
   args:
-    app_name:
+    - app_name:
       description: 'The app name to compare the revision against on ArgoCD - use the default value if not provided'
       required: false
       default: "koss110-client"
-    revision:
+    - revision:
       description: 'The revision to compare the app against - use the default value if not provided'
       required: false
       default: "main"
