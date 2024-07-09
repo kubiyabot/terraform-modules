@@ -21,7 +21,7 @@ tools:
       mkdir -p "$APT_CACHE_DIR"
       mkdir -p "$BIN_DIR"
       mkdir -p "$PIP_CACHE_DIR"
-      
+
       # Function to install Terraform if not cached
       install_terraform() {
         if [ ! -f "$BIN_DIR/terraform" ]; then
@@ -58,7 +58,7 @@ tools:
       # Function to install pip dependencies if not cached
       install_pip_dependencies() {
         export PIP_CACHE_DIR="$PIP_CACHE_DIR"
-        pip install -r "${REPO_DIR}/${SOURCE_CODE_DIR}/requirements.txt" --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
+        pip install -r requirements.txt --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
       }
 
       # Install git
