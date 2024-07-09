@@ -3,12 +3,9 @@ tools:
     image: python:3.11
     description: "Create one or more infrastructure resources (eg. AWS) based on a natural language request. If the request exceeds the budget, it will be automatically sent for approval based on the approval rules"
     alias: request-infra-resource
-    #with_git_repo:
-    #  url: "https://github.com/Kubiya-Barak/mend"
-    #  branch: "main"
     content: |
       # Set default values for environment variables
-      REPO_URL="${REPO_URL:-https://github.com/Kubiya-Barak/mend}"
+      REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
       REPO_NAME="${REPO_NAME:-mend}"
       REPO_BRANCH="${REPO_BRANCH:-main}"
       REPO_DIR="${REPO_DIR:-$REPO_NAME}"
@@ -58,7 +55,7 @@ tools:
       # Function to install pip dependencies if not cached
       install_pip_dependencies() {
         export PIP_CACHE_DIR="$PIP_CACHE_DIR"
-        pip install -r requirements.txt --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
+        pip install -r "${REPO_DIR}/src/requirements.txt" --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
       }
 
       # Install git
@@ -71,8 +68,8 @@ tools:
       install_infracost
 
       # Clone repository if not already cloned
-      if [ ! -d mend ]; then
-        git clone "$REPO_URL" > /dev/null
+      if [ ! -d "$REPO_DIR" ]; then
+        git clone --branch "$REPO_BRANCH" "$REPO_URL" "$REPO_DIR" > /dev/null
       fi
 
       # cd into the cloned repo
