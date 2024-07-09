@@ -10,6 +10,9 @@ tools:
       SOURCE_CODE_DIR="${SOURCE_CODE_DIR:-resource-lifecycle/src}"
       REPO_BRANCH="${REPO_BRANCH:-main}"
       REPO_DIR="${REPO_DIR:-$REPO_NAME}"
+      BIN_DIR="${BIN_DIR:-/usr/local/bin}"
+      APT_CACHE_DIR="${APT_CACHE_DIR:-/var/cache/apt/archives}"
+      PIP_CACHE_DIR="${PIP_CACHE_DIR:-/var/cache/pip}"
       
       # Create cache directories
       mkdir -p "$APT_CACHE_DIR"
