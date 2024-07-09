@@ -18,6 +18,7 @@ def estimate_resource_cost(tf_plan_json) -> Tuple[float, Dict]:
                 cwd=temp_dir
             )
             cost_data = json.loads(infracost_output.stdout)
+            print(f"Cost data:\n\n\n\n{cost_data}")
             estimated_cost = float(cost_data['projects'][0]['breakdown']['totalMonthlyCost'])
             return estimated_cost, cost_data
         except subprocess.CalledProcessError as e:
