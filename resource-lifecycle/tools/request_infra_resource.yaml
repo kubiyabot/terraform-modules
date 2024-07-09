@@ -6,9 +6,11 @@ tools:
     content: |
       # Set default values for environment variables
       REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
-      REPO_NAME="${REPO_NAME:-mend}"
+      REPO_NAME="${REPO_NAME:-terraform-modules}"
+      SOURCE_CODE_DIR="${SOURCE_CODE_DIR:-resource-lifecycle}"
       REPO_BRANCH="${REPO_BRANCH:-main}"
       REPO_DIR="${REPO_DIR:-$REPO_NAME}"
+      
       # Caching runtime dependencies to speed up the execution
       APT_CACHE_DIR="${APT_CACHE_DIR:-/sqlite_data/apt/cache}"
       BIN_DIR="${BIN_DIR:-/sqlite_data/bin}"
@@ -48,6 +50,7 @@ tools:
         ln -sf "$BIN_DIR/infracost" /usr/local/bin/infracost
       }
 
+      # Function to install Git so we could clone repositories from within the tool execution
       install_git() {
         apt-get update -qq > /dev/null && apt-get install -y -qq git > /dev/null
       }
@@ -73,12 +76,12 @@ tools:
       fi
 
       # cd into the cloned repo
-      cd "${REPO_DIR}/src"
+      cd "${REPO_DIR}/${SOURCE_CODE_DIR}/src"
 
       # Install pip dependencies
       install_pip_dependencies
 
-      # Run the script
+      # Run the relevant script
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
