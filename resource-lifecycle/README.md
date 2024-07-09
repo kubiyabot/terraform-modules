@@ -50,7 +50,6 @@ graph TD
     style KS fill:#E0FFFF,stroke:#000,stroke-width:1px
     style DR fill:#FFC0CB,stroke:#000,stroke-width:1px
     style CD fill:#E6E6FA,stroke:#000,stroke-width:1px
-    style SBR fill:#FFFACD,stroke:#000,stroke-width:1px
     style WBA fill:#F5DEB3,stroke:#000,stroke-width:1px
     style AAP fill:#FFB6C1,stroke:#000,stroke-width:1px
     style TFA fill:#E0FFFF,stroke:#000,stroke-width:1px
