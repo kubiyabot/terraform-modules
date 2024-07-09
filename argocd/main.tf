@@ -64,13 +64,13 @@ output "agent" {
 resource "kubiya_webhook" "webhook" {
   name = "tf-webhook-github-argocd"
   //Please specify the source of the webhook - e.g: 'pull request opened on repository foo'
-  source = "Github pull request opened on repository deployments"
+  source = "Github pull request opened on repository 'deployments'"
   //Provide AI instructions prompt for the agent to follow upon incoming webhook. use {{.event.}} syntax for dynamic parsing of the event
-  prompt = "send costa@kubiya.ai a summary of all pull requests created in deployments repo based on the commits and add the link of the pull request to the message"
+  prompt = "Run argo diff against the following revision: {{.event.pull_request.head.ref}}"
   //Select an Agent which will perform the task and receive the webhook payload
   agent = kubiya_agent.agent.name
   //Please provide a destination that starts with `#` or `@`
-  destination = "costa@domain.ai"
+  destination = "#devops"
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
   filter = "pull_request[?state == 'open']"
