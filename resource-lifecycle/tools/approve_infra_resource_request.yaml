@@ -85,12 +85,12 @@ tools:
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
       exec python approval/approve_request.py --request_id "{{ .request_id }}" --approval_action "{{ .approval_action }}"
     args:
-      request_id:
-        description: 'The unique identifier for the request being approved or rejected'
-        required: true
-      approval_action:
-        description: 'Approval action (can be either "approve" or "reject")'
-        required: true
+        - name: request_id
+          description: 'The unique identifier for the request being approved or rejected'
+          required: true
+        - name: approval_action
+          description: 'The action to take on the request. Can be either "approve" or "reject"'
+          required: true
     env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
       - AWS_PROFILE # AWS profile to use for the operation

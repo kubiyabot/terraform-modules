@@ -85,13 +85,13 @@ tools:
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
-      user_input:
+      - name: user_input
         description: 'The natural language statement describing the AWS resources to be created'
         required: true
-      purpose:
+      - name: purpose
         description: 'The purpose of the request - why the resources are needed'
         required: true
-      ttl:
+      - name: ttl
         description: 'Time to live for the resource (e.g., 3h, 1d, 1m) - after this time, the resource will be deleted - ask for how long but suggest a good default based on the request'
         required: false
     env:

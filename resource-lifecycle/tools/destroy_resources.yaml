@@ -83,9 +83,9 @@ tools:
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/src"
       exec python approval/destroy_resources.py --request_id "{{ .request_id }}"
     args:
-      request_id:
-        description: 'The unique identifier for the request being approved or rejected'
-        required: true
+        - name: request_id
+          description: "Unique request ID for the resource to be destroyed"
+          required: true
     env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
       - AWS_PROFILE # AWS profile to use for the operation
