@@ -1,7 +1,7 @@
 import os
 import subprocess
 import tempfile
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 import json
 
 
@@ -19,7 +19,7 @@ def estimate_resource_cost(tf_plan_json: str) -> Tuple[float, Dict]:
                 cwd=temp_dir
             )
             cost_data = json.loads(infracost_output.stdout)
-            estimated_cost = float(cost_data.get('projects', [{}])[0].get('breakdown', {}).get('totalMonthlyCost', 0))
+            estimated_cost = float(cost_data.get('projects', [{}])[0].get('breakdown', {}).get('totalMonthlyCost', 0) or 0)
             return estimated_cost, cost_data
         except subprocess.CalledProcessError as e:
             error_message = e.stderr.decode('utf-8')
@@ -44,7 +44,7 @@ def format_cost_change(cost: float) -> str:
 
 
 def format_cost_data_for_slack(cost_data: Dict) -> Dict:
-    total_cost = float(cost_data.get('projects', [{}])[0].get('breakdown', {}).get('totalMonthlyCost', 0))
+    total_cost = float(cost_data.get('projects', [{}])[0].get('breakdown', {}).get('totalMonthlyCost', 0) or 0)
     resources = cost_data.get('projects', [{}])[0].get('breakdown', {}).get('resources', [])
 
     blocks = [
@@ -61,12 +61,12 @@ def format_cost_data_for_slack(cost_data: Dict) -> Dict:
     for resource in resources:
         resource_name = resource.get('name', 'Unknown Resource')
         resource_type = resource.get('resourceType', 'Unknown Type')
-        monthly_cost = float(resource.get('monthlyCost', 0))
-        hourly_cost = float(resource.get('hourlyCost', 0))
+        monthly_cost = float(resource.get('monthlyCost', 0) or 0)
+        hourly_cost = float(resource.get('hourlyCost', 0) or 0)
         cost_components = resource.get('costComponents', [])
 
         components_text = "\n".join([
-            f"  - *{component.get('name', 'Unknown Component')}*: {format_cost_change(float(component.get('monthlyCost', 0)))} per {component.get('unit', 'unit')}"
+            f"  - *{component.get('name', 'Unknown Component')}*: {format_cost_change(float(component.get('monthlyCost', 0) or 0))} per {component.get('unit', 'unit')}"
             for component in cost_components
         ])
 
