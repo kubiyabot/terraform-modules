@@ -3,7 +3,7 @@ import subprocess
 import logging
 import requests
 from typing import Tuple, Dict
-from slack import SlackMessage  # Ensure slack.py is in the same directory or adjust the import accordingly
+from slack.slack import SlackMessage
 
 # Set environment variables and defaults
 SHOW_TF_OUTPUT = os.getenv("SHOW_TF_OUTPUT", "true").lower() == "true"
