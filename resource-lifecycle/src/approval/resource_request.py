@@ -155,7 +155,7 @@ def manage_resource_request(user_input, purpose, ttl):
             plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
 
             if plan_success:
-                print(f"✅ Terraform plan created successfully on attempt {attempts}.")
+                print(f"✅ Terraform plan created successfully on attempt {attempts}\n\nHere is the plan:\n{plan_output_or_error}")
                 break
 
             print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
