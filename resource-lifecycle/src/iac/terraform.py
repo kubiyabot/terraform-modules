@@ -1,12 +1,17 @@
 import os
 import subprocess
 import logging
+import requests
 from typing import Tuple, Dict
+from slack import SlackMessage  # Ensure slack.py is in the same directory or adjust the import accordingly
 
 # Set environment variables and defaults
 SHOW_TF_OUTPUT = os.getenv("SHOW_TF_OUTPUT", "true").lower() == "true"
 LOGS_PATH = os.getenv("LOGS_PATH", "/tf_logs")
 LOGS_ENABLED = os.getenv("LOGS_ENABLED", "false").lower() == "true"
+GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "true").lower() == "true"
+SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
+SLACK_THREAD_TS = os.getenv("SLACK_THREAD_TS")
 
 # Configure logging based on LOGS_ENABLED
 if LOGS_ENABLED:
@@ -31,12 +36,14 @@ def run_terraform_command(command: list) -> Tuple[bool, str]:
     stderr_lines = []
     
     for stdout_line in iter(process.stdout.readline, ""):
-        if SHOW_TF_OUTPUT:
-            print(stdout_line.strip())
+        if SHOW_TF_OUTPUT and ("apply" in command or "plan" in command):
+            filtered_line = filter_terraform_output(stdout_line.strip())
+            if filtered_line:
+                print(filtered_line)
         stdout_lines.append(stdout_line.strip())
     
     for stderr_line in iter(process.stderr.readline, ""):
-        if SHOW_TF_OUTPUT:
+        if SHOW_TF_OUTPUT and ("apply" in command or "plan" in command):
             print(stderr_line.strip())
         stderr_lines.append(stderr_line.strip())
 
@@ -50,6 +57,13 @@ def run_terraform_command(command: list) -> Tuple[bool, str]:
         error_output = "\n".join(stderr_lines)
         specific_error = check_common_errors(error_output)
         return False, specific_error
+
+def filter_terraform_output(line: str) -> str:
+    keywords = ["Plan:", "Changes to", "Apply complete", "resource"]
+    for keyword in keywords:
+        if keyword in line:
+            return line
+    return None
 
 def check_common_errors(error_output: str) -> str:
     for error_key, error_message in COMMON_ERRORS.items():
@@ -90,6 +104,10 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
         if not success:
             return False, plan_json, None
 
+        if GENERATE_GRAPH:
+            graph_path = generate_graph(plan_path, request_id, use_state=True)
+            send_graph_to_slack(graph_path, request_id, "Terraform Plan Preview")
+
         return True, plan_output, plan_json
     except subprocess.CalledProcessError as e:
         error_output = e.stderr.decode('utf-8')
@@ -122,6 +140,11 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
         os.makedirs(log_path, exist_ok=True)
         with open(os.path.join(log_path, "apply.log"), "w") as log_file:
             log_file.write(apply_output)
+        
+        if GENERATE_GRAPH:
+            graph_path = generate_graph(plan_path, request_id, use_state=True)
+            send_graph_to_slack(graph_path, request_id, "Terraform Apply Preview")
+
         return apply_output, plan_path
 
     return "Plan created but not applied.", plan_path
@@ -147,3 +170,46 @@ def destroy_terraform(tf_files: Dict[str, str], request_id: str) -> str:
     with open(os.path.join(log_path, "destroy.log"), "w") as log_file:
         log_file.write(destroy_output)
     return destroy_output
+
+def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
+    dot_file = os.path.join(plan_path, f'{request_id}.dot')
+    png_file = os.path.join(plan_path, f'{request_id}.png')
+    
+    if use_state:
+        # Generate the DOT file using inframap from state
+        command = ['inframap', 'generate', f'{plan_path}/{request_id}.tfplan']
+    else:
+        # Generate the DOT file using inframap from HCL
+        command = ['inframap', 'generate', f'{plan_path}']
+
+    with open(dot_file, 'w') as file:
+        subprocess.run(command, stdout=file, cwd=plan_path, check=True)
+    
+    # Convert the DOT file to PNG using Graphviz
+    command = ['dot', '-Tpng', dot_file, '-o', png_file]
+    subprocess.run(command, check=True)
+    
+    return png_file
+
+def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
+    slack_message = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
+    slack_message.send_initial_message(f"{message} for request {request_id}")
+    
+    with open(graph_path, 'rb') as file:
+        response = requests.post(
+            "https://slack.com/api/files.upload",
+            headers={
+                'Authorization': f'Bearer {os.getenv("SLACK_API_TOKEN")}'
+            },
+            data={
+                'channels': SLACK_CHANNEL_ID,
+                'initial_comment': f"{message} for request {request_id}"
+            },
+            files={
+                'file': file
+            }
+        )
+
+    if response.status_code >= 300:
+        if os.getenv('KUBIYA_DEBUG'):
+            print(f"Error uploading graph to Slack: {response.status_code} - {response.text}")
