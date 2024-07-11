@@ -6,7 +6,7 @@ class SlackMessage:
         self.channel = channel
         self.thread_ts = thread_ts
         self.blocks = []
-        self.api_key = os.getenv('SLACK_API_KEY')
+        self.api_key = os.getenv('SLACK_API_TOKEN')
 
     def send_initial_message(self, text):
         self.blocks = [
@@ -50,7 +50,7 @@ class SlackMessage:
     def send_message(self, text=None):
         if not self.api_key:
             if os.getenv('KUBIYA_DEBUG'):
-                print("No SLACK_API_KEY set. Slack messages will not be sent.")
+                print("No SLACK_API_TOKEN set. Slack messages will not be sent.")
             return
         payload = {
             "channel": self.channel,
