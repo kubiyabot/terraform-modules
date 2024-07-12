@@ -175,13 +175,9 @@ def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
     dot_file = os.path.join(plan_path, f'{request_id}.dot')
     png_file = os.path.join(plan_path, f'{request_id}.png')
     
-    if use_state:
-        # Generate the DOT file using inframap from state
-        command = ['inframap', 'generate', f'{plan_path}/{request_id}.tfplan']
-    else:
-        # Generate the DOT file using inframap from HCL
-        command = ['inframap', 'generate', f'{plan_path}']
-
+    # Generate the DOT file using terraform graph
+    command = ['terraform', 'graph']
+    
     with open(dot_file, 'w') as file:
         subprocess.run(command, stdout=file, cwd=plan_path, check=True)
     
