@@ -13,7 +13,7 @@ tools:
       BIN_DIR="${BIN_DIR:-/usr/local/bin}"
       APT_CACHE_DIR="${APT_CACHE_DIR:-/var/cache/apt/archives}"
       PIP_CACHE_DIR="${PIP_CACHE_DIR:-/var/cache/pip}"
-      
+
       # Create cache directories
       mkdir -p "$APT_CACHE_DIR"
       mkdir -p "$BIN_DIR"
@@ -58,6 +58,15 @@ tools:
         pip install -r requirements.txt --cache-dir "$PIP_CACHE_DIR" --quiet > /dev/null
       }
 
+      # Function to install dot and graphviz
+      install_dot_graphviz() {
+        apt-get update -qq > /dev/null && apt-get install -y -qq graphviz > /dev/null
+        if ! command -v dot &> /dev/null; then
+          echo "dot could not be found. Please check the installation."
+          exit 1
+        fi
+      }
+
       # Install git
       install_git
 
@@ -66,6 +75,9 @@ tools:
 
       # Install Infracost
       install_infracost
+
+      # Install dot and graphviz
+      install_dot_graphviz
 
       # Clone repository if not already cloned
       if [ ! -d "$REPO_DIR" ]; then
@@ -88,6 +100,7 @@ tools:
 
       # Run the script
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
+
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
       - name: user_input
