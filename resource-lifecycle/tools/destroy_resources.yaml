@@ -53,36 +53,6 @@ tools:
         apt-get update -qq > /dev/null && apt-get install -y -qq git > /dev/null
       }
 
-
-      # Function to install Inframap if not cached
-      install_inframap() {
-        # Directory to store the binary
-        BIN_DIR="$HOME/bin"
-        
-        # Ensure the binary directory exists
-        mkdir -p "$BIN_DIR"
-        
-        # Check if Inframap is already installed
-        if [ ! -f "$BIN_DIR/inframap" ]; then
-          # Download the tar.gz file
-          curl -fsSL -o /tmp/inframap.tar.gz https://github.com/cycloidio/inframap/releases/download/v0.7.0/inframap-linux-amd64.tar.gz
-          
-          # Extract the tar.gz file
-          tar -xzf /tmp/inframap.tar.gz -C /tmp
-          
-          # Move the binary to the binary directory
-          mv /tmp/inframap "$BIN_DIR/inframap"
-          
-          # Clean up
-          rm /tmp/inframap.tar.gz
-        fi
-        
-        # Create a symlink to the binary in /usr/local/bin, if it doesn't already exist
-        if [ "$(readlink -f /usr/local/bin/inframap)" != "$BIN_DIR/inframap" ]; then
-          ln -sf "$BIN_DIR/inframap" /usr/local/bin/inframap
-        fi
-      }
-
       # Function to install pip dependencies if not cached
       install_pip_dependencies() {
         export PIP_CACHE_DIR="$PIP_CACHE_DIR"
@@ -97,9 +67,6 @@ tools:
 
       # Install Infracost
       install_infracost
-
-      # Install Inframap
-      install_inframap
 
       # Clone repository if not already cloned
       if [ ! -d "$REPO_DIR" ]; then
