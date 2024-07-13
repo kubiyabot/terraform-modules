@@ -61,10 +61,6 @@ tools:
       # Function to install dot and graphviz
       install_dot_graphviz() {
         apt-get update -qq > /dev/null && apt-get install -y -qq graphviz > /dev/null
-        if ! command -v dot &> /dev/null; then
-          echo "dot could not be found. Please check the installation."
-          exit 1
-        fi
       }
 
       # Install git
