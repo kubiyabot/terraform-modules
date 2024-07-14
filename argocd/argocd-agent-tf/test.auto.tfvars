@@ -6,7 +6,8 @@ agent_image = "kubiya/base-agent:tools-v5"
 
 agent_tool_sources = [
     "https://raw.githubusercontent.com/kubiyabot/terraform-modules/DEV-949-akamai-argocd-github-use-case/argocd/argocd-tools/argo-diff-tool/argo-diff-tool.yaml",
-    "https://raw.githubusercontent.com/kubiyabot/terraform-modules/DEV-949-akamai-argocd-github-use-case/argocd/argocd-tools/argo-sync-tool/argo-sync-tool.yaml"
+    "https://raw.githubusercontent.com/kubiyabot/terraform-modules/DEV-949-akamai-argocd-github-use-case/argocd/argocd-tools/argo-sync-tool/argo-sync-tool.yaml",
+    "https://raw.githubusercontent.com/kubiyabot/terraform-modules/DEV-949-akamai-argocd-github-use-case/argocd/argocd-tools/argo-set-tool/argo-set-tool.yaml"
 ]
 agent_integrations = ["slack"]
 agent_environment_variables = {
