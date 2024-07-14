@@ -1,4 +1,4 @@
-agent_name = "argocd-test-tf"
+agent_name = "argocd-agent-tf"
 agent_runners = "aks-dev"
 agent_description = "used to test argocd diff and sync tools"
 agent_llm_model = "azure/gpt-4"
@@ -14,6 +14,7 @@ agent_environment_variables = {
     LOG_LEVEL       = "INFO"
     ARGOCD_SERVER = "argocd-server.argocd"
     ARGOCD_USERNAME = "admin"
+    APPROVING_USERS = "evgeniy.reichelson@kubiya.ai,user1@example.com,user2@example.com"
 }
 
 agent_ai_instructions = <<EOF

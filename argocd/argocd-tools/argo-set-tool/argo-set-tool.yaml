@@ -8,7 +8,7 @@ tools:
     # Login first
     argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD  --insecure  --plaintext
     # Set the app to a different revision
-     argocd app set $app_name --revision $revision
+     argocd app set "{{ .app_name }}" --revision "{{ .revision }}"
     return 0
   args:
     app_name:
