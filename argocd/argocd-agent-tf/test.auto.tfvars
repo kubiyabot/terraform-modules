@@ -15,7 +15,7 @@ agent_environment_variables = {
     LOG_LEVEL       = "INFO"
     ARGOCD_SERVER = "argocd-server.argocd"
     ARGOCD_USERNAME = "admin"
-    APPROVING_USERS = "evgeniy.reichelson@kubiya.ai,user1@example.com,user2@example.com"
+    APPROVING_USERS = ""
 }
 
 agent_ai_instructions = <<EOF
