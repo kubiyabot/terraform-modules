@@ -1,0 +1,33 @@
+tools:
+- name: argocd-diff-tool
+  image: argoproj/argocd
+  description: "Get a diff between a live argocd state and a specified revision."
+  type: docker
+  alias: argocd-differ
+  content: |
+    # Login first
+    argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD  --insecure  --plaintext
+    # Get Diff
+    app_name="{{ .app_name }}"
+    revision="{{ .revision }}"
+    if [ -z "$revision" ]; then
+        argocd app diff "$app_name"
+    else
+        argocd app diff $app_name --revision $revision
+    fi
+    return 0
+  args:
+    app_name:
+      description: 'The name of the live app to compare. Use default value if no other is specified'
+      required: false
+      default: "koss110-client"
+    revision:
+      description: 'The name of the revision to compare to. Use default value if no other is specified'
+      required: false
+      default: "main"
+  env:
+    - "ARGOCD_SERVER"
+    - "ARGOCD_USERNAME"
+    - "ARGOCD_PASSWORD"
+
+    
