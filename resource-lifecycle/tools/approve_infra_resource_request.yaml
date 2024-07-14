@@ -106,7 +106,8 @@ tools:
           required: true
         - name: approval_action
           description: 'The action to take on the request. Can be either "approve" or "reject"'
-          required: true    env:
+          required: true    
+    env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
       - AWS_PROFILE # AWS profile to use for the operation
       - OPENAI_API_KEY # API key for OpenAI

@@ -96,7 +96,6 @@ tools:
 
       # Run the script
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
-
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
       - name: user_input
