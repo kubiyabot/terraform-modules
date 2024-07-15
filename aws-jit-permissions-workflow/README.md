@@ -10,7 +10,7 @@ Here's how Alice, a developer, requests access to an S3 bucket:
 
 ```mermaid
 graph TD
-    A[🙋 User Request: "Access S3 bucket 'financial-reports'"] --> B[🧠 AI Policy Generation]
+    A[🙋 User Request: Access S3 bucket 'financial-reports'] --> B[🧠 AI Policy Generation]
     B --> C[📝 Create Approval Request]
     C --> D[👀 Admin Review]
     D --> E{✅ Approval Decision}
