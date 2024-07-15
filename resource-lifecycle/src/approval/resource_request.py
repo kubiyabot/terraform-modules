@@ -200,6 +200,7 @@ def manage_resource_request(user_input, purpose, ttl):
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         print(f"❌ An error occurred: {e}")
+        exit(1)
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
