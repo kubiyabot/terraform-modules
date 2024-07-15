@@ -1,0 +1,30 @@
+# Ignore Terraform lock files
+*.tflock
+*.terraform.lock.hcl
+
+# Ignore Terraform crash log files
+crash.log
+
+# Ignore Terraform plan files
+*.tfplan
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore the .terraform directory and its contents
+.terraform/
+.terraform/*
+
+# Ignore all .tf files except main.tf
+*.tf
+!**/main.tf
+
+# Ignore .tf.json files
+*.tf.json
+
+# Ignore macOS .DS_Store files
+.DS_Store
+

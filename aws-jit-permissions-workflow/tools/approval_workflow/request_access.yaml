@@ -1,0 +1,187 @@
+tools:
+  - name: request_access
+    alias: request_access
+    description: A tool to request access, generating an IAM policy based on a description and creating an approval request for admins to review
+    type: python
+    content: |
+      import os
+      import sqlite3
+      import sys
+      import time
+      from datetime import datetime, timedelta
+      import requests
+      from litellm import completion
+      import uuid
+
+      # Environment variables
+      USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
+      SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
+      SLACK_THREAD_TS = os.getenv('SLACK_THREAD_TS')
+      KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
+      KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
+      APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
+      OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+      OPENAI_API_BASE = os.getenv('OPENAI_API_BASE')
+
+      # Parameters
+      purpose = "{{.purpose}}"
+      ttl = "{{.ttl}}"
+      permission_set_name = "{{.permission_set_name}}"
+      policy_description = "{{.policy_description}}"
+      policy_name = f"KubiyaPolicy-{int(time.time())}"
+
+      def generate_policy(description):
+          print("✨ Generating least privileged policy JSON...")
+          messages = [{"content": f"Generate a least privileged policy JSON for the following description: {description} - return the JSON object.", "role": "user"}]
+          try:
+              response = completion(model="gpt-4o", messages=messages)
+              if not response['choices']:
+                  print("❌ Error: No response from OpenAI API. Could not generate policy.")
+                  sys.exit(1)
+              content = response['choices'][0]['message']['content']
+              start = content.find('{')
+              end = content.rfind('}')
+              return content[start:end+1]
+          except Exception as e:
+              print(f"❌ Policy generation failed: {e}")
+              sys.exit(1)
+
+      policy_json = generate_policy(policy_description)
+      print(f"✅ Generated least privileged policy JSON:\n\n{policy_json}")
+
+      try:
+          if ttl[-1] == 'm':
+              ttl_minutes = int(ttl[:-1])
+          elif ttl[-1] == 'h':
+              ttl_minutes = int(ttl[:-1]) * 60
+          elif ttl[-1] == 'd':
+              ttl_minutes = int(ttl[:-1]) * 60 * 24
+          else:
+              raise ValueError("Unsupported TTL format")
+      except ValueError as e:
+          print(f"❌ Error: {e}. Defaulting to 30 days.")
+          ttl_minutes = 30 * 24 * 60
+
+      request_id = str(uuid.uuid4())
+
+      approval_request = {
+          'user_email': USER_EMAIL,
+          'purpose': purpose,
+          'ttl_minutes': ttl_minutes,
+          'policy_name': policy_name,
+          'permission_set_name': permission_set_name,
+          'policy_json': policy_json,
+          'requested_at': datetime.utcnow().isoformat(),
+          'expires_at': (datetime.utcnow() + timedelta(minutes=ttl_minutes)).isoformat(),
+          'slack_channel_id': SLACK_CHANNEL_ID,
+          'slack_thread_ts': SLACK_THREAD_TS,
+          'approved': 'pending',
+          'request_id': request_id
+      }
+
+      print(f"📝 Creating approval request")
+
+      conn = sqlite3.connect('/sqlite_data/approval_requests.db')
+      c = conn.cursor()
+
+      # Create table if not exists
+      c.execute('''CREATE TABLE IF NOT EXISTS approvals
+                   (user_email text, purpose text, ttl_minutes int, policy_name text, permission_set_name text, policy_json text, requested_at text, expires_at text, slack_channel_id text, slack_thread_ts text, approved text, request_id text)''')
+
+      # Insert the new approval request
+      c.execute("INSERT INTO approvals (user_email, purpose, ttl_minutes, policy_name, permission_set_name, policy_json, requested_at, expires_at, slack_channel_id, slack_thread_ts, approved, request_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (approval_request['user_email'], approval_request['purpose'], 
+                 approval_request['ttl_minutes'], approval_request['policy_name'], approval_request['permission_set_name'], 
+                 approval_request['policy_json'], approval_request['requested_at'], approval_request['expires_at'], 
+                 approval_request['slack_channel_id'], approval_request['slack_thread_ts'], 'pending', approval_request['request_id']))
+      conn.commit()
+      print("✅ Approval request created successfully.")
+      conn.close()
+
+      # Create and send webhook
+      prompt = """You are an access management assistant. You are currently conversing with an approving group.
+                  Your task is to help the approving group decide whether to approve the following access request.
+                  You have a new access request from {USER_EMAIL} for the following purpose: {purpose}. The user requested this access for {ttl} minutes.
+                  This means that the access will be revoked after {ttl} minutes in case the request is approved.
+                  The ID of the request is {request_id}. The policy to be created is: ```{policy_json}```\n\n
+                  CAREFULLY ASK IF YOU CAN MOVE FORWARD WITH THIS REQUEST. DO NOT EXECUTE THE REQUEST UNTIL YOU HAVE RECEIVED APPROVAL FROM THE USER YOU ARE ASSISTING.""".format(
+          USER_EMAIL=USER_EMAIL,
+          purpose=purpose,
+          ttl=ttl,
+          request_id=request_id,
+          policy_json=policy_json
+      )
+
+      payload = {
+          "agent_id": os.getenv('KUBIYA_AGENT_UUID'),
+          "communication": {
+              "destination": APPROVAL_SLACK_CHANNEL,
+              "method": "Slack"
+          },
+          "created_at": datetime.utcnow().isoformat() + "Z",
+          "created_by": USER_EMAIL,
+          "name": "Approval Request",
+          "org": KUBIYA_USER_ORG,
+          "prompt": prompt,
+          "source": "Triggered by an access request (Agent)",
+          "updated_at": datetime.utcnow().isoformat() + "Z"
+      }
+
+      response = requests.post(
+          "https://api.kubiya.ai/api/v1/event",
+          headers={
+              'Content-Type': 'application/json',
+              'Authorization': f'UserKey {KUBIYA_API_KEY}'
+          },
+          json=payload
+      )
+
+      if response.status_code < 300:
+          print(f"✅ WAITING: Request submitted successfully and has been sent to an approver. Waiting for approval.")
+          event_response = response.json()
+          webhook_url = event_response.get("webhook_url")
+          if webhook_url:
+              webhook_response = requests.post(
+                  webhook_url,
+                  headers={'Content-Type': 'application/json'},
+                  json=payload
+              )
+              if webhook_response.status_code < 300:
+                  print("✅ Webhook event sent successfully.")
+              else:
+                  print(f"❌ Error sending webhook event: {webhook_response.status_code} - {webhook_response.text}")
+          else:
+              print("❌ Error: No webhook URL returned in the response. Could not send webhook to approving channel.")
+      else:
+          print(f"❌ Error: {response.status_code} - {response.text}")
+
+    args:
+      purpose:
+        description: The purpose of the request
+        required: true
+      ttl:
+        description: "Time to live for the request in minutes - always ask the user for how long they need the access for yet recommend a default least privilege TTL (FORMAT: '<number>m' - eg '30m' - ONLY 'm' is supported)"
+        required: true
+      permission_set_name:
+        description: The name of the permission set to update
+        required: true
+      policy_description:
+        description: "A NATURAL LANGUAGE description of the policy to generate - this will be used to generate the policy JSON - should be a precise description of the permissions required, eg: 'Allow the user to read from the S3 bucket named 'my-bucket' and write to the DynamoDB table named 'my-table'.'"
+        required: true
+    dependencies: |
+      litellm
+      requests
+    env:
+      - KUBIYA_USER_EMAIL # The email of the user requesting access (injected automatically by Kubiya)
+      - SLACK_CHANNEL_ID # The Slack channel ID for the approval request (injected automatically by Kubiya)
+      - SLACK_THREAD_TS # The Slack thread timestamp for the approval request (injected automatically by Kubiya)
+      - KUBIYA_AGENT_UUID # The agent UUID (injected automatically by Kubiya)
+      - KUBIYA_USER_ORG # The organization name (injected automatically by Kubiya)
+      - KUBIYA_API_KEY # The API key for the Kubiya API
+      - APPROVAL_SLACK_CHANNEL # The Slack channel ID for approval notifications
+      - AWS_PROFILE # The AWS profile to use for the policy generation (injected automatically by Kubiya)
+      - OPENAI_API_KEY # The API key for the OpenAI API (injected automatically by Kubiya in agent context, requires api key to run locally)
+      - OPENAI_API_BASE # The base URL for the OpenAI API (injected automatically by Kubiya in agent context, locally defaults to https://api.openai.com)
+    with_volumes:
+      - name: sqlite_data
+        path: /sqlite_data
