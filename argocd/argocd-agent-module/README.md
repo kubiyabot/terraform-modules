@@ -15,6 +15,7 @@
 ```hcl
 module "argocd_agent" {
   source = "git@github.com:kubiyabot/terraform-modules.git//argocd/argocd-agent-module"
+  agent_runners       = "my-runner"
   agent_name          = "argocd-agent-test"
   create_webhook      = "true"
   webhook_destination = "#devops"
