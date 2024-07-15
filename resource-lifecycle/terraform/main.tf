@@ -36,6 +36,8 @@ resource "kubiya_agent" "agent" {
       APPROVING_USERS         = join(",", var.approving_users)
       KUBIYA_TOOL_TIMEOUT     = "5m"
     },
+    var.store_tf_state_enabled ? { STORE_TF_STATE = "1" } : {},
+    var.approval_workflow_enabled ? { APPROVAL_WORKFLOW = "1" } : {},
     var.debug ? { KUBIYA_DEBUG = "1" } : {},
     var.dry_run ? { DRY_RUN_ENABLED = "1" } : {}
   )

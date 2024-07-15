@@ -8,6 +8,18 @@ variable "kubiya_runner" {
   type        = string
 }
 
+variable "store_tf_state_enabled" {
+  description = "Decide whether to store Terraform state or not when creating resources or requesting changes to resources"
+  type        = bool
+  default     = false
+}
+
+variable "approval_workflow_enabled" {
+  description = "Decide whether to enable approval workflow or not"
+  type        = bool
+  default     = false
+}
+
 variable "agent_description" {
   description = "Description of the agent"
   type        = string

@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 # Maximum number of retries for Terraform plan creation
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
+APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
+STORE_STATE = APPROVAL_WORKFLOW or os.getenv('STORE_STATE', 'true').lower() == 'true'
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
@@ -36,40 +38,42 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
 
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
         ttl_seconds = max_ttl_seconds
+        logger.info("TTL is ignored as it exceeds the maximum allowed TTL.")
 
     expiry_time = requested_at + timedelta(seconds=ttl_seconds)
 
-    approval_request = ApprovalRequest(
-        request_id=request_id,
-        user_email=USER_EMAIL,
-        purpose=purpose,
-        cost=estimated_cost,
-        requested_at=requested_at,
-        ttl=ttl,
-        expiry_time=expiry_time,
-        slack_channel_id=SLACK_CHANNEL_ID,
-        slack_thread_ts=slack_thread_ts
-    )
+    if STORE_STATE:
+        approval_request = ApprovalRequest(
+            request_id=request_id,
+            user_email=USER_EMAIL,
+            purpose=purpose,
+            cost=estimated_cost,
+            requested_at=requested_at,
+            ttl=ttl,
+            expiry_time=expiry_time,
+            slack_channel_id=SLACK_CHANNEL_ID,
+            slack_thread_ts=slack_thread_ts
+        )
 
-    conn = sqlite3.connect('/sqlite_data/approval_requests.db')
-    c = conn.cursor()
+        conn = sqlite3.connect('/sqlite_data/approval_requests.db')
+        c = conn.cursor()
 
-    c.execute('''CREATE TABLE IF NOT EXISTS approvals
-                 (request_id text, user_email text, purpose text, cost real, requested_at text, ttl text, expiry_time text, slack_channel_id text, slack_thread_ts text, approved text)''')
+        c.execute('''CREATE TABLE IF NOT EXISTS approvals
+                     (request_id text, user_email text, purpose text, cost real, requested_at text, ttl text, expiry_time text, slack_channel_id text, slack_thread_ts text, approved text)''')
 
-    c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (approval_request.request_id, approval_request.user_email, approval_request.purpose, approval_request.cost, approval_request.requested_at.isoformat(), approval_request.ttl, approval_request.expiry_time.isoformat(), approval_request.slack_channel_id, approval_request.slack_thread_ts, approval_request.approved))
-    conn.commit()
+        c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  (approval_request.request_id, approval_request.user_email, approval_request.purpose, approval_request.cost, approval_request.requested_at.isoformat(), approval_request.ttl, approval_request.expiry_time.isoformat(), approval_request.slack_channel_id, approval_request.slack_thread_ts, approval_request.approved))
+        conn.commit()
 
-    # Store tf_plan and cost_data in the database for later use
-    c.execute('''CREATE TABLE IF NOT EXISTS tf_plans
-                 (request_id text, tf_plan text, cost_data text)''')
-    c.execute("INSERT INTO tf_plans VALUES (?, ?, ?)",
-              (request_id, tf_plan, json.dumps(cost_data)))
-    conn.commit()
-    conn.close()
+        # Store tf_plan and cost_data in the database for later use
+        c.execute('''CREATE TABLE IF NOT EXISTS tf_plans
+                     (request_id text, tf_plan text, cost_data text)''')
+        c.execute("INSERT INTO tf_plans VALUES (?, ?, ?)",
+                  (request_id, tf_plan, json.dumps(cost_data)))
+        conn.commit()
+        conn.close()
 
-    print("Approval request created successfully.")
+        print("Approval request created successfully.")
 
     prompt = f"""
     You have a new infrastructure resources creation request from {USER_EMAIL} for the following purpose: {purpose}.
@@ -182,25 +186,33 @@ def manage_resource_request(user_input, purpose, ttl):
 
         if comparison_result == "greater":
             print(f"🔔 The estimated cost of ${estimation:.2f} exceeds the average monthly cost by more than 10% (Average: ${average_monthly_cost:.2f}).")
-            print("🔔 Requesting approval for resources creation...")
-            request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_msg.thread_ts)
-            print("🔔 Approval request sent successfully.")
+            if APPROVAL_WORKFLOW:
+                print("🔔 Requesting approval for resources creation...")
+                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_msg.thread_ts)
+                print("🔔 Approval request sent successfully.")
+            else:
+                print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
+                print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
+                apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
         else:
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
             print("🚀 Attempting to create the resource(s)..")
-            # Step 6: Apply Terraform
-            if os.getenv('DRY_RUN_ENABLED'):
-                print("🚀 Dry run mode enabled. Skipping Terraform apply.")
-                apply_output, tf_state = apply_terraform(resource_details["tf_files"], request_id, apply=False)
-            else:
-                apply_output, tf_state = apply_terraform(resource_details["tf_files"], request_id, apply=True)
-            store_resource_in_db(request_id, resource_details, tf_state, ttl)
-            print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
+            apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         print(f"❌ An error occurred: {e}")
         exit(1)
+
+def apply_resources(request_id, resource_details, tf_files, ttl):
+    if os.getenv('DRY_RUN_ENABLED'):
+        print("🚀 Dry run mode enabled. Skipping Terraform apply.")
+        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
+    else:
+        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+    if STORE_STATE:
+        store_resource_in_db(request_id, resource_details, tf_state, ttl)
+    print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
