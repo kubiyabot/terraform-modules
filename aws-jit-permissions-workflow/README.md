@@ -46,64 +46,66 @@ graph TD
     style K fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style L fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     style M fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-🚶‍♀️ Step-by-Step Breakdown:
+```
 
-🙋 User Request
+# 🚶‍♀️ Step-by-Step Breakdown:
+
+## 🙋 User Request
 
 Action: Alice requests access to the 'financial-reports' S3 bucket.
 Method: Slack command /request-aws-access
 
 
-🧠 AI Policy Generation
+## 🧠 AI Policy Generation
 
 Action: AI creates a least-privilege policy based on the request.
 Output: JSON policy allowing specific S3 actions on the 'financial-reports' bucket.
 
 
-📝 Create Approval Request
+## 📝 Create Approval Request
 
 Action: System logs the request with a unique ID.
 Purpose: Tracking and admin notification.
 
 
-👀 Admin Review
+## 👀 Admin Review
 
 Action: Admin (Bob) receives a Slack notification with request details.
 Decision: Approve or reject the request.
 
 
-✅ Approval Decision
+## ✅ Approval Decision
 
 If Approved: Proceed to policy attachment.
 If Rejected: Notify user of rejection.
 
 
-🔗 Attach Policy to User
+## 🔗 Attach Policy to User
 
 Action: System creates and attaches the policy to Alice's IAM user.
 Result: Alice gains temporary access to the S3 bucket.
 
 
-⏰ Schedule Policy Removal
+## ⏰ Schedule Policy Removal
 
 Action: System schedules a task to remove the policy after the specified duration.
 
 
-🗑️ Auto-Remove Policy at TTL
+## 🗑️ Auto-Remove Policy at TTL
 
 Action: System automatically detaches and deletes the policy when TTL expires.
 Result: Alice's temporary access is revoked.
 
 
 
-🛠️ Key Components
+## 🛠️ Key Components
 
 📥 request_access Tool: Handles user requests and triggers AI policy generation.
 👍 approve_request Tool: Manages the admin approval process.
 🔒 attach_policy_to_user Tool: Creates and attaches approved policies.
 🔓 remove-customer-managed-policy-from-sso Tool: Handles automatic policy removal.
 
-🌟 Features
+## 🌟 Features
 
 🤖 AI-powered policy generation
 👥 Slack-integrated approval workflow
