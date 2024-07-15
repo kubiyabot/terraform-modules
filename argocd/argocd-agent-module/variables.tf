@@ -1,7 +1,7 @@
 variable "agent_secrets" {
   type        = list(string)
   description = "List of secrets to be used by the agent"
-  default = ["ARGOCD_PASSWORD"]
+  default     = ["ARGOCD_PASSWORD", "APPROVING_USERS", "ARGOCD_SERVER", "ARGOCD_USERNAME"]
 }
 
 variable "agent_name" {
@@ -43,7 +43,7 @@ variable "agent_starters" {
 variable "agent_environment_variables" {
   type        = map(string)
   description = "Environment variables to be set for the agent"
-  default     = {
+  default = {
     LOG_LEVEL = "INFO"
   }
 }
