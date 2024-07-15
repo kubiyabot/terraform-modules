@@ -12,26 +12,23 @@ resource "kubiya_agent" "agent" {
   image = var.agent_image
 
   //Optional Fields (omitting will retain the current values): 
-  secrets      = var.agent_secrets
-  integrations = var.agent_integrations
-  users        = var.agent_users
-  groups       = var.agent_groups
-  links        = var.agent_links
-  tool_sources = var.agent_tool_sources
-
-  //Objects
-  starters = var.agent_starters
-
-  tasks = var.agent_tasks
-
+  secrets               = var.agent_secrets
   environment_variables = var.agent_environment_variables
+  integrations          = var.agent_integrations
+  links                 = var.agent_links
+  starters              = var.agent_starters
+  tasks                 = var.agent_tasks
+  tool_sources          = var.agent_tool_sources
+  //Access Control
+  users  = var.agent_users
+  groups = var.agent_groups
+
+
 }
 
-# output "agent" {
-#   value = kubiya_agent.agent
-# }
-
 resource "kubiya_webhook" "webhook" {
+  count = var.create_webhook == "true" ? 1 : 0
+
   name = var.webhook_name
   //Please specify the source of the webhook - e.g: 'pull request opened on repository foo'
   source = var.webhook_source
@@ -45,7 +42,3 @@ resource "kubiya_webhook" "webhook" {
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
   filter = var.webhook_filter
 }
-
-# output "webhook" {
-#   value = kubiya_webhook.webhook
-# }
