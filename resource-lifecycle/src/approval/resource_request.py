@@ -6,6 +6,8 @@ import json
 import requests
 from datetime import datetime, timedelta
 from pytimeparse.timeparse import timeparse
+from pydantic import ValidationError
+from litellm import completion
 from models.models import ApprovalRequest
 from slack.slack import SlackMessage
 from llm.parse_request import parse_user_request, generate_terraform_code, fix_terraform_code
@@ -14,7 +16,36 @@ from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
 
-# Maximum number of retries for Terraform plan creation
+class CodeUnrecoverableLLMResponse(BaseModel):
+    unrecoverable_error: bool
+    reasoning: str
+
+def is_error_unrecoverable(error: str, max_retries: int = 3, delay: int = 2) -> CodeUnrecoverableLLMResponse:
+    sys_prompt = f"CAREFULLY READ the error message below and determine if it is an unrecoverable error. For example, if the error is due to a syntax error in the Terraform code, it may be unrecoverable. If the error is due to a missing resource, it may be recoverable. Please provide your decision and reasoning in the response.```{error}```\n\nReturn a json object with the following keys: `unrecoverable_error` (boolean) and `reasoning` (string)."
+
+    messages = [{"content": sys_prompt, "role": "system"}]
+
+    for attempt in range(max_retries):
+        try:
+            response = completion(
+                model="gpt-4o",
+                messages=messages,
+                format="json"
+            )
+            llm_response = response['choices'][0]['message']['content']
+
+            # Parse the response to ensure it is valid JSON and matches the expected format
+            parsed_response = json.loads(llm_response)
+            return CodeUnrecoverableLLMResponse(**parsed_response)
+        except (json.JSONDecodeError, ValidationError) as e:
+            print(f"Attempt {attempt + 1}/{max_retries} failed with error: {e}")
+            if attempt < max_retries - 1:
+                sleep(delay)
+            else:
+                raise e
+
+# Configuration from environment variables
+MAX_CODE_GEN_RETRIES = int(os.getenv('MAX_CODE_GEN_RETRIES', 10))
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
 APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
 STORE_STATE = APPROVAL_WORKFLOW or os.getenv('STORE_STATE', 'true').lower() == 'true'
@@ -26,6 +57,7 @@ KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
 KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
 APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
+UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
@@ -140,14 +172,24 @@ def manage_resource_request(user_input, purpose, ttl):
         # Print request details
         print(f"📝 Created request entry with ID: {request_id}")
 
-        # Step 2: Generate Terraform code
-        print("🔧 Generating Terraform code for the specified resource...")
-        tf_code_details = generate_terraform_code(resource_details)
-        resource_details["tf_files"] = tf_code_details.tf_files
-        resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
+        # Step 2: Generate Terraform code with retries
+        retries = 0
+        print("🧠 Generating Terraform code for the specified resource...")
+        while retries < MAX_CODE_GEN_RETRIES:
+            try:
+                tf_code_details = generate_terraform_code(resource_details)
+                resource_details["tf_files"] = tf_code_details.tf_files
+                resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
+                break  # Break out of the loop if successful
+            except Exception as e:
+                retries += 1
+                print(f"❌ Error generating Terraform code. Attempt {retries}/{MAX_CODE_GEN_RETRIES}. Error: {e}")
+                if retries == MAX_CODE_GEN_RETRIES:
+                    print("❌ Failed to generate Terraform code after multiple attempts. Please contact your administrator.")
+                    return
 
         # Step 3: Attempt to create Terraform plan with retries
-        print(f"🔧 Creating Terraform plan for the specified resource...")
+        print(f"🌟📋 Creating Terraform plan for the specified resource...")
         plan_success = False
         attempts = 0
 
@@ -157,10 +199,17 @@ def manage_resource_request(user_input, purpose, ttl):
             plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
 
             if plan_success:
-                print(f"✅ Terraform plan created successfully on attempt {attempts}\n\nHere is the plan:\n{plan_output_or_error}")
+                print(f"✅ Terraform plan seems to be successful on attempt {attempts}.")
                 break
 
             print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
+
+            if UNRECOVERABLE_ERROR_CHECK:
+                llm_response = is_error_unrecoverable(plan_output_or_error)
+                if llm_response.unrecoverable_error:
+                    print(f"❌ Unrecoverable error detected: {llm_response.reasoning}")
+                    return
+
             fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
             resource_details["tf_files"] = fixed_tf_code_details.tf_files
             resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
@@ -194,7 +243,7 @@ def manage_resource_request(user_input, purpose, ttl):
                 apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
         else:
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
-            print("🚀 Attempting to create the resource(s)..")
+            print("🚀 Attempting to create the resource(s)...")
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
 
     except Exception as e:
@@ -211,11 +260,18 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     # Check if the apply was successful
     if "Error" in apply_output or "error" in apply_output:
         print(f"❌ Terraform apply failed. Attempting to fix the code...")
+
+        if UNRECOVERABLE_ERROR_CHECK:
+            llm_response = is_error_unrecoverable(apply_output)
+            if llm_response.unrecoverable_error:
+                print(f"❌ Unrecoverable error detected during apply: {llm_response.reasoning}")
+                return
+
         fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
         tf_files = fixed_tf_code_details.tf_files
 
         # Retry Terraform apply after fixing the code
-        print("🚀 Retrying Terraform apply with fixed code...")
+        print("🚀🧩 Retrying Terraform apply with fixed code...")
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
         if "Error" in apply_output or "error" in apply_output:
             print(f"❌ Terraform apply failed again after fixing the code. Please contact your administrator.")
@@ -229,7 +285,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
         schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
-    print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
+    print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     print("📦 Storing state")
