@@ -1,143 +1,307 @@
 import os
+import argparse
+import logging
+import sqlite3
+import uuid
 import json
-from litellm import completion
-from pydantic import ValidationError
-from models.models import ParsedRequest, TerraformCode
-from models.constants import SYSTEM_PROMPT_TEMPLATE, TERRAFORM_CODE_PROMPT_TEMPLATE, TERRAFORM_CODE_FIX_PROMPT_TEMPLATE
+import requests
+from datetime import datetime, timedelta
+from pytimeparse.timeparse import timeparse
+from models.models import ApprovalRequest
+from slack.slack import SlackMessage
+from llm.parse_request import parse_user_request, generate_terraform_code, fix_terraform_code
+from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
+from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
+from iac.terraform import apply_terraform, create_terraform_plan
+from approval.scheduler import schedule_deletion_task
+import re
 
-def validate_json_structure(json_data):
-    try:
-        # Strip ```json tags if present
-        if json_data.startswith("```json"):
-            json_data = json_data[7:]
-        if json_data.endswith("```"):
-            json_data = json_data[:-3]
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-        data = json.loads(json_data)
-        parsed_request = ParsedRequest(**data)
-        return True, parsed_request
-    except (json.JSONDecodeError, ValidationError) as e:
-        log_message = f"Error in parsing request: {e}, for data: {json_data}"
-        print(log_message)
-        return False, str(e)
+# Maximum number of retries for Terraform plan creation
+MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
+APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
+STORE_STATE = APPROVAL_WORKFLOW or os.getenv('STORE_STATE', 'true').lower() == 'true'
+TTL_ENABLED = os.getenv('TTL_ENABLED', 'true').lower() == 'true'
+USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
+SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
+SLACK_THREAD_TS = os.getenv('SLACK_THREAD_TS')
+KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
+KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
+APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
+MAX_TTL = os.getenv('MAX_TTL', '30d')
 
-def parse_user_request(user_input):
-    sys_prompt = SYSTEM_PROMPT_TEMPLATE.format(
-        allowed_vendors=os.getenv('ALLOWED_VENDORS', 'aws'),
-        user_input=user_input
+def parse_ttl(ttl: str) -> int:
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        raise ValueError(f"Invalid TTL format: {ttl}")
+    return ttl_seconds
+
+def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
+    requested_at = datetime.utcnow()
+
+    ttl_seconds = parse_ttl(ttl)
+    max_ttl_seconds = parse_ttl(MAX_TTL)
+
+    if ttl_seconds > max_ttl_seconds:
+        error_message = "TTL exceeds the maximum allowed TTL."
+        logger.error(error_message)
+        print(f"❌ {error_message}")
+        exit(1)
+
+    expiry_time = requested_at + timedelta(seconds=ttl_seconds)
+
+    if STORE_STATE:
+        approval_request = ApprovalRequest(
+            request_id=request_id,
+            user_email=USER_EMAIL,
+            purpose=purpose,
+            cost=estimated_cost,
+            requested_at=requested_at,
+            ttl=ttl,
+            expiry_time=expiry_time,
+            slack_channel_id=SLACK_CHANNEL_ID,
+            slack_thread_ts=slack_thread_ts
+        )
+
+        conn = sqlite3.connect('/sqlite_data/approval_requests.db')
+        c = conn.cursor()
+
+        c.execute('''CREATE TABLE IF NOT EXISTS approvals
+                     (request_id text, user_email text, purpose text, cost real, requested_at text, ttl text, expiry_time text, slack_channel_id text, slack_thread_ts text, approved text)''')
+
+        c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  (approval_request.request_id, approval_request.user_email, approval_request.purpose, approval_request.cost, approval_request.requested_at.isoformat(), approval_request.ttl, approval_request.expiry_time.isoformat(), approval_request.slack_channel_id, approval_request.slack_thread_ts, approval_request.approved))
+        conn.commit()
+
+        # Store tf_plan and cost_data in the database for later use
+        c.execute('''CREATE TABLE IF NOT EXISTS tf_plans
+                     (request_id text, tf_plan text, cost_data text)''')
+        c.execute("INSERT INTO tf_plans VALUES (?, ?, ?)",
+                  (request_id, tf_plan, json.dumps(cost_data)))
+        conn.commit()
+        conn.close()
+
+        print("Approval request created successfully.")
+
+    prompt = f"""
+    You have a new infrastructure resources creation request from {USER_EMAIL} for the following purpose: {purpose}.
+    Resource details: {resource_details}
+    The estimated cost for the resource is: ${estimated_cost}.
+    The ID of the request is {request_id}. Please ask the user if they would like to approve this request or not.
+    """
+
+    payload = {
+        "agent_id": os.getenv('KUBIYA_AGENT_UUID'),
+        "communication": {
+            "destination": APPROVAL_SLACK_CHANNEL,
+            "method": "Slack"
+        },
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_by": USER_EMAIL,
+        "name": "Approval Request",
+        "org": KUBIYA_USER_ORG,
+        "prompt": prompt,
+        "source": "Triggered by an access request (Agent)",
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    }
+
+    response = requests.post(
+        "https://api.kubiya.ai/api/v1/event",
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': f'UserKey {KUBIYA_API_KEY}'
+        },
+        json=payload
     )
 
-    messages = [
-        {"content": sys_prompt, "role": "system"},
-        {"content": user_input, "role": "user"}
+    if response.status_code < 300:
+        print(f"Request submitted successfully and has been sent to an approver.")
+        event_response = response.json()
+        webhook_url = event_response.get("webhook_url")
+        if webhook_url:
+            webhook_response = requests.post(
+                webhook_url,
+                headers={'Content-Type': 'application/json'},
+                json=payload
+            )
+            if webhook_response.status_code < 300:
+                print("Webhook event sent successfully.")
+            else:
+                print(f"Error sending webhook event: {webhook_response.status_code} - {webhook_response.text}")
+        else:
+            print("Error: No webhook URL returned in the response. Could not send webhook to approving channel.")
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+
+def handle_terraform_apply_errors(output):
+    # Define a list of error patterns that cannot be fixed by modifying the code
+    unfixable_errors = [
+        "resource with the name already exists",
+        "invalid credentials",
+        "access denied",
+        "insufficient permissions",
+        "quota exceeded",
+        "rate limit exceeded",
+        "unsupported attribute",
+        "cannot be destroyed",
+        "missing required argument",
+        "already associated",
+        "does not have an attribute",
+        "no matching items found",
+        "conflict with",
+        "cannot be updated",
+        "read-only",
+        "missing mandatory field",
+        "invalid value",
+        "unrecognized argument",
+        "duplicate resource",
+        "cannot be deleted",
+        "timeout while waiting",
+        "cannot parse",
+        "invalid syntax",
+        "unknown provider",
+        "provider configuration not present",
+        "provider produced inconsistent",
+        "incompatible block types",
+        "multiple conflicting configurations",
+        "invalid index",
+        "invalid reference",
+        "unsupported block type",
+        "conflicts with configuration",
+        "extraneous key",
+        "invalid combination of arguments",
+        # Add more patterns as needed
     ]
+    
+    # Combine all error patterns into a single regex pattern
+    combined_pattern = re.compile("|".join(re.escape(error) for error in unfixable_errors), re.IGNORECASE)
+    
+    # Check if any of the unfixable error patterns are present in the output
+    if combined_pattern.search(output):
+        return False, f"Unfixable error detected: {combined_pattern.search(output).group()}"
+    return True, "Fixable errors detected"
 
-    response = completion(model="gpt-4o", messages=messages, format="json")
-
+def manage_resource_request(user_input, purpose, ttl):
     try:
-        parsed_response = response['choices'][0]['message']['content']
-        
-        # Ensure the response is correctly formatted JSON
-        if parsed_response.startswith("```json"):
-            parsed_response = parsed_response[7:]
-        if parsed_response.endswith("```"):
-            parsed_response = parsed_response[:-3]
+        # Step 1: Understand the request
+        print("🔍 Understanding your request...")
+        parsed_request, error_message = parse_user_request(user_input)
 
-        is_valid, result = validate_json_structure(parsed_response)
+        if error_message:
+            print(f"❌ {error_message}")
+            return
 
-        if not is_valid:
-            parsed_response = {
-                "resource_details": {},
-                "vendor": "",
-                "natural_language_description": user_input,
-                "missing_details_message": f"Error in parsing request: {result}"
-            }
-            print(f"Unable to get resource details from your request: {parsed_response['missing_details_message']}")
-            return None, parsed_response
+        resource_details = parsed_request.resource_details
+        # Generate request ID (UUID)
+        request_id = uuid.uuid4().hex
 
-        return result, None
+        # Print request details
+        print(f"📝 Created request entry with ID: {request_id}")
+
+        # Step 2: Generate Terraform code
+        print("🔧 Generating Terraform code for the specified resource...")
+        tf_code_details = generate_terraform_code(resource_details)
+        resource_details["tf_files"] = tf_code_details.tf_files
+        resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
+
+        # Step 3: Attempt to create Terraform plan with retries
+        print(f"🔧 Creating Terraform plan for the specified resource...")
+        plan_success = False
+        attempts = 0
+
+        while not plan_success and attempts < MAX_TERRAFORM_RETRIES:
+            attempts += 1
+            print(f"Attempt {attempts}/{MAX_TERRAFORM_RETRIES} to create Terraform plan...")
+            plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
+
+            if plan_success:
+                print(f"✅ Terraform plan created successfully on attempt {attempts}\n\nHere is the plan:\n{plan_output_or_error}")
+                break
+
+            fixable, error_message = handle_terraform_apply_errors(plan_output_or_error)
+            if not fixable:
+                print(f"❌ Terraform plan failed due to unfixable error: {error_message}.")
+                return
+
+            print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
+            fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
+            resource_details["tf_files"] = fixed_tf_code_details.tf_files
+            resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
+
+        if not plan_success:
+            print(f"❌ Terraform plan still failed after {MAX_TERRAFORM_RETRIES} attempts. Please contact your administrator.")
+            return
+
+        # Step 4: Estimate cost
+        print(f"💰 Estimating costs for the specified resources...")
+        estimation, cost_data = estimate_resource_cost(plan_json)
+        slack_cost_data = format_cost_data_for_slack(cost_data)
+        slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'), os.getenv('SLACK_THREAD_TS'))
+        slack_msg.send_block_message(slack_cost_data)
+        print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
+
+        # Step 5: Compare with average monthly cost
+        print("📊 Comparing the estimated cost with the average monthly cost...")
+        comparison_result = compare_cost_with_avg(estimation)
+        average_monthly_cost = get_average_monthly_cost()
+
+        if comparison_result == "greater":
+            print(f"🔔 The estimated cost of ${estimation:.2f} exceeds the average monthly cost by more than 10% (Average: ${average_monthly_cost:.2f}).")
+            if APPROVAL_WORKFLOW:
+                print("🔔 Requesting approval for resources creation...")
+                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_msg.thread_ts)
+                print("🔔 Approval request sent successfully.")
+            else:
+                print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
+                print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
+                apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
+        else:
+            print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
+            print("🚀 Attempting to create the resource(s)..")
+            apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
     except Exception as e:
-        error_message = f"Error in processing response: {e}"
-        parsed_response = {
-            "resource_details": {},
-            "vendor": "",
-            "natural_language_description": user_input,
-            "missing_details_message": error_message
-        }
-        print(f"Unable to get resource details from your request: {error_message}")
-        return None, parsed_response
+        print(f"❌ Failed to process the request: {e}")
+        exit(1)
 
-def generate_terraform_code(resource_details):
-    sys_prompt = TERRAFORM_CODE_PROMPT_TEMPLATE.format(resource_details=json.dumps(resource_details, indent=2))
+def apply_resources(request_id, resource_details, tf_files, ttl):
+    if os.getenv('DRY_RUN_ENABLED'):
+        print("🚀 Dry run mode enabled. Skipping Terraform apply.")
+        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
+    else:
+        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+    # Store the state in the database
+    if STORE_STATE:
+        print("📦 Attempting to store resources state")
+        store_resource_in_db(request_id, resource_details, tf_state, ttl)
+    # Schedule deletion task if TTL is enabled and state storage is enabled
+    if TTL_ENABLED and STORE_STATE:
+        print("⏰ Scheduling deletion task...")
+        schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
+    print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
 
-    messages = [{"content": sys_prompt, "role": "system"}]
+def store_resource_in_db(request_id, resource_details, tf_state, ttl):
+    print("📦 Storing state")
+    conn = sqlite3.connect('/sqlite_data/approval_requests.db')
+    c = conn.cursor()
 
-    response = completion(
-        model="gpt-4o",
-        messages=messages,
-        format="json"
-    )
+    ttl_seconds = parse_ttl(ttl)
+    expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
 
-    try:
-        tf_files_and_explanation = response['choices'][0]['message']['content']
-        
-        # Ensure the response is correctly formatted JSON
-        if tf_files_and_explanation.startswith("```json"):
-            tf_files_and_explanation = tf_files_and_explanation[7:]
-        if tf_files_and_explanation.endswith("```"):
-            tf_files_and_explanation = tf_files_and_explanation[:-3]
-
-        tf_files_and_explanation = json.loads(tf_files_and_explanation)
-
-        tf_files = tf_files_and_explanation.get("tf_files")
-        tf_code_explanation = tf_files_and_explanation.get("tf_code_explanation")
-
-        return TerraformCode(tf_files=tf_files, tf_code_explanation=tf_code_explanation)
-    except Exception as e:
-        error_message = f"Error in generating Terraform code: {e}"
-        print(error_message)
-        raise ValueError(error_message)
-
-def fix_terraform_code(tf_files, error_message):
-    sys_prompt = TERRAFORM_CODE_FIX_PROMPT_TEMPLATE.format(error_message=error_message, tf_code=json.dumps(tf_files))
-
-    messages = [{"content": sys_prompt, "role": "system"}]
-
-    response = completion(
-        model="gpt-4o",
-        messages=messages,
-        format="json"
-    )
-
-    try:
-        tf_files_and_explanation = response['choices'][0]['message']['content']
-        
-        # Ensure the response is correctly formatted JSON
-        if tf_files_and_explanation.startswith("```json"):
-            tf_files_and_explanation = tf_files_and_explanation[7:]
-        if tf_files_and_explanation.endswith("```"):
-            tf_files_and_explanation = tf_files_and_explanation[:-3]
-
-        tf_files_and_explanation = json.loads(tf_files_and_explanation)
-
-        tf_files = tf_files_and_explanation.get("tf_files")
-        tf_code_explanation = tf_files_and_explanation.get("tf_code_explanation")
-
-        return TerraformCode(tf_files=tf_files, tf_code_explanation=tf_code_explanation)
-    except Exception as e:
-        error_message = f"Error in fixing Terraform code: {e}"
-        print(error_message)
-        raise ValueError(error_message)
+    c.execute('''CREATE TABLE IF NOT EXISTS resources
+                 (request_id text, resource_details text, tf_state text, expiry_time text)''')
+    c.execute("INSERT INTO resources VALUES (?, ?, ?, ?)",
+              (request_id, json.dumps(resource_details), tf_state, expiry_time.isoformat()))
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description='Parse the user request.')
+    parser = argparse.ArgumentParser(description='Manage infrastructure resource creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')
+    parser.add_argument('--purpose', required=True, help='The purpose of the request')
+    parser.add_argument('--ttl', default='1d', help='Time to live for the resource (e.g., 3h, 1d, 1m)')
 
     args = parser.parse_args()
-    result, error = parse_user_request(args.user_input)
-    if result:
-        print(f"Parsed request details: {result}")
-    else:
-        print(f"Error: {error}")
+    manage_resource_request(args.user_input, args.purpose, args.ttl)

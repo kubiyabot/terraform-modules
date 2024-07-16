@@ -208,10 +208,8 @@ def manage_resource_request(user_input, purpose, ttl):
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
             print("🚀 Attempting to create the resource(s)..")
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
-
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        print(f"❌ An error occurred: {e}")
+        print(f"❌ Failed to process the request: {e}")
         exit(1)
 
 def apply_resources(request_id, resource_details, tf_files, ttl):
