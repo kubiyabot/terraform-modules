@@ -13,6 +13,7 @@ from llm.parse_request import parse_user_request, generate_terraform_code, fix_t
 from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
+from approval.scheduler import schedule_deletion_task
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
 APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
 STORE_STATE = APPROVAL_WORKFLOW or os.getenv('STORE_STATE', 'true').lower() == 'true'
+TTL_ENABLED = os.getenv('TTL_ENABLED', 'true').lower() == 'true'
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
@@ -210,11 +212,18 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
     else:
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+    # Store the state in the database
     if STORE_STATE:
+        print("📦 Attempting to store resources state")
         store_resource_in_db(request_id, resource_details, tf_state, ttl)
+    # Schedule deletion task if TTL is enabled and state storage is enabled
+    if TTL_ENABLED and STORE_STATE:
+        print("⏰ Scheduling deletion task...")
+        schedule_deletion_task(request_id, resource_details["user_email"], ttl, resource_details["slack_thread_ts"])
     print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
+    print("📦 Storing state")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
