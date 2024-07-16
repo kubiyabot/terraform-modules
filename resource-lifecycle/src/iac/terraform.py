@@ -11,7 +11,7 @@ from pytimeparse.timeparse import timeparse
 SHOW_TF_OUTPUT = os.getenv("SHOW_TF_OUTPUT", "true").lower() == "true"
 LOGS_PATH = os.getenv("LOGS_PATH", "/tf_logs")
 LOGS_ENABLED = os.getenv("LOGS_ENABLED", "false").lower() == "true"
-GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "false").lower() == "true" # requires Graphviz, see https://graphviz.org/download/
+GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "true").lower() == "true" # requires Graphviz, see https://graphviz.org/download/
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 SLACK_THREAD_TS = os.getenv("SLACK_THREAD_TS")
 MAX_TTL = os.getenv('MAX_TTL', '30d')
