@@ -3,8 +3,8 @@ import os
 
 class SlackMessage:
     def __init__(self, channel, thread_ts=None):
-        self.channel = channel
-        self.thread_ts = thread_ts
+        self.channel = channel or os.getenv('SLACK_CHANNEL_ID')
+        self.thread_ts = os.getenv('SLACK_THREAD_TS') or thread_ts
         self.blocks = []
         self.api_key = os.getenv('SLACK_API_TOKEN')
 

@@ -108,6 +108,7 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
             return False, plan_json, None
 
         if GENERATE_GRAPH:
+            # TODO:: show here a nicer message, with possible confimation button
             graph_path = generate_graph(plan_path, request_id, use_state=True)
             send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
 

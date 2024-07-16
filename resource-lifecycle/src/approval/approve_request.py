@@ -111,7 +111,7 @@ def approve_request(request_id, approval_action, user_email):
             sys.exit(1)
 
         ttl = timeparse(approval_request[7])
-        schedule_deletion_task(request_id, approval_request[1], ttl, approval_request[10])
+        schedule_deletion_task(request_id, ttl, approval_request[10])
 
     slack_msg.update_message(f"✅ Approval request with ID {request_id} has been {approval_action} by {user_email}")
 

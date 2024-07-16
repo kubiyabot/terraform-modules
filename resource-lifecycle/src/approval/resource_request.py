@@ -234,7 +234,7 @@ def ttl_to_seconds(ttl):
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
         exit(1)
-    return ttl_seconds
+    return int(ttl_seconds)
 
 # Function to apply the resources
 def apply_resources(request_id, resource_details, tf_files, ttl):
@@ -272,7 +272,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
         ttl=ttl_to_seconds(ttl)
-        schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
+        schedule_deletion_task(request_id, ttl, SLACK_THREAD_TS)
     print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
 
 # Function to store the resource state in the database

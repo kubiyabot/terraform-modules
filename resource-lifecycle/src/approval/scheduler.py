@@ -16,14 +16,14 @@ def calculate_schedule_time(duration):
     now = datetime.utcnow()
     return now + parse_duration(duration)
 
-def schedule_deletion_task(request_id, user_email, ttl, slack_thread_ts):
+def schedule_deletion_task(request_id, ttl, slack_thread_ts):
     schedule_time = calculate_schedule_time(ttl).isoformat()
 
     task_payload = {
         "schedule_time": schedule_time,
         "task_description": f"Delete resources associated with request ID {request_id} as the TTL has expired.",
-        "channel_id": os.getenv('SLACK_CHANNEL_ID'),
-        "user_email": user_email,
+        "channel_id": os.getenv("NOTIFICATION_CHANNEL_ID") or os.getenv("APPROVAL_CHANNEL_ID") or channel_id,
+        "user_email": os.getenv("KUBIYA_USER_EMAIL"), # the user who is responsible for the resources being deleted (task will get reported to him)
         "organization_name": os.getenv("KUBIYA_USER_ORG"),
         "agent": os.getenv("KUBIYA_AGENT_PROFILE"),
         "thread_ts": slack_thread_ts,
