@@ -39,10 +39,8 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     max_ttl_seconds = timeparse(MAX_TTL)
 
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
-        error_message = "TTL exceeds the maximum allowed TTL."
-        logger.error(error_message)
-        print(f"❌ {error_message}")
-        exit(1)
+        ttl_seconds = max_ttl_seconds
+        logger.info("TTL is ignored as it exceeds the maximum allowed TTL.")
 
     expiry_time = requested_at + timedelta(seconds=ttl_seconds)
 
@@ -114,7 +112,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         print(f"Request submitted successfully and has been sent to an approver.")
         event_response = response.json()
         webhook_url = event_response.get("webhook_url")
-        if (webhook_url):
+        if webhook_url:
             webhook_response = requests.post(
                 webhook_url,
                 headers={'Content-Type': 'application/json'},
@@ -204,8 +202,19 @@ def manage_resource_request(user_input, purpose, ttl):
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
 
     except Exception as e:
+        logger.error(f"An error occurred: {e}")
         print(f"❌ An error occurred: {e}")
         exit(1)
+
+def convert_ttl_to_seconds(ttl):
+    ttl_seconds = timeparse(ttl)
+    max_ttl_seconds = timeparse(MAX_TTL)
+
+    if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
+        ttl_seconds = max_ttl_seconds
+        logger.info("TTL is ignored as it exceeds the maximum allowed TTL.")
+
+    return ttl_seconds
 
 def apply_resources(request_id, resource_details, tf_files, ttl):
     if os.getenv('DRY_RUN_ENABLED'):
@@ -213,43 +222,24 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
     else:
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
-
-    # Check if the apply was successful
-    if "Error" in apply_output or "error" in apply_output:
-        print(f"❌ Terraform apply failed. Attempting to fix the code...")
-        fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
-        tf_files = fixed_tf_code_details.tf_files
-
-        # Retry Terraform apply after fixing the code
-        print("🚀 Retrying Terraform apply with fixed code...")
-        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
-        if "Error" in apply_output or "error" in apply_output:
-            print(f"❌ Terraform apply failed again after fixing the code. Please contact your administrator.")
-            return
-
+    # Convert the TTL to seconds
+    ttl = convert_ttl_to_seconds(ttl)
     # Store the state in the database
     if STORE_STATE:
-        print("📦 Attempting to store the created resources state")
+        print("📦 Attempting to store resources state")
         store_resource_in_db(request_id, resource_details, tf_state, ttl)
     # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
-        print("⏰ Scheduling future deletion task...")
+        print("⏰ Scheduling deletion task...")
         schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
-    print(f"✅ All resources were successfully created!")
+    print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     print("📦 Storing state")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
-    ttl_seconds = timeparse(ttl)
-    if ttl_seconds is None:
-        error_message = "Invalid TTL format provided."
-        logger.error(error_message)
-        print(f"❌ {error_message}")
-        exit(1)
-
-    expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
+    expiry_time = datetime.utcnow() + timedelta(seconds=timeparse(ttl))
 
     c.execute('''CREATE TABLE IF NOT EXISTS resources
                  (request_id text, resource_details text, tf_state text, expiry_time text)''')
@@ -259,7 +249,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Manage infrastructure resources creation requests.')
+    parser = argparse.ArgumentParser(description='Manage AWS resource creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')
     parser.add_argument('--purpose', required=True, help='The purpose of the request')
     parser.add_argument('--ttl', default='1d', help='Time to live for the resource (e.g., 3h, 1d, 1m)')
