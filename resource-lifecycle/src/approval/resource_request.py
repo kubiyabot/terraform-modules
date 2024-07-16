@@ -39,8 +39,10 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     max_ttl_seconds = timeparse(MAX_TTL)
 
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
-        ttl_seconds = max_ttl_seconds
-        logger.info("TTL is ignored as it exceeds the maximum allowed TTL.")
+        error_message = "TTL exceeds the maximum allowed TTL."
+        logger.error(error_message)
+        print(f"❌ {error_message}")
+        exit(1)
 
     expiry_time = requested_at + timedelta(seconds=ttl_seconds)
 
@@ -227,7 +229,14 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
-    expiry_time = datetime.utcnow() + timedelta(seconds=timeparse(ttl))
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        error_message = "Invalid TTL format provided."
+        logger.error(error_message)
+        print(f"❌ {error_message}")
+        exit(1)
+
+    expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
 
     c.execute('''CREATE TABLE IF NOT EXISTS resources
                  (request_id text, resource_details text, tf_state text, expiry_time text)''')

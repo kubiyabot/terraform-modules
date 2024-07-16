@@ -2,6 +2,7 @@ import os
 import subprocess
 import logging
 import requests
+import sqlite3
 from typing import Tuple, Dict
 from slack.slack import SlackMessage
 
@@ -150,8 +151,27 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
     return "Plan created but not applied.", plan_path
 
 def destroy_terraform(tf_files: Dict[str, str], request_id: str) -> str:
+    conn = sqlite3.connect('/sqlite_data/approval_requests.db')
+    c = conn.cursor()
+    
+    c.execute("SELECT tf_state FROM resources WHERE request_id = ?", (request_id,))
+    result = c.fetchone()
+    conn.close()
+    
+    if result is None:
+        error_message = f"No Terraform state found for request ID {request_id}."
+        logging.error(error_message)
+        raise ValueError(error_message)
+
+    tf_state = result[0]
+    
     plan_path = prepare_plan_path(request_id)
     write_tf_files(tf_files, plan_path)
+    
+    # Write the state file
+    state_file_path = os.path.join(plan_path, "terraform.tfstate")
+    with open(state_file_path, "w") as state_file:
+        state_file.write(tf_state)
     
     os.chdir(plan_path)
     os.environ["TF_IN_AUTOMATION"] = "true"
@@ -209,3 +229,4 @@ def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
     if response.status_code >= 300:
         if os.getenv('KUBIYA_DEBUG'):
             print(f"Error uploading graph to Slack: {response.status_code} - {response.text}")
+
