@@ -209,7 +209,7 @@ def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
 
 def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
     slack_message = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
-    slack_message.send_initial_message(f"{message} for request {request_id}")
+    slack_message.send_initial_message(f"Here's a preview of the resources this request will create:")
     
     with open(graph_path, 'rb') as file:
         response = requests.post(
