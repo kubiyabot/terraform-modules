@@ -3,16 +3,20 @@ import subprocess
 import logging
 import requests
 import sqlite3
+import json
 from typing import Tuple, Dict
 from slack.slack import SlackMessage
+from datetime import datetime, timedelta
+from pytimeparse.timeparse import timeparse
 
 # Set environment variables and defaults
 SHOW_TF_OUTPUT = os.getenv("SHOW_TF_OUTPUT", "true").lower() == "true"
 LOGS_PATH = os.getenv("LOGS_PATH", "/tf_logs")
 LOGS_ENABLED = os.getenv("LOGS_ENABLED", "false").lower() == "true"
-GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "true").lower() == "true" # requires Graphviz, see https://graphviz.org/download/
+GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "false").lower() == "true" # requires Graphviz, see https://graphviz.org/download/
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 SLACK_THREAD_TS = os.getenv("SLACK_THREAD_TS")
+MAX_TTL = os.getenv('MAX_TTL', '30d')
 
 # Configure logging based on LOGS_ENABLED
 if LOGS_ENABLED:
@@ -150,11 +154,11 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
 
     return "Plan created but not applied.", plan_path
 
-def destroy_terraform(tf_files: Dict[str, str], request_id: str) -> str:
+def destroy_terraform(request_id: str) -> str:
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
     
-    c.execute("SELECT tf_state FROM resources WHERE request_id = ?", (request_id,))
+    c.execute("SELECT tf_state, resource_details FROM resources WHERE request_id = ?", (request_id,))
     result = c.fetchone()
     conn.close()
     
@@ -163,10 +167,11 @@ def destroy_terraform(tf_files: Dict[str, str], request_id: str) -> str:
         logging.error(error_message)
         raise ValueError(error_message)
 
-    tf_state = result[0]
-    
+    tf_state, resource_details = result
+    resource_details = json.loads(resource_details)
+
     plan_path = prepare_plan_path(request_id)
-    write_tf_files(tf_files, plan_path)
+    write_tf_files(resource_details["tf_files"], plan_path)
     
     # Write the state file
     state_file_path = os.path.join(plan_path, "terraform.tfstate")
@@ -192,6 +197,7 @@ def destroy_terraform(tf_files: Dict[str, str], request_id: str) -> str:
     return destroy_output
 
 def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
+    print("📊 Generating graph representation..")
     dot_file = os.path.join(plan_path, f'{request_id}.dot')
     png_file = os.path.join(plan_path, f'{request_id}.png')
     
@@ -204,13 +210,10 @@ def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
     # Convert the DOT file to PNG using Graphviz
     command = ['dot', '-Tpng', dot_file, '-o', png_file]
     subprocess.run(command, check=True)
-    
+    print(f"📊 Graph generated")
     return png_file
 
 def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
-    slack_message = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
-    slack_message.send_initial_message(f"Here's a preview of the resources this request will create:")
-    
     with open(graph_path, 'rb') as file:
         response = requests.post(
             "https://slack.com/api/files.upload",
@@ -219,7 +222,6 @@ def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
             },
             data={
                 'channels': SLACK_CHANNEL_ID,
-                'thread_ts': SLACK_THREAD_TS,
                 'initial_comment': f"{message} for request {request_id}"
             },
             files={
@@ -231,3 +233,9 @@ def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
         if os.getenv('KUBIYA_DEBUG'):
             print(f"Error uploading graph to Slack: {response.status_code} - {response.text}")
 
+# Function to parse TTL and handle errors
+def parse_ttl(ttl: str) -> int:
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        raise ValueError(f"Invalid TTL format: {ttl}")
+    return ttl_seconds
