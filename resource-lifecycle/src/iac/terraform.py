@@ -109,7 +109,7 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
 
         if GENERATE_GRAPH:
             graph_path = generate_graph(plan_path, request_id, use_state=True)
-            send_graph_to_slack(graph_path, request_id, "Terraform Plan Preview")
+            send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
 
         return True, plan_output, plan_json
     except subprocess.CalledProcessError as e:
@@ -144,9 +144,10 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
         with open(os.path.join(log_path, "apply.log"), "w") as log_file:
             log_file.write(apply_output)
         
-        if GENERATE_GRAPH:
-            graph_path = generate_graph(plan_path, request_id, use_state=True)
-            send_graph_to_slack(graph_path, request_id, "Terraform Apply Preview")
+        # For now, we're not generating the graph for apply
+        # if GENERATE_GRAPH:
+            # graph_path = generate_graph(plan_path, request_id, use_state=True)
+            # send_graph_to_slack(graph_path, request_id, "👇 Terraform Apply Preview")
 
         return apply_output, plan_path
 
@@ -220,7 +221,8 @@ def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
             },
             data={
                 'channels': SLACK_CHANNEL_ID,
-                'initial_comment': f"{message} for request {request_id}"
+                'thread_ts': SLACK_THREAD_TS,
+                'initial_comment': f"{message}",
             },
             files={
                 'file': file
