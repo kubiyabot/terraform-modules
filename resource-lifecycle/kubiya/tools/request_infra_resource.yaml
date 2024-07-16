@@ -99,13 +99,13 @@ tools:
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
       - name: user_input
-        description: 'The natural language statement describing the AWS resources to be created'
+        description: 'The natural language statement describing the infrastructure resources to be created. Can also include specific requirements like region, instance type, etc.'
         required: true
       - name: purpose
         description: 'The purpose of the request - why the resources are needed'
         required: true
       - name: ttl
-        description: 'Time to live for the resource (e.g., 3h, 1d, 1m) - after this time, the resource will be deleted - ask for how long but suggest a good default based on the request'
+        description: 'Time to live for the resource (e.g., 3h, 1d, 1m) - after this time, the resource will be deleted - ask for how long but suggest a good default based on the request.'
         required: false
     env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
