@@ -219,6 +219,7 @@ def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:
             },
             data={
                 'channels': SLACK_CHANNEL_ID,
+                'thread_ts': SLACK_THREAD_TS,
                 'initial_comment': f"{message} for request {request_id}"
             },
             files={
