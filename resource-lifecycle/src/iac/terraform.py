@@ -210,7 +210,7 @@ def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
     # Convert the DOT file to PNG using Graphviz
     command = ['dot', '-Tpng', dot_file, '-o', png_file]
     subprocess.run(command, check=True)
-    print(f"📊 Graph generated")
+    print(f"📊 Graph generated.. sending")
     return png_file
 
 def send_graph_to_slack(graph_path: str, request_id: str, message: str) -> None:

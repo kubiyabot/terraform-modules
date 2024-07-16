@@ -32,13 +32,19 @@ KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
 APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 
+def parse_ttl(ttl: str) -> int:
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        raise ValueError(f"Invalid TTL format: {ttl}")
+    return ttl_seconds
+
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
 
-    ttl_seconds = timeparse(ttl)
-    max_ttl_seconds = timeparse(MAX_TTL)
+    ttl_seconds = parse_ttl(ttl)
+    max_ttl_seconds = parse_ttl(MAX_TTL)
 
-    if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
+    if ttl_seconds > max_ttl_seconds:
         error_message = "TTL exceeds the maximum allowed TTL."
         logger.error(error_message)
         print(f"❌ {error_message}")
@@ -229,13 +235,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
-    ttl_seconds = timeparse(ttl)
-    if ttl_seconds is None:
-        error_message = "Invalid TTL format provided."
-        logger.error(error_message)
-        print(f"❌ {error_message}")
-        exit(1)
-
+    ttl_seconds = parse_ttl(ttl)
     expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
 
     c.execute('''CREATE TABLE IF NOT EXISTS resources
@@ -246,7 +246,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Manage AWS resource creation requests.')
+    parser = argparse.ArgumentParser(description='Manage infrastructure resource creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')
     parser.add_argument('--purpose', required=True, help='The purpose of the request')
     parser.add_argument('--ttl', default='1d', help='Time to live for the resource (e.g., 3h, 1d, 1m)')
