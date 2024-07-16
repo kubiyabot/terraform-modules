@@ -1,6 +1,5 @@
 import os
 import argparse
-import logging
 import sqlite3
 import uuid
 import json
@@ -14,10 +13,6 @@ from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Maximum number of retries for Terraform plan creation
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
@@ -40,11 +35,10 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
 
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
         error_message = "TTL exceeds the maximum allowed TTL."
-        logger.error(error_message)
         print(f"❌ {error_message}")
         exit(1)
 
-    expiry_time = requested_at + timedelta(seconds=ttl_seconds)
+    expiry_time = requested_at + timedelta(seconds=int(ttl_seconds))
 
     if STORE_STATE:
         approval_request = ApprovalRequest(
@@ -114,7 +108,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         print(f"Request submitted successfully and has been sent to an approver.")
         event_response = response.json()
         webhook_url = event_response.get("webhook_url")
-        if (webhook_url):
+        if webhook_url:
             webhook_response = requests.post(
                 webhook_url,
                 headers={'Content-Type': 'application/json'},
@@ -245,11 +239,10 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     ttl_seconds = timeparse(ttl)
     if ttl_seconds is None:
         error_message = "Invalid TTL format provided."
-        logger.error(error_message)
         print(f"❌ {error_message}")
         exit(1)
 
-    expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
+    expiry_time = datetime.utcnow() + timedelta(seconds=int(ttl_seconds))
 
     c.execute('''CREATE TABLE IF NOT EXISTS resources
                  (request_id text, resource_details text, tf_state text, expiry_time text)''')
