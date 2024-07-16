@@ -228,6 +228,14 @@ def manage_resource_request(user_input, purpose, ttl):
         print(f"❌ An error occurred: {e}")
         exit(1)
 
+def ttl_to_seconds(ttl):
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        error_message = "Invalid TTL format provided."
+        print(f"❌ {error_message}")
+        exit(1)
+    return ttl_seconds
+
 # Function to apply the resources
 def apply_resources(request_id, resource_details, tf_files, ttl):
     if os.getenv('DRY_RUN_ENABLED'):
@@ -263,6 +271,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
+        ttl=ttl_to_seconds(ttl)
         schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
     print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
 
