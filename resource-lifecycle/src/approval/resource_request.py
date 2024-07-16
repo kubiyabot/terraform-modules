@@ -15,36 +15,11 @@ from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
-
-class CodeUnrecoverableLLMResponse(BaseModel):
-    unrecoverable_error: bool
-    reasoning: str
-
-def is_error_unrecoverable(error: str, max_retries: int = 3, delay: int = 2) -> CodeUnrecoverableLLMResponse:
-    sys_prompt = f"CAREFULLY READ the error message below and determine if it is an unrecoverable error. For example, if the error is due to a syntax error in the Terraform code, it may be unrecoverable. If the error is due to a missing resource, it may be recoverable. Please provide your decision and reasoning in the response.```{error}```\n\nReturn a json object with the following keys: `unrecoverable_error` (boolean) and `reasoning` (string)."
-
-    messages = [{"content": sys_prompt, "role": "system"}]
-
-    for attempt in range(max_retries):
-        try:
-            response = completion(
-                model="gpt-4o",
-                messages=messages,
-                format="json"
-            )
-            llm_response = response['choices'][0]['message']['content']
-
-            # Parse the response to ensure it is valid JSON and matches the expected format
-            parsed_response = json.loads(llm_response)
-            return CodeUnrecoverableLLMResponse(**parsed_response)
-        except (json.JSONDecodeError, ValidationError) as e:
-            print(f"Attempt {attempt + 1}/{max_retries} failed with error: {e}")
-            if attempt < max_retries - 1:
-                sleep(delay)
-            else:
-                raise e
+from llm.terraform_errors import is_error_unrecoverable
 
 # Configuration from environment variables
+# Default values are provided for local development
+# Use Terraform to set these values in production
 MAX_CODE_GEN_RETRIES = int(os.getenv('MAX_CODE_GEN_RETRIES', 10))
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
 APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
@@ -59,6 +34,7 @@ APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
 
+# Function to request approval for resource creation
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
 
@@ -155,6 +131,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     else:
         print(f"Error: {response.status_code} - {response.text}")
 
+# Function to manage the resource request
 def manage_resource_request(user_input, purpose, ttl):
     try:
         # Step 1: Understand the request
@@ -205,6 +182,7 @@ def manage_resource_request(user_input, purpose, ttl):
             print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
 
             if UNRECOVERABLE_ERROR_CHECK:
+                print("🧩 Checking if the error is unrecoverable...")
                 llm_response = is_error_unrecoverable(plan_output_or_error)
                 if llm_response.unrecoverable_error:
                     print(f"❌ Unrecoverable error detected: {llm_response.reasoning}")
@@ -250,6 +228,7 @@ def manage_resource_request(user_input, purpose, ttl):
         print(f"❌ An error occurred: {e}")
         exit(1)
 
+# Function to apply the resources
 def apply_resources(request_id, resource_details, tf_files, ttl):
     if os.getenv('DRY_RUN_ENABLED'):
         print("🚀 Dry run mode enabled. Skipping Terraform apply.")
@@ -287,6 +266,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
         schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
     print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
 
+# Function to store the resource state in the database
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     print("📦 Storing state")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
@@ -307,6 +287,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn.commit()
     conn.close()
 
+# Main function to manage the resource request (CLI entry point)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manage infrastructure resources creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')

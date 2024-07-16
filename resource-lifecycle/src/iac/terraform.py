@@ -5,8 +5,6 @@ import requests
 import sqlite3
 import json
 from typing import Tuple, Dict
-from slack.slack import SlackMessage
-from datetime import datetime, timedelta
 from pytimeparse.timeparse import timeparse
 
 # Set environment variables and defaults
