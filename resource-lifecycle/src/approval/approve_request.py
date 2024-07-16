@@ -9,6 +9,7 @@ from litellm import completion
 import requests
 import subprocess
 from slack.slack import SlackMessage
+from approval.scheduler import schedule_deletion_task
 
 def get_access_instructions(resource_details):
     sys_prompt = f"""

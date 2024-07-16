@@ -24,15 +24,15 @@ MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
 APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
 STORE_STATE = APPROVAL_WORKFLOW or os.getenv('STORE_STATE', 'true').lower() == 'true'
 TTL_ENABLED = os.getenv('TTL_ENABLED', 'true').lower() == 'true'
+USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
+SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
+SLACK_THREAD_TS = os.getenv('SLACK_THREAD_TS')
+KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
+KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
+APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
+MAX_TTL = os.getenv('MAX_TTL', '30d')
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
-    USER_EMAIL = os.getenv('KUBIYA_USER_EMAIL')
-    SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
-    KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
-    KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
-    APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
-    MAX_TTL = os.getenv('MAX_TTL', '30d')
-
     requested_at = datetime.utcnow()
 
     ttl_seconds = timeparse(ttl)
@@ -219,7 +219,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
-        schedule_deletion_task(request_id, resource_details["user_email"], ttl, resource_details["slack_thread_ts"])
+        schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
     print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
