@@ -9,11 +9,11 @@ from datetime import datetime, timedelta
 from pytimeparse.timeparse import timeparse
 from models.models import ApprovalRequest
 from slack.slack import SlackMessage
+from llm.parse_request import parse_user_request, generate_terraform_code, fix_terraform_code
 from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
-import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,19 +32,13 @@ KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
 APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 
-def parse_ttl(ttl: str) -> int:
-    ttl_seconds = timeparse(ttl)
-    if ttl_seconds is None:
-        raise ValueError(f"Invalid TTL format: {ttl}")
-    return ttl_seconds
-
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
 
-    ttl_seconds = parse_ttl(ttl)
-    max_ttl_seconds = parse_ttl(MAX_TTL)
+    ttl_seconds = timeparse(ttl)
+    max_ttl_seconds = timeparse(MAX_TTL)
 
-    if ttl_seconds > max_ttl_seconds:
+    if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
         error_message = "TTL exceeds the maximum allowed TTL."
         logger.error(error_message)
         print(f"❌ {error_message}")
@@ -120,7 +114,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         print(f"Request submitted successfully and has been sent to an approver.")
         event_response = response.json()
         webhook_url = event_response.get("webhook_url")
-        if webhook_url:
+        if (webhook_url):
             webhook_response = requests.post(
                 webhook_url,
                 headers={'Content-Type': 'application/json'},
@@ -135,59 +129,8 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     else:
         print(f"Error: {response.status_code} - {response.text}")
 
-def handle_terraform_apply_errors(output):
-    # Define a list of error patterns that cannot be fixed by modifying the code
-    unfixable_errors = [
-        "resource with the name already exists",
-        "invalid credentials",
-        "access denied",
-        "insufficient permissions",
-        "quota exceeded",
-        "rate limit exceeded",
-        "unsupported attribute",
-        "cannot be destroyed",
-        "missing required argument",
-        "already associated",
-        "does not have an attribute",
-        "no matching items found",
-        "conflict with",
-        "cannot be updated",
-        "read-only",
-        "missing mandatory field",
-        "invalid value",
-        "unrecognized argument",
-        "duplicate resource",
-        "cannot be deleted",
-        "timeout while waiting",
-        "cannot parse",
-        "invalid syntax",
-        "unknown provider",
-        "provider configuration not present",
-        "provider produced inconsistent",
-        "incompatible block types",
-        "multiple conflicting configurations",
-        "invalid index",
-        "invalid reference",
-        "unsupported block type",
-        "conflicts with configuration",
-        "extraneous key",
-        "invalid combination of arguments",
-        # Add more patterns as needed
-    ]
-    
-    # Combine all error patterns into a single regex pattern
-    combined_pattern = re.compile("|".join(re.escape(error) for error in unfixable_errors), re.IGNORECASE)
-    
-    # Check if any of the unfixable error patterns are present in the output
-    if combined_pattern.search(output):
-        return False, f"Unfixable error detected: {combined_pattern.search(output).group()}"
-    return True, "Fixable errors detected"
-
 def manage_resource_request(user_input, purpose, ttl):
     try:
-        # Import functions locally to avoid circular import issues
-        from llm.parse_request import parse_user_request, generate_terraform_code, fix_terraform_code
-
         # Step 1: Understand the request
         print("🔍 Understanding your request...")
         parsed_request, error_message = parse_user_request(user_input)
@@ -222,11 +165,6 @@ def manage_resource_request(user_input, purpose, ttl):
             if plan_success:
                 print(f"✅ Terraform plan created successfully on attempt {attempts}\n\nHere is the plan:\n{plan_output_or_error}")
                 break
-
-            fixable, error_message = handle_terraform_apply_errors(plan_output_or_error)
-            if not fixable:
-                print(f"❌ Terraform plan failed due to unfixable error: {error_message}.")
-                return
 
             print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
             fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
@@ -264,8 +202,9 @@ def manage_resource_request(user_input, purpose, ttl):
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
             print("🚀 Attempting to create the resource(s)..")
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
+
     except Exception as e:
-        print(f"❌ Failed to process the request: {e}")
+        print(f"❌ An error occurred: {e}")
         exit(1)
 
 def apply_resources(request_id, resource_details, tf_files, ttl):
@@ -274,22 +213,42 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
     else:
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+
+    # Check if the apply was successful
+    if "Error" in apply_output or "error" in apply_output:
+        print(f"❌ Terraform apply failed. Attempting to fix the code...")
+        fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
+        tf_files = fixed_tf_code_details.tf_files
+
+        # Retry Terraform apply after fixing the code
+        print("🚀 Retrying Terraform apply with fixed code...")
+        apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+        if "Error" in apply_output or "error" in apply_output:
+            print(f"❌ Terraform apply failed again after fixing the code. Please contact your administrator.")
+            return
+
     # Store the state in the database
     if STORE_STATE:
-        print("📦 Attempting to store resources state")
+        print("📦 Attempting to store the created resources state")
         store_resource_in_db(request_id, resource_details, tf_state, ttl)
     # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
-        print("⏰ Scheduling deletion task...")
+        print("⏰ Scheduling future deletion task...")
         schedule_deletion_task(request_id, USER_EMAIL, ttl, SLACK_THREAD_TS)
-    print(f"✅ All resources were successfully created. Terraform apply output:\n{apply_output}")
+    print(f"✅ All resources were successfully created!")
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     print("📦 Storing state")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
-    ttl_seconds = parse_ttl(ttl)
+    ttl_seconds = timeparse(ttl)
+    if ttl_seconds is None:
+        error_message = "Invalid TTL format provided."
+        logger.error(error_message)
+        print(f"❌ {error_message}")
+        exit(1)
+
     expiry_time = datetime.utcnow() + timedelta(seconds=ttl_seconds)
 
     c.execute('''CREATE TABLE IF NOT EXISTS resources
@@ -300,7 +259,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Manage infrastructure resource creation requests.')
+    parser = argparse.ArgumentParser(description='Manage infrastructure resources creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')
     parser.add_argument('--purpose', required=True, help='The purpose of the request')
     parser.add_argument('--ttl', default='1d', help='Time to live for the resource (e.g., 3h, 1d, 1m)')
