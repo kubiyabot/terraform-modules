@@ -2,21 +2,32 @@ import requests
 import os
 
 class SlackMessage:
-    def __init__(self, channel, thread_ts=None):
+    def __init__(self, channel=None, thread_ts=None):
         self.channel = channel or os.getenv('SLACK_CHANNEL_ID')
         self.thread_ts = os.getenv('SLACK_THREAD_TS') or thread_ts
         self.blocks = []
         self.api_key = os.getenv('SLACK_API_TOKEN')
 
-    def send_initial_message(self, text):
-        self.blocks = [
-            {"type": "section", "text": {"type": "mrkdwn", "text": text}},
-            {"type": "divider"}
-        ]
-        self.send_message()
-
-    def update_message(self, text):
-        self.blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": text}})
+    def send_initial_message(self, steps):
+        self.blocks = []
+        for step in steps:
+            elements = [
+                {
+                    "type": "image",
+                    "image_url": step["icon"],
+                    "alt_text": step["name"]
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*{step['name']}*"
+                },
+                {
+                    "type": "image",
+                    "image_url": "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif",
+                    "alt_text": "progress"
+                }
+            ]
+            self.blocks.append({"type": "context", "elements": elements})
         self.blocks.append({"type": "divider"})
         self.send_message()
 
@@ -33,8 +44,7 @@ class SlackMessage:
             "text": {"type": "mrkdwn", "text": f"{emoji} *{step_name}*"}
         }
 
-        # Update the existing step block if it exists, otherwise add a new one
-        step_index = next((index for (index, d) in enumerate(self.blocks) if d["text"]["text"].endswith(f"*{step_name}*")), None)
+        step_index = next((index for (index, d) in enumerate(self.blocks) if d["type"] == "section" and f"*{step_name}*" in d["text"]["text"]), None)
         if step_index is not None:
             self.blocks[step_index] = step_block
         else:
