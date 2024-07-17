@@ -486,7 +486,11 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
         ttl_seconds = ttl_to_seconds(ttl, task_statuses)
         schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
     
-    print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
+    print(f"✅ All resources were successfully created!")
+    if STORE_STATE and TTL_ENABLED:
+        print(f"📦 Resource state stored and the resources will get deleted automatically when the TTL expires")
+    else:
+        print(f"📦 Resource state was not stored or TTL was not enabled. Please ensure to manage the resources manually.\n\n* Ask the operators (platform or DevOps team) to enable this feature by setting TTL_ENABLED on the agent environment")
     task_statuses["Scheduling Deletion Task"]["status"] = "Resources created successfully"
     task_statuses["Scheduling Deletion Task"]["is_completed"] = True
     update_slack_progress(task_statuses)
