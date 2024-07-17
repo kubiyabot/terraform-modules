@@ -7,24 +7,27 @@ class SlackMessage:
         self.thread_ts = os.getenv('SLACK_THREAD_TS') or thread_ts
         self.blocks = []
         self.api_key = os.getenv('SLACK_API_TOKEN')
+        self.message_ts = None  # To store the timestamp of the message
 
     def send_initial_message(self, text):
         self.blocks = [
             {"type": "section", "text": {"type": "mrkdwn", "text": text}},
             {"type": "divider"}
         ]
-        return self.send_message()
+        response = self.send_message()
+        if response and 'ts' in response:
+            self.message_ts = response['ts']
 
     def update_message(self, blocks):
         self.blocks = blocks
-        return self.send_message()
+        self.send_message(update=True)
 
     def update_step(self, step_name, status):
         emoji = {
-            "in_progress": ":hourglass_flowing_sand:",
-            "completed": ":white_check_mark:",
-            "failed": ":x:",
-            "waiting": ":hourglass:"
+            "in_progress": "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif",
+            "completed": "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png",
+            "failed": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png",
+            "waiting": ""
         }.get(status, "")
 
         step_block = {
@@ -40,17 +43,17 @@ class SlackMessage:
             self.blocks.append(step_block)
             self.blocks.append({"type": "divider"})
 
-        return self.send_message()
+        self.send_message(update=True)
 
     def send_block_message(self, blocks):
         self.blocks.extend(blocks)
-        return self.send_message()
+        self.send_message(update=True)
 
-    def send_message(self, text=None):
+    def send_message(self, text=None, update=False):
         if not self.api_key:
             if os.getenv('KUBIYA_DEBUG'):
                 print("No SLACK_API_TOKEN set. Slack messages will not be sent.")
-            return
+            return None
 
         payload = {
             "channel": self.channel,
@@ -59,8 +62,13 @@ class SlackMessage:
         if self.thread_ts:
             payload["thread_ts"] = self.thread_ts
 
+        url = "https://slack.com/api/chat.postMessage"
+        if update and self.message_ts:
+            payload["ts"] = self.message_ts
+            url = "https://slack.com/api/chat.update"
+
         response = requests.post(
-            "https://slack.com/api/chat.postMessage",
+            url,
             headers={
                 'Content-Type': 'application/json',
                 'Authorization': f'Bearer {self.api_key}'
