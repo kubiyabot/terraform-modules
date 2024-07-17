@@ -15,7 +15,7 @@ from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
-from llm.terraform_errors import is_error_unrecoverable, CodeUnrecoverableLLMResponse
+from llm.terraform_errors import is_error_unrecoverable
 
 # Configuration from environment variables
 MAX_CODE_GEN_RETRIES = int(os.getenv('MAX_CODE_GEN_RETRIES', 10))
@@ -32,7 +32,11 @@ APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
 
+# Global variable to store the Slack message timestamp
+SLACK_MESSAGE_TS = None
+
 def update_slack_progress(slack_channel_id, thread_ts, status, task, is_terraform=True, is_completed=False, is_failed=False):
+    global SLACK_MESSAGE_TS
     slack_msg = SlackMessage(slack_channel_id, thread_ts)
     
     if is_terraform:
@@ -47,52 +51,55 @@ def update_slack_progress(slack_channel_id, thread_ts, status, task, is_terrafor
     else:
         status_image = None
 
-    blocks = [
-        {
-            "type": "divider"
-        },
-        {
-            "type": "context",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": f"Status: {status}"
-                }
-            ]
-        },
-        {
-            "type": "context",
-            "elements": [
-                {
-                    "type": "image",
-                    "image_url": image_url,
-                    "alt_text": "operation"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": f"*{task}*"
-                }
-            ]
-        }
-    ]
+    new_block = {
+        "type": "context",
+        "elements": [
+            {
+                "type": "image",
+                "image_url": image_url,
+                "alt_text": "operation"
+            },
+            {
+                "type": "mrkdwn",
+                "text": f"*{task}*"
+            }
+        ]
+    }
 
     if status_image:
-        blocks.append({
-            "type": "context",
-            "elements": [
-                {
-                    "type": "image",
-                    "image_url": status_image,
-                    "alt_text": "status"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "Task Status"
-                }
-            ]
+        new_block["elements"].append({
+            "type": "image",
+            "image_url": status_image,
+            "alt_text": "status"
         })
 
-    slack_msg.send_block_message(blocks)
+    if SLACK_MESSAGE_TS:
+        # Retrieve the existing message
+        existing_message = slack_msg.get_message(SLACK_MESSAGE_TS)
+        if existing_message and 'blocks' in existing_message:
+            blocks = existing_message['blocks']
+            # Add the new block
+            blocks.append(new_block)
+            # Update the existing message
+            slack_msg.update_message(blocks, SLACK_MESSAGE_TS)
+    else:
+        # If it's the first message, create a new one
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Resource Creation Progress"
+                }
+            },
+            {
+                "type": "divider"
+            },
+            new_block
+        ]
+        response = slack_msg.send_block_message(blocks)
+        if response and 'ts' in response:
+            SLACK_MESSAGE_TS = response['ts']
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
@@ -277,9 +284,6 @@ def manage_resource_request(user_input, purpose, ttl):
             update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, "Failed", f"Terraform plan failed after {MAX_TERRAFORM_RETRIES} attempts", is_failed=True)
             return
 
-        print(f"💰 Estimating costs for the specified resources...")
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, "In Progress", "Estimating costs...")
-        estimation, cost_data = estimate_resource_cost(plan_json)
         print(f"💰 Estimating costs for the specified resources...")
         update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, "In Progress", "Estimating costs...")
         estimation, cost_data = estimate_resource_cost(plan_json)
