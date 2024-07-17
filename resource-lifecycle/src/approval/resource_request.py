@@ -35,7 +35,7 @@ UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower
 # Global variable to store the Slack message timestamp
 SLACK_MESSAGE_TS = None
 
-def update_slack_progress(slack_channel_id, thread_ts, task_statuses):
+def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=False):
     global SLACK_MESSAGE_TS
     slack_msg = SlackMessage(slack_channel_id, thread_ts)
 
@@ -62,17 +62,14 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses):
             status_image = "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png"
         elif status.get("is_failed"):
             status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
+        elif status["status"] == "In Progress":
+            status_image = image_url
         else:
-            status_image = "https://static-00.iconduck.com/assets.00/hourglass-sand-emoji-1936x2048-u14n9as3.png"
+            status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
 
         task_block = {
             "type": "context",
             "elements": [
-                {
-                    "type": "image",
-                    "image_url": image_url,
-                    "alt_text": "operation"
-                },
                 {
                     "type": "mrkdwn",
                     "text": f"*{task}*: {status['status']}"
@@ -89,12 +86,12 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses):
 
         blocks.append(task_block)
 
-    if SLACK_MESSAGE_TS:
-        slack_msg.update_message(blocks, SLACK_MESSAGE_TS)
-    else:
+    if initial:
         response = slack_msg.send_block_message(blocks)
         if response and 'ts' in response:
             SLACK_MESSAGE_TS = response['ts']
+    else:
+        slack_msg.update_message(blocks, SLACK_MESSAGE_TS)
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts, task_statuses):
     requested_at = datetime.utcnow()
@@ -216,8 +213,9 @@ def manage_resource_request(user_input, purpose, ttl):
         "Scheduling Deletion Task": {"status": "Pending", "is_terraform": False}
     }
 
+    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses, initial=True)
+
     try:
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
         print("🔍 Understanding your request...")
         parsed_request, error_message = parse_user_request(user_input)
 

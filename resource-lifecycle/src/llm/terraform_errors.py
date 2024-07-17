@@ -9,8 +9,7 @@ class CodeUnrecoverableLLMResponse(BaseModel):
     reasoning: str
 
 def is_error_unrecoverable(error: str, max_retries: int = 10, delay: int = 2) -> CodeUnrecoverableLLMResponse:
-    sys_prompt = f"CAREFULLY READ the error message below and determine if it is an unrecoverable error. For example, if the error is due to a syntax error in the Terraform code, it may be unrecoverable. If the error is due to a missing resource, it may be recoverable. Please provide your decision and reasoning in the response.```{error}```\n\nReturn a VALID JSON object with the following keys: `unrecoverable_error` (boolean) and `reasoning` (string)."
-
+    sys_prompt = f"Carefully read the following output from Terraform and classify the error as recoverable or unrecoverable. Unrecoverable errors are those that require manual intervention to resolve (eg. resource name already exists). If the error is unrecoverable, provide a brief reasoning for why it is unrecoverable.\n\n{error}\n\nReturn a VALID JSON response with the following structure:\n{{\n    \"unrecoverable_error\": bool,\n    \"reasoning\": \"string\"\n}}"
     messages = [{"content": sys_prompt, "role": "system"}]
 
     for attempt in range(max_retries):
