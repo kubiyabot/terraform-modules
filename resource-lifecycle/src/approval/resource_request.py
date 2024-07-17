@@ -42,7 +42,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     max_ttl_seconds = timeparse(MAX_TTL)
 
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
-        error_message = "TTL exceeds the maximum allowed TTL."
+        error_message = "TTL exceeds the maximum allowed TTL. Please adjust it to a lower value."
         print(f"❌ {error_message}")
         exit(1)
 
@@ -139,7 +139,7 @@ def manage_resource_request(user_input, purpose, ttl):
         parsed_request, error_message = parse_user_request(user_input)
 
         if error_message:
-            print(f"❌ {error_message}")
+            print(f"Failed to parse request: {error_message}")
             return
 
         resource_details = parsed_request.resource_details
@@ -225,7 +225,7 @@ def manage_resource_request(user_input, purpose, ttl):
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
 
     except Exception as e:
-        print(f"❌ An error occurred: {e}")
+        print(f"Failed to complete the operation. See the output above. In case the failure are releted to code / configuration - you might need to tweak your input instructions to adjust the problem")
         exit(1)
 
 def ttl_to_seconds(ttl):
@@ -246,7 +246,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
 
     # Check if the apply was successful
     if "Error" in apply_output or "error" in apply_output:
-        print(f"❌ Terraform apply failed. Attempting to fix the code...")
+        print(f"Terraform apply failed. Attempting to fix the code...")
 
         if UNRECOVERABLE_ERROR_CHECK:
             llm_response = is_error_unrecoverable(apply_output)
@@ -261,7 +261,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
         print("🚀🧩 Retrying Terraform apply with fixed code...")
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
         if "Error" in apply_output or "error" in apply_output:
-            print(f"❌ Terraform apply failed again after fixing the code. Please contact your administrator.")
+            print(f"Terraform apply failed again after fixing the code. Please contact your administrator.")
             return
 
     # Store the state in the database
