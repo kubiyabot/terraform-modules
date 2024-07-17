@@ -11,16 +11,13 @@ class SlackMessage:
 
     def send_initial_message(self, blocks):
         self.blocks = blocks
-        print("Sending initial message...")
         response = self.send_message()
         if response and 'ts' in response:
             self.message_ts = response['ts']
-            print(f"Message sent successfully. Timestamp: {self.message_ts}")
         else:
             print(f"Failed to send message. Response: {response}")
 
     def update_message(self):
-        print("Updating message...")
         self.send_message(update=True)
 
     def send_message(self, update=False):
