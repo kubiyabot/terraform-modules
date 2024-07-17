@@ -30,7 +30,7 @@ KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
 KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
 APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
-UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
+UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower() == 'true'
 
 # Global variable to store the Slack message timestamp
 SLACK_MESSAGE_TS = None
