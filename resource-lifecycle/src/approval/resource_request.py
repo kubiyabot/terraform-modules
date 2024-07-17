@@ -84,10 +84,24 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
     ]
 
     for task, status in task_statuses.items():
+        elements = []
+        
         if status["is_terraform"]:
             image_url = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
         else:
             image_url = ""
+
+        if image_url:
+            elements.append({
+                "type": "image",
+                "image_url": image_url,
+                "alt_text": "terraform"
+            })
+
+        elements.append({
+            "type": "mrkdwn",
+            "text": f"*{task}*: {status['status']}"
+        })
 
         if status["status"] == "In Progress":
             status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
@@ -96,31 +110,19 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
         elif status.get("is_failed"):
             status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
         else:
-            status_image = ":hourglass:"
-
-        task_block = {
-            "type": "context",
-            "elements": [
-                {
-                    "type": "image",
-                    "image_url": image_url,
-                    "alt_text": "terraform"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": f"*{task}*: {status['status']}"
-                }
-            ]
-        }
+            status_image = ""
 
         if status_image:
-            task_block["elements"].append({
+            elements.append({
                 "type": "image",
                 "image_url": status_image,
                 "alt_text": "status"
             })
 
-        blocks.append(task_block)
+        blocks.append({
+            "type": "context",
+            "elements": elements
+        })
 
     if initial:
         slack_msg.send_initial_message(blocks)
