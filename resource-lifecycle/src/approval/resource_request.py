@@ -4,6 +4,8 @@ import sqlite3
 import uuid
 import json
 import requests
+import signal
+import sys
 from datetime import datetime, timedelta
 from pytimeparse.timeparse import timeparse
 from pydantic import BaseModel, ValidationError
@@ -34,6 +36,37 @@ UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower
 
 # Global variable to store the Slack message timestamp
 SLACK_MESSAGE_TS = None
+
+# Signal handler for termination signals
+def signal_handler(sig, frame):
+    global SLACK_MESSAGE_TS
+    if SLACK_MESSAGE_TS:
+        slack_msg = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Resource Creation Progress"
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*ABORTED*"
+                }
+            }
+        ]
+        slack_msg.update_message(blocks)
+    sys.exit(0)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=False):
     global SLACK_MESSAGE_TS
@@ -91,7 +124,7 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
         if response and 'ts' in response:
             SLACK_MESSAGE_TS = response['ts']
     else:
-        slack_msg.update_message(blocks, SLACK_MESSAGE_TS)
+        slack_msg.update_message(blocks)
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts, task_statuses):
     requested_at = datetime.utcnow()

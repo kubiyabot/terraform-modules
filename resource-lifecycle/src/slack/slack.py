@@ -13,12 +13,11 @@ class SlackMessage:
             {"type": "section", "text": {"type": "mrkdwn", "text": text}},
             {"type": "divider"}
         ]
-        self.send_message()
+        return self.send_message()
 
-    def update_message(self, text):
-        self.blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": text}})
-        self.blocks.append({"type": "divider"})
-        self.send_message()
+    def update_message(self, blocks):
+        self.blocks = blocks
+        return self.send_message()
 
     def update_step(self, step_name, status):
         emoji = {
@@ -34,30 +33,32 @@ class SlackMessage:
         }
 
         # Update the existing step block if it exists, otherwise add a new one
-        step_index = next((index for (index, d) in enumerate(self.blocks) if d["text"]["text"].endswith(f"*{step_name}*")), None)
+        step_index = next((index for (index, d) in enumerate(self.blocks) if 'text' in d and d["text"]["text"].endswith(f"*{step_name}*")), None)
         if step_index is not None:
             self.blocks[step_index] = step_block
         else:
             self.blocks.append(step_block)
             self.blocks.append({"type": "divider"})
 
-        self.send_message()
+        return self.send_message()
 
     def send_block_message(self, blocks):
         self.blocks.extend(blocks)
-        self.send_message()
+        return self.send_message()
 
     def send_message(self, text=None):
         if not self.api_key:
             if os.getenv('KUBIYA_DEBUG'):
                 print("No SLACK_API_TOKEN set. Slack messages will not be sent.")
             return
+
         payload = {
             "channel": self.channel,
             "blocks": self.blocks
         }
         if self.thread_ts:
             payload["thread_ts"] = self.thread_ts
+
         response = requests.post(
             "https://slack.com/api/chat.postMessage",
             headers={
@@ -69,3 +70,5 @@ class SlackMessage:
         if response.status_code >= 300:
             if os.getenv('KUBIYA_DEBUG'):
                 print(f"Error sending Slack message: {response.status_code} - {response.text}")
+        else:
+            return response.json()
