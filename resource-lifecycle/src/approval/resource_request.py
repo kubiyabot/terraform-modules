@@ -35,6 +35,9 @@ UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower
 # Global variable to store the Slack message timestamp
 SLACK_MESSAGE_TS = None
 
+# Global variable to store the Slack message timestamp
+SLACK_MESSAGE_TS = None
+
 def update_slack_progress(slack_channel_id, thread_ts, status, task, is_terraform=True, is_completed=False, is_failed=False):
     global SLACK_MESSAGE_TS
     slack_msg = SlackMessage(slack_channel_id, thread_ts)
@@ -61,7 +64,7 @@ def update_slack_progress(slack_channel_id, thread_ts, status, task, is_terrafor
             },
             {
                 "type": "mrkdwn",
-                "text": f"*{task}*"
+                "text": f"*{task}*: {status}"
             }
         ]
     }
