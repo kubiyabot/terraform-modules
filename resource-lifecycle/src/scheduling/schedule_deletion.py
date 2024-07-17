@@ -5,6 +5,8 @@ import requests
 import sys
 from pytimeparse.timeparse import timeparse
 
+DELETION_ENABLED = os.getenv("RESOURCE_DELETION_ENABLED", "false").lower() == "true"
+
 def parse_duration(duration):
     seconds = timeparse(duration)
     if seconds is None:
@@ -17,6 +19,8 @@ def calculate_schedule_time(duration):
     return now + parse_duration(duration)
 
 def schedule_deletion(request_id, duration):
+    if not DELETION_ENABLED:
+        print("Resource deletion is not enabled. Please ask the oprator who created this task to set the RESOURCE_DELETION_ENABLED environment variable to 'true' to enable it.")
     ttl_seconds = timeparse(duration)
     initial_schedule_time = (datetime.utcnow() + timedelta(seconds=ttl_seconds)).isoformat()
 
