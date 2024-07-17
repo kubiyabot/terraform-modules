@@ -125,9 +125,11 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
         })
 
     if initial:
+        print("Sending initial Slack message...")
         slack_msg.send_initial_message(blocks)
     else:
         slack_msg.blocks = blocks
+        print("Updating Slack message...")
         slack_msg.update_message()
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts, task_statuses):
