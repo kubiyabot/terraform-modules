@@ -6,16 +6,17 @@ import json
 import requests
 from datetime import datetime, timedelta
 from pytimeparse.timeparse import timeparse
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from litellm import completion
 from models.models import ApprovalRequest
 from slack.slack import SlackMessage
 from llm.parse_request import parse_user_request, generate_terraform_code, fix_terraform_code
+from llm.terraform_errors import is_error_unrecoverable
 from iac.estimate_cost import estimate_resource_cost, format_cost_data_for_slack
 from iac.compare_cost import compare_cost_with_avg, get_average_monthly_cost
 from iac.terraform import apply_terraform, create_terraform_plan
 from approval.scheduler import schedule_deletion_task
-from llm.terraform_errors import is_error_unrecoverable
+from typing import Any
 
 # Configuration from environment variables
 # Default values are provided for local development
@@ -179,7 +180,7 @@ def manage_resource_request(user_input, purpose, ttl):
                 print(f"✅ Terraform plan seems to be successful on attempt {attempts}.")
                 break
 
-            print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
+            print(f"❌ Terraform plan failed on attempt {attempts}.")
 
             if UNRECOVERABLE_ERROR_CHECK:
                 print("🧩 Checking if the error is unrecoverable...")
@@ -188,6 +189,7 @@ def manage_resource_request(user_input, purpose, ttl):
                     print(f"❌ Unrecoverable error detected: {llm_response.reasoning}")
                     return
 
+            print("Attempting to fix the code...")
             fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
             resource_details["tf_files"] = fixed_tf_code_details.tf_files
             resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
@@ -246,14 +248,14 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
 
     # Check if the apply was successful
     if "Error" in apply_output or "error" in apply_output:
-        print(f"Terraform apply failed. Attempting to fix the code...")
-
         if UNRECOVERABLE_ERROR_CHECK:
+            print("🧩 Checking if the error is unrecoverable...")
             llm_response = is_error_unrecoverable(apply_output)
             if llm_response.unrecoverable_error:
                 print(f"❌ Unrecoverable error detected during apply: {llm_response.reasoning}")
                 return
 
+        print(f"Terraform apply failed. Attempting to fix the code...")
         fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
         tf_files = fixed_tf_code_details.tf_files
 
@@ -268,12 +270,14 @@ def apply_resources(request_id, resource_details, tf_files, ttl):
     if STORE_STATE:
         print("📦 Attempting to store resources state")
         store_resource_in_db(request_id, resource_details, tf_state, ttl)
+    
     # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
-        print("⏰ Scheduling deletion task...")
-        ttl=ttl_to_seconds(ttl)
-        schedule_deletion_task(request_id, ttl, SLACK_THREAD_TS)
-    print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
+        print("⏰ Scheduling deletion task as TTL is enabled and state storage is enabled")
+        ttl_seconds = ttl_to_seconds(ttl)
+        schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
+    
+    print(f"✅ All resources were successfully created!")
 
 # Function to store the resource state in the database
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):

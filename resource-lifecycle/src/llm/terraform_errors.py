@@ -1,8 +1,8 @@
-import json
 from time import sleep
 from typing import Any, Dict
-from litellm import completion
 from pydantic import BaseModel, ValidationError
+from litellm import completion
+import json
 
 class CodeUnrecoverableLLMResponse(BaseModel):
     unrecoverable_error: bool
