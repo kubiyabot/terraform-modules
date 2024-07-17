@@ -362,7 +362,8 @@ def manage_resource_request(user_input, purpose, ttl):
         update_slack_progress(task_statuses)
         estimation, cost_data = estimate_resource_cost(plan_json)
         slack_cost_data = format_cost_data_for_slack(cost_data)
-        slack_msg.send_initial_message(slack_cost_data)
+        slack_msg.blocks.extend(slack_cost_data)
+        slack_msg.update_message()
         print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
         task_statuses["Estimating Costs"]["status"] = f"Estimated cost: ${estimation:.2f}"
         task_statuses["Estimating Costs"]["is_completed"] = True
