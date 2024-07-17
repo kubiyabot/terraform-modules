@@ -17,6 +17,9 @@ def calculate_schedule_time(duration):
     return now + parse_duration(duration)
 
 def schedule_deletion_task(request_id, ttl, slack_thread_ts):
+    if not os.getenv("RESOURCE_DELETION_ENABLED", "false").lower() == "true":
+        print("Resource deletion is not enabled. Please ask the operator who created this task to set the RESOURCE_DELETION_ENABLED environment variable to 'true' to enable it.")
+        return
     schedule_time = calculate_schedule_time(ttl).isoformat()
 
     task_payload = {
