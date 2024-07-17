@@ -96,7 +96,7 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
         elif status.get("is_failed"):
             status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
         else:
-            status_image = ""
+            status_image = ":hourglass:"
 
         task_block = {
             "type": "context",
@@ -108,7 +108,7 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
                 },
                 {
                     "type": "mrkdwn",
-                    "text": f"*{task}*"
+                    "text": f"*{task}*: {status['status']}"
                 }
             ]
         }
@@ -360,7 +360,7 @@ def manage_resource_request(user_input, purpose, ttl):
         estimation, cost_data = estimate_resource_cost(plan_json)
         slack_cost_data = format_cost_data_for_slack(cost_data)
         slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'), os.getenv('SLACK_THREAD_TS'))
-        slack_msg.send_block_message(slack_cost_data)
+        slack_msg.send_initial_message(slack_cost_data)
         print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
         task_statuses["Estimating Costs"]["status"] = f"Estimated cost: ${estimation:.2f}"
         task_statuses["Estimating Costs"]["is_completed"] = True

@@ -22,10 +22,10 @@ def is_error_unrecoverable(error: str, max_retries: int = 10, delay: int = 2) ->
             llm_response = response['choices'][0]['message']['content']
             try:
                 # Ensure the response is correctly formatted JSON
-                if tf_files_and_explanation.startswith("```json"):
-                    tf_files_and_explanation = tf_files_and_explanation[7:]
-                if tf_files_and_explanation.endswith("```"):
-                    tf_files_and_explanation = tf_files_and_explanation[:-3]
+                if llm_response.startswith("```json"):
+                    llm_response = llm_response[7:]
+                if llm_response.endswith("```"):
+                    llm_response = llm_response[:-3]
                 # Parse the response to ensure it is valid JSON and matches the expected format
                 parsed_response: Dict[str, Any] = json.loads(llm_response)
                 return CodeUnrecoverableLLMResponse(**parsed_response)
