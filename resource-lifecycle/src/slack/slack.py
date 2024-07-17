@@ -50,7 +50,8 @@ class SlackMessage:
             json=payload
         )
         if response.status_code >= 300:
-            print(f"Error sending Slack message: {response.status_code} - {response.text}")
+            if os.getenv('KUBIYA_DEBUG'):
+                print(f"Error sending Slack message: {response.status_code} - {response.text}")
             return None
         else:
             return response.json()

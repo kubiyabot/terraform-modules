@@ -1,8 +1,8 @@
 tools:
-  - name: request_infra_resource
+  - name: request_infra_resources
     image: python:3.11
     description: "Create one or more infrastructure resources (eg. AWS) based on a natural language request. If the request exceeds the budget, it will be automatically sent for approval based on the approval rules"
-    alias: request-infra-resource
+    alias: request-infra-resources
     content: |
       # Set default values for environment variables
       REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
@@ -98,14 +98,14 @@ tools:
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
       exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
-      - name: user_input
-        description: 'The natural language statement describing the infrastructure resources to be created. Can also include specific requirements like region, instance type, etc.'
+      - name: natural_language_statement
+        description: 'The natural language statement describing the infrastructure resources to be created. Can also include specific requirements like region, instance type, etc. Need to validate with the user if the request is not clear.'
         required: true
       - name: purpose
-        description: 'The purpose of the request - why the resources are needed'
+        description: 'The purpose of the request - why the resources are needed - eg. development, testing, production, etc.'
         required: true
       - name: ttl
-        description: 'Time to live for the resource (e.g., 3h, 1d, 1m) - after this time, the resource will be deleted - ask for how long but suggest a good default based on the request.'
+        description: 'For how long the resources are needed. Can be in hours, days, weeks, or months. User can define it as "for 2 weeks", "for 1 month", etc but the expected format to be passed is "2h", "1d", "2w", "1m" etc.'
         required: false
     env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
@@ -126,8 +126,11 @@ tools:
       - INFRACOST_API_KEY # API key for Infracost
       - GH_TOKEN # GitHub token for cloning private repositories
     with_volumes:
+      # SQLite data directory for persistent storage
       - name: sqlite_data
         path: /sqlite_data
+      # AWS credentials for Terraform operations
+      # Add more mounts for other cloud providers
     with_files:
       - source: $HOME/.aws/credentials
         destination: /root/.aws/credentials

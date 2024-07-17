@@ -34,14 +34,13 @@ APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower() == 'true'
 
-# Global variable to store the Slack message timestamp
-SLACK_MESSAGE_TS = None
+# Global variable to store the Slack message object
+slack_msg = None
 
 # Signal handler for termination signals
 def signal_handler(sig, frame):
-    global SLACK_MESSAGE_TS
-    if SLACK_MESSAGE_TS:
-        slack_msg = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
+    global slack_msg
+    if slack_msg and slack_msg.message_ts:
         blocks = [
             {
                 "type": "divider"
@@ -64,9 +63,8 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=False):
-    global SLACK_MESSAGE_TS
-    slack_msg = SlackMessage(slack_channel_id, thread_ts)
+def update_slack_progress(task_statuses, initial=False):
+    global slack_msg
 
     blocks = [
         {
@@ -122,15 +120,15 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
 
         blocks.append(task_block)
 
+    slack_msg.blocks = blocks
     if initial:
         print("Sending initial Slack message...")
         slack_msg.send_initial_message(blocks)
     else:
-        slack_msg.blocks = blocks
         print("Updating Slack message...")
         slack_msg.update_message()
 
-def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts, task_statuses):
+def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, task_statuses):
     requested_at = datetime.utcnow()
 
     ttl_seconds = timeparse(ttl)
@@ -140,7 +138,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         error_message = "TTL exceeds the maximum allowed TTL. Please adjust it to a lower value."
         print(f"❌ {error_message}")
         task_statuses["Requesting Approval"] = {"status": error_message, "is_terraform": False, "is_failed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         exit(1)
 
     expiry_time = requested_at + timedelta(seconds=int(ttl_seconds))
@@ -155,7 +153,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
             ttl=ttl,
             expiry_time=expiry_time,
             slack_channel_id=SLACK_CHANNEL_ID,
-            slack_thread_ts=slack_thread_ts
+            slack_thread_ts=slack_msg.thread_ts
         )
 
         conn = sqlite3.connect('/sqlite_data/approval_requests.db')
@@ -177,7 +175,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
 
         print("Approval request created successfully.")
         task_statuses["Requesting Approval"] = {"status": "Approval request created", "is_terraform": False, "is_completed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
 
     prompt = f"""
     You have a new infrastructure resources creation request from {USER_EMAIL} for the following purpose: {purpose}.
@@ -213,7 +211,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     if response.status_code < 300:
         print(f"Request submitted successfully and has been sent to an approver.")
         task_statuses["Requesting Approval"] = {"status": "Approval request sent to approver", "is_terraform": False, "is_completed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         event_response = response.json()
         webhook_url = event_response.get("webhook_url")
         if webhook_url:
@@ -227,17 +225,19 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
             else:
                 print(f"Error sending webhook event: {webhook_response.status_code} - {webhook_response.text}")
                 task_statuses["Requesting Approval"] = {"status": f"Error sending webhook event: {webhook_response.status_code} - {webhook_response.text}", "is_terraform": False, "is_failed": True}
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
         else:
             print("Error: No webhook URL returned in the response. Could not send webhook to approving channel.")
             task_statuses["Requesting Approval"] = {"status": "No webhook URL returned", "is_terraform": False, "is_failed": True}
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
     else:
         print(f"Error: {response.status_code} - {response.text}")
         task_statuses["Requesting Approval"] = {"status": f"Error: {response.status_code} - {response.text}", "is_terraform": False, "is_failed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
 
 def manage_resource_request(user_input, purpose, ttl):
+    global slack_msg
+
     task_statuses = {
         "Understanding Request": {"status": "In Progress", "is_terraform": False},
         "Generating Terraform Code": {"status": "Pending", "is_terraform": True},
@@ -254,7 +254,8 @@ def manage_resource_request(user_input, purpose, ttl):
     if not APPROVAL_WORKFLOW:
         del task_statuses["Requesting Approval"]
 
-    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses, initial=True)
+    slack_msg = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
+    update_slack_progress(task_statuses, initial=True)
 
     try:
         print("🔍 Understanding your request...")
@@ -264,7 +265,7 @@ def manage_resource_request(user_input, purpose, ttl):
             print(f"Failed to parse request: {error_message}")
             task_statuses["Understanding Request"]["status"] = f"Failed: {error_message}"
             task_statuses["Understanding Request"]["is_failed"] = True
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             return
 
         resource_details = parsed_request.resource_details
@@ -274,7 +275,7 @@ def manage_resource_request(user_input, purpose, ttl):
         task_statuses["Understanding Request"]["status"] = "Completed"
         task_statuses["Understanding Request"]["is_completed"] = True
         task_statuses["Generating Terraform Code"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
 
         retries = 0
         print("🧠 Generating Terraform code for the specified resource...")
@@ -285,23 +286,23 @@ def manage_resource_request(user_input, purpose, ttl):
                 resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
                 task_statuses["Generating Terraform Code"]["status"] = "Completed"
                 task_statuses["Generating Terraform Code"]["is_completed"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
                 break
             except Exception as e:
                 retries += 1
                 print(f"❌ Error generating Terraform code. Attempt {retries}/{MAX_CODE_GEN_RETRIES}. Error: {e}")
                 task_statuses["Generating Terraform Code"]["status"] = f"Retrying ({retries}/{MAX_CODE_GEN_RETRIES})"
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
                 if retries == MAX_CODE_GEN_RETRIES:
                     print("❌ Failed to generate Terraform code after multiple attempts. Please contact your administrator.")
                     task_statuses["Generating Terraform Code"]["status"] = "Failed"
                     task_statuses["Generating Terraform Code"]["is_failed"] = True
-                    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                    update_slack_progress(task_statuses)
                     return
 
         print(f"🌟📋 Creating Terraform plan for the specified resource...")
         task_statuses["Creating Terraform Plan"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         plan_success = False
         attempts = 0
 
@@ -314,12 +315,12 @@ def manage_resource_request(user_input, purpose, ttl):
                 print(f"✅ Terraform plan seems to be successful on attempt {attempts}.")
                 task_statuses["Creating Terraform Plan"]["status"] = "Completed"
                 task_statuses["Creating Terraform Plan"]["is_completed"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
                 break
 
             print(f"❌ Terraform plan failed on attempt {attempts}.")
             task_statuses["Creating Terraform Plan"]["status"] = f"Retrying ({attempts}/{MAX_TERRAFORM_RETRIES})"
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
 
             if UNRECOVERABLE_ERROR_CHECK:
                 print("🧩 Checking if the error is unrecoverable...")
@@ -331,14 +332,14 @@ def manage_resource_request(user_input, purpose, ttl):
                         print(llm_response.reasoning)
                         task_statuses["Creating Terraform Plan"]["status"] = f"Unrecoverable error: {llm_response.reasoning}"
                         task_statuses["Creating Terraform Plan"]["is_failed"] = True
-                        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                        update_slack_progress(task_statuses)
                         return
                 except Exception as e:
                     print(f"Failed to check if error is unrecoverable. Continuing with retry. Error: {e}")
 
             print("Attempting to fix the code...")
             task_statuses["Creating Terraform Plan"]["status"] = "Attempting to fix Terraform code..."
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             try:
                 fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
                 resource_details["tf_files"] = fixed_tf_code_details.tf_files
@@ -347,30 +348,29 @@ def manage_resource_request(user_input, purpose, ttl):
                 print(f"Failed to fix Terraform code. Error: {e}")
                 task_statuses["Creating Terraform Plan"]["status"] = f"Failed to fix Terraform code: {e}"
                 task_statuses["Creating Terraform Plan"]["is_failed"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
 
         if not plan_success:
             print(f"❌ Terraform plan still failed after {MAX_TERRAFORM_RETRIES} attempts. Please contact your administrator.")
             task_statuses["Creating Terraform Plan"]["status"] = f"Failed after {MAX_TERRAFORM_RETRIES} attempts"
             task_statuses["Creating Terraform Plan"]["is_failed"] = True
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             return
 
         print(f"💰 Estimating costs for the specified resources...")
         task_statuses["Estimating Costs"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         estimation, cost_data = estimate_resource_cost(plan_json)
         slack_cost_data = format_cost_data_for_slack(cost_data)
-        slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'), os.getenv('SLACK_THREAD_TS'))
         slack_msg.send_initial_message(slack_cost_data)
         print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
         task_statuses["Estimating Costs"]["status"] = f"Estimated cost: ${estimation:.2f}"
         task_statuses["Estimating Costs"]["is_completed"] = True
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
 
         print("📊 Comparing the estimated cost with the average monthly cost...")
         task_statuses["Comparing Costs"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         comparison_result = compare_cost_with_avg(estimation)
         average_monthly_cost = get_average_monthly_cost()
 
@@ -378,25 +378,25 @@ def manage_resource_request(user_input, purpose, ttl):
             print(f"🔔 The estimated cost of ${estimation:.2f} exceeds the average monthly cost by more than 10% (Average: ${average_monthly_cost:.2f}).")
             task_statuses["Comparing Costs"]["status"] = f"Cost ${estimation:.2f} exceeds average (${average_monthly_cost:.2f})"
             task_statuses["Comparing Costs"]["is_warning"] = True
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             if APPROVAL_WORKFLOW:
                 print("🔔 Requesting approval for resources creation...")
                 task_statuses["Requesting Approval"]["status"] = "In Progress"
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
-                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_msg.thread_ts, task_statuses)
+                update_slack_progress(task_statuses)
+                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, task_statuses)
                 print("🔔 Approval request sent successfully.")
             else:
                 print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
                 task_statuses["Comparing Costs"]["status"] = "Proceeding without approval (not enabled)"
                 task_statuses["Comparing Costs"]["is_warning"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
                 print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
                 apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, task_statuses)
         else:
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
             task_statuses["Comparing Costs"]["status"] = f"Cost ${estimation:.2f} within acceptable range"
             task_statuses["Comparing Costs"]["is_completed"] = True
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             print("🚀 Attempting to create the resource(s)...")
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, task_statuses)
 
@@ -404,7 +404,7 @@ def manage_resource_request(user_input, purpose, ttl):
         print(f"Failed to complete the operation. Error: {e}")
         task_statuses["Understanding Request"]["status"] = f"Operation failed: {e}"
         task_statuses["Understanding Request"]["is_failed"] = True
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         print("This is most likely a problem with the tool implementation or the infrastructure it is running on. Please contact the operator who configured this tool.")
         exit(1)
 
@@ -414,7 +414,7 @@ def ttl_to_seconds(ttl, task_statuses):
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
         task_statuses["Scheduling Deletion Task"] = {"status": error_message, "is_terraform": False, "is_failed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         exit(1)
     return int(ttl_seconds)
 
@@ -423,7 +423,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
 
     for attempt in range(max_apply_attempts):
         task_statuses["Applying Terraform"]["status"] = f"In Progress (Attempt {attempt + 1}/{max_apply_attempts})"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         if os.getenv('DRY_RUN_ENABLED'):
             print("🚀 Dry run mode enabled. Skipping Terraform apply.")
             apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
@@ -433,18 +433,18 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
         if "Error" not in apply_output and "error" not in apply_output:
             task_statuses["Applying Terraform"]["status"] = "Terraform apply successful"
             task_statuses["Applying Terraform"]["is_completed"] = True
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             break
 
         print(f"Terraform apply failed on attempt {attempt + 1}/{max_apply_attempts}.")
         task_statuses["Applying Terraform"]["status"] = f"Failed (Attempt {attempt + 1}/{max_apply_attempts})"
         task_statuses["Applying Terraform"]["is_failed"] = True
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
 
         if UNRECOVERABLE_ERROR_CHECK:
             print("🧩 Checking if the error is unrecoverable...")
             task_statuses["Applying Terraform"]["status"] = "Checking for unrecoverable errors..."
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             try:
                 llm_response = is_error_unrecoverable(apply_output)
                 if llm_response.unrecoverable_error:
@@ -453,18 +453,18 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
                     print(llm_response.reasoning)
                     task_statuses["Applying Terraform"]["status"] = f"Unrecoverable error: {llm_response.reasoning}"
                     task_statuses["Applying Terraform"]["is_failed"] = True
-                    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                    update_slack_progress(task_statuses)
                     return
             except Exception as e:
                 print(f"Failed to check if error is unrecoverable. Continuing with retry. Error: {e}")
                 task_statuses["Applying Terraform"]["status"] = "Failed to check for unrecoverable errors"
                 task_statuses["Applying Terraform"]["is_warning"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
 
         if attempt < max_apply_attempts - 1:
             print(f"Attempting to fix the code...")
             task_statuses["Applying Terraform"]["status"] = "Attempting to fix Terraform code..."
-            update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+            update_slack_progress(task_statuses)
             try:
                 fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
                 tf_files = fixed_tf_code_details.tf_files
@@ -472,33 +472,33 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
                 print(f"Failed to fix Terraform code. Error: {e}")
                 task_statuses["Applying Terraform"]["status"] = f"Failed to fix Terraform code: {e}"
                 task_statuses["Applying Terraform"]["is_failed"] = True
-                update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+                update_slack_progress(task_statuses)
     else:
         print(f"Terraform apply failed after {max_apply_attempts} attempts. Please contact your administrator.")
         task_statuses["Applying Terraform"]["status"] = f"Failed after {max_apply_attempts} attempts"
         task_statuses["Applying Terraform"]["is_failed"] = True
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         return
 
     if STORE_STATE:
         print("📦 Attempting to store resources state")
         task_statuses["Storing State"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statuses)
     
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
         task_statuses["Scheduling Deletion Task"]["status"] = "In Progress"
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         ttl_seconds = ttl_to_seconds(ttl, task_statuses)
         schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
     
     print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
     task_statuses["Scheduling Deletion Task"]["status"] = "Resources created successfully"
     task_statuses["Scheduling Deletion Task"]["is_completed"] = True
-    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+    update_slack_progress(task_statuses)
     task_statuses["Completed"] = {"status": "All operations were completed successfully! 🎉", "is_terraform": False, "is_completed": True}
-    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+    update_slack_progress(task_statuses)
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statuses):
     print("📦 Storing state")
@@ -510,7 +510,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statu
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
         task_statuses["Storing State"] = {"status": error_message, "is_terraform": False, "is_failed": True}
-        update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+        update_slack_progress(task_statuses)
         exit(1)
 
     expiry_time = datetime.utcnow() + timedelta(seconds=int(ttl_seconds))
@@ -522,7 +522,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statu
     conn.commit()
     conn.close()
     task_statuses["Storing State"] = {"status": "Resource state stored in database", "is_terraform": False, "is_completed": True}
-    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+    update_slack_progress(task_statuses)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manage infrastructure resources creation requests.')

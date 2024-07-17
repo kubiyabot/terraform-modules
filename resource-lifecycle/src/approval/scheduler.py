@@ -43,7 +43,7 @@ def schedule_deletion_task(request_id, ttl, slack_thread_ts):
     )
 
     if response.status_code >= 300:
-        slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'))
+        slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'), slack_thread_ts)
         slack_msg.update_message(f"❌ Error scheduling task for request ID {request_id}: {response.status_code} - {response.text}")
         print(f"Error scheduling task: {response.status_code} - {response.text}")
         sys.exit(1)
