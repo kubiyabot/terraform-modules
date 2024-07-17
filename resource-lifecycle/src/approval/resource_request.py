@@ -18,6 +18,8 @@ from approval.scheduler import schedule_deletion_task
 from llm.terraform_errors import is_error_unrecoverable
 
 # Configuration from environment variables
+# Default values are provided for local development
+# Use Terraform to set these values in production
 MAX_CODE_GEN_RETRIES = int(os.getenv('MAX_CODE_GEN_RETRIES', 10))
 MAX_TERRAFORM_RETRIES = int(os.getenv('MAX_TERRAFORM_RETRIES', 10))
 APPROVAL_WORKFLOW = os.getenv('APPROVAL_WORKFLOW', '').lower() == 'true'
@@ -32,15 +34,20 @@ APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
 
+# Function to request approval for resource creation
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
     requested_at = datetime.utcnow()
+
     ttl_seconds = timeparse(ttl)
     max_ttl_seconds = timeparse(MAX_TTL)
+
     if ttl_seconds is None or ttl_seconds > max_ttl_seconds:
         error_message = "TTL exceeds the maximum allowed TTL."
         print(f"❌ {error_message}")
         exit(1)
+
     expiry_time = requested_at + timedelta(seconds=int(ttl_seconds))
+
     if STORE_STATE:
         approval_request = ApprovalRequest(
             request_id=request_id,
@@ -53,26 +60,34 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
             slack_channel_id=SLACK_CHANNEL_ID,
             slack_thread_ts=slack_thread_ts
         )
+
         conn = sqlite3.connect('/sqlite_data/approval_requests.db')
         c = conn.cursor()
+
         c.execute('''CREATE TABLE IF NOT EXISTS approvals
                      (request_id text, user_email text, purpose text, cost real, requested_at text, ttl text, expiry_time text, slack_channel_id text, slack_thread_ts text, approved text)''')
+
         c.execute("INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   (approval_request.request_id, approval_request.user_email, approval_request.purpose, approval_request.cost, approval_request.requested_at.isoformat(), approval_request.ttl, approval_request.expiry_time.isoformat(), approval_request.slack_channel_id, approval_request.slack_thread_ts, approval_request.approved))
         conn.commit()
+
+        # Store tf_plan and cost_data in the database for later use
         c.execute('''CREATE TABLE IF NOT EXISTS tf_plans
                      (request_id text, tf_plan text, cost_data text)''')
         c.execute("INSERT INTO tf_plans VALUES (?, ?, ?)",
                   (request_id, tf_plan, json.dumps(cost_data)))
         conn.commit()
         conn.close()
+
         print("Approval request created successfully.")
+
     prompt = f"""
     You have a new infrastructure resources creation request from {USER_EMAIL} for the following purpose: {purpose}.
     Resource details: {resource_details}
     The estimated cost for the resource is: ${estimated_cost}.
     The ID of the request is {request_id}. Please ask the user if they would like to approve this request or not.
     """
+
     payload = {
         "agent_id": os.getenv('KUBIYA_AGENT_UUID'),
         "communication": {
@@ -87,6 +102,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         "source": "Triggered by an access request (Agent)",
         "updated_at": datetime.utcnow().isoformat() + "Z"
     }
+
     response = requests.post(
         "https://api.kubiya.ai/api/v1/event",
         headers={
@@ -95,6 +111,7 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
         },
         json=payload
     )
+
     if response.status_code < 300:
         print(f"Request submitted successfully and has been sent to an approver.")
         event_response = response.json()
@@ -114,20 +131,26 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
     else:
         print(f"Error: {response.status_code} - {response.text}")
 
-def manage_resource_request(user_input, purpose, ttl, slack_message):
+# Function to manage the resource request
+def manage_resource_request(user_input, purpose, ttl):
     try:
-        slack_message.update_step("Understanding request", "in_progress")
+        # Step 1: Understand the request
+        send_slack_message("🔍 Understanding your request...")
         print("🔍 Understanding your request...")
         parsed_request, error_message = parse_user_request(user_input)
+
         if error_message:
             print(f"❌ {error_message}")
-            slack_message.update_step("Understanding request", "failed")
             return
-        slack_message.update_step("Understanding request", "completed")
+
         resource_details = parsed_request.resource_details
+        # Generate request ID (UUID)
         request_id = uuid.uuid4().hex
+
+        # Print request details
         print(f"📝 Created request entry with ID: {request_id}")
-        slack_message.update_step("Generating Terraform code", "in_progress")
+
+        # Step 2: Generate Terraform code with retries
         retries = 0
         print("🧠 Generating Terraform code for the specified resource...")
         while retries < MAX_CODE_GEN_RETRIES:
@@ -135,76 +158,75 @@ def manage_resource_request(user_input, purpose, ttl, slack_message):
                 tf_code_details = generate_terraform_code(resource_details)
                 resource_details["tf_files"] = tf_code_details.tf_files
                 resource_details["tf_code_explanation"] = tf_code_details.tf_code_explanation
-                slack_message.update_step("Generating Terraform code", "completed")
-                break
+                break  # Break out of the loop if successful
             except Exception as e:
                 retries += 1
                 print(f"❌ Error generating Terraform code. Attempt {retries}/{MAX_CODE_GEN_RETRIES}. Error: {e}")
                 if retries == MAX_CODE_GEN_RETRIES:
                     print("❌ Failed to generate Terraform code after multiple attempts. Please contact your administrator.")
-                    slack_message.update_step("Generating Terraform code", "failed")
                     return
-        slack_message.update_step("Creating Terraform plan", "in_progress")
+
+        # Step 3: Attempt to create Terraform plan with retries
         print(f"🌟📋 Creating Terraform plan for the specified resource...")
         plan_success = False
         attempts = 0
+
         while not plan_success and attempts < MAX_TERRAFORM_RETRIES:
             attempts += 1
             print(f"Attempt {attempts}/{MAX_TERRAFORM_RETRIES} to create Terraform plan...")
             plan_success, plan_output_or_error, plan_json = create_terraform_plan(resource_details["tf_files"], request_id)
+
             if plan_success:
                 print(f"✅ Terraform plan seems to be successful on attempt {attempts}.")
-                slack_message.update_step("Creating Terraform plan", "completed")
                 break
+
             print(f"❌ Terraform plan failed on attempt {attempts}. Attempting to fix the code...")
+
             if UNRECOVERABLE_ERROR_CHECK:
                 print("🧩 Checking if the error is unrecoverable...")
                 llm_response = is_error_unrecoverable(plan_output_or_error)
                 if llm_response.unrecoverable_error:
                     print(f"❌ Unrecoverable error detected: {llm_response.reasoning}")
-                    slack_message.update_step("Creating Terraform plan", "failed")
                     return
+
             fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
             resource_details["tf_files"] = fixed_tf_code_details.tf_files
             resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
+
         if not plan_success:
             print(f"❌ Terraform plan still failed after {MAX_TERRAFORM_RETRIES} attempts. Please contact your administrator.")
-            slack_message.update_step("Creating Terraform plan", "failed")
             return
-        slack_message.update_step("Estimating costs", "in_progress")
+
+        # Step 4: Estimate cost
         print(f"💰 Estimating costs for the specified resources...")
         estimation, cost_data = estimate_resource_cost(plan_json)
         slack_cost_data = format_cost_data_for_slack(cost_data)
-        slack_message.send_block_message(slack_cost_data)
+        slack_msg = SlackMessage(os.getenv('SLACK_CHANNEL_ID'), os.getenv('SLACK_THREAD_TS'))
+        slack_msg.send_block_message(slack_cost_data)
         print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
-        slack_message.update_step("Estimating costs", "completed")
-        slack_message.update_step("Comparing costs", "in_progress")
+
+        # Step 5: Compare with average monthly cost
         print("📊 Comparing the estimated cost with the average monthly cost...")
         comparison_result = compare_cost_with_avg(estimation)
         average_monthly_cost = get_average_monthly_cost()
+
         if comparison_result == "greater":
             print(f"🔔 The estimated cost of ${estimation:.2f} exceeds the average monthly cost by more than 10% (Average: ${average_monthly_cost:.2f}).")
-            slack_message.update_step("Comparing costs", "completed")
             if APPROVAL_WORKFLOW:
-                slack_message.update_step("Requesting approval", "in_progress")
                 print("🔔 Requesting approval for resources creation...")
-                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_message.thread_ts)
+                request_resource_creation_approval(request_id, purpose, resource_details, estimation, plan_json, cost_data, ttl, slack_msg.thread_ts)
                 print("🔔 Approval request sent successfully.")
-                slack_message.update_step("Requesting approval", "completed")
             else:
                 print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
-                slack_message.update_step("Requesting approval", "completed")
                 print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
-                apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, slack_message)
+                apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
         else:
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
-            slack_message.update_step("Comparing costs", "completed")
             print("🚀 Attempting to create the resource(s)...")
-            slack_message.update_step("Applying resources", "in_progress")
-            apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, slack_message)
+            apply_resources(request_id, resource_details, resource_details["tf_files"], ttl)
+
     except Exception as e:
         print(f"❌ An error occurred: {e}")
-        slack_message.update_step("Unknown error", "failed")
         exit(1)
 
 def ttl_to_seconds(ttl):
@@ -215,48 +237,59 @@ def ttl_to_seconds(ttl):
         exit(1)
     return int(ttl_seconds)
 
-def apply_resources(request_id, resource_details, tf_files, ttl, slack_message):
+# Function to apply the resources
+def apply_resources(request_id, resource_details, tf_files, ttl):
     if os.getenv('DRY_RUN_ENABLED'):
         print("🚀 Dry run mode enabled. Skipping Terraform apply.")
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=False)
     else:
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
+
+    # Check if the apply was successful
     if "Error" in apply_output or "error" in apply_output:
         print(f"❌ Terraform apply failed. Attempting to fix the code...")
+
         if UNRECOVERABLE_ERROR_CHECK:
             llm_response = is_error_unrecoverable(apply_output)
             if llm_response.unrecoverable_error:
                 print(f"❌ Unrecoverable error detected during apply: {llm_response.reasoning}")
-                slack_message.update_step("Applying resources", "failed")
                 return
+
         fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
         tf_files = fixed_tf_code_details.tf_files
+
+        # Retry Terraform apply after fixing the code
         print("🚀🧩 Retrying Terraform apply with fixed code...")
         apply_output, tf_state = apply_terraform(tf_files, request_id, apply=True)
         if "Error" in apply_output or "error" in apply_output:
             print(f"❌ Terraform apply failed again after fixing the code. Please contact your administrator.")
-            slack_message.update_step("Applying resources", "failed")
             return
+
+    # Store the state in the database
     if STORE_STATE:
         print("📦 Attempting to store resources state")
         store_resource_in_db(request_id, resource_details, tf_state, ttl)
+    # Schedule deletion task if TTL is enabled and state storage is enabled
     if TTL_ENABLED and STORE_STATE:
         print("⏰ Scheduling deletion task...")
         ttl=ttl_to_seconds(ttl)
         schedule_deletion_task(request_id, ttl, SLACK_THREAD_TS)
     print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
-    slack_message.update_step("Applying resources", "completed")
 
+# Function to store the resource state in the database
 def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     print("📦 Storing state")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
+
     ttl_seconds = timeparse(ttl)
     if ttl_seconds is None:
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
         exit(1)
+
     expiry_time = datetime.utcnow() + timedelta(seconds=int(ttl_seconds))
+
     c.execute('''CREATE TABLE IF NOT EXISTS resources
                  (request_id text, resource_details text, tf_state text, expiry_time text)''')
     c.execute("INSERT INTO resources VALUES (?, ?, ?, ?)",
@@ -264,6 +297,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl):
     conn.commit()
     conn.close()
 
+# Main function to manage the resource request (CLI entry point)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manage infrastructure resources creation requests.')
     parser.add_argument('user_input', type=str, help='The natural language request from the user')
@@ -271,18 +305,4 @@ if __name__ == "__main__":
     parser.add_argument('--ttl', default='1d', help='Time to live for the resource (e.g., 3h, 1d, 1m)')
 
     args = parser.parse_args()
-
-    slack_message = SlackMessage()
-    steps = [
-        {"name": "Understanding request", "icon": "https://example.com/icon1.png"},
-        {"name": "Generating Terraform code", "icon": "https://example.com/icon2.png"},
-        {"name": "Creating Terraform plan", "icon": "https://example.com/icon3.png"},
-        {"name": "Estimating costs", "icon": "https://example.com/icon4.png"},
-        {"name": "Comparing costs", "icon": "https://example.com/icon5.png"},
-        {"name": "Requesting approval", "icon": "https://example.com/icon6.png"},
-        {"name": "Applying resources", "icon": "https://example.com/icon7.png"}
-    ]
-
-    slack_message.send_initial_message(steps)
-
-    manage_resource_request(args.user_input, args.purpose, args.ttl, slack_message)
+    manage_resource_request(args.user_input, args.purpose, args.ttl)
