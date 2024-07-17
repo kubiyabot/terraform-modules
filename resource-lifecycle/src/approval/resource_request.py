@@ -89,23 +89,23 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
         if status["is_terraform"]:
             image_url = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
         else:
-            image_url = "https://cdn.dribbble.com/users/11609495/screenshots/18251844/media/a4d3556d8b51796968cbcc63ea7c5abc.gif"
+            image_url = ""
 
-        if status.get("is_completed"):
+        if status["status"] == "In Progress":
+            status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
+        elif status.get("is_completed"):
             status_image = "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png"
         elif status.get("is_failed"):
             status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
-        elif status["status"] == "In Progress":
-            status_image = image_url
         else:
-            status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
+            status_image = ""
 
         task_block = {
             "type": "context",
             "elements": [
                 {
                     "type": "mrkdwn",
-                    "text": f"*{task}*: {status['status']}"
+                    "text": f"{image_url} *{task}*: {status['status']}"
                 }
             ]
         }
@@ -246,6 +246,10 @@ def manage_resource_request(user_input, purpose, ttl):
         "Scheduling Deletion Task": {"status": "Pending", "is_terraform": False}
     }
 
+    # Remove "Requesting Approval" if approval workflow is not enabled
+    if not APPROVAL_WORKFLOW:
+        del task_statuses["Requesting Approval"]
+
     update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses, initial=True)
 
     try:
@@ -379,8 +383,8 @@ def manage_resource_request(user_input, purpose, ttl):
                 print("🔔 Approval request sent successfully.")
             else:
                 print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
-                task_statuses["Requesting Approval"]["status"] = "Proceeding without approval (not enabled)"
-                task_statuses["Requesting Approval"]["is_warning"] = True
+                task_statuses["Comparing Costs"]["status"] = "Proceeding without approval (not enabled)"
+                task_statuses["Comparing Costs"]["is_warning"] = True
                 update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
                 print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
                 apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, task_statuses)
@@ -485,9 +489,16 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
         ttl_seconds = ttl_to_seconds(ttl, task_statuses)
         schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
     
-    print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
+    print(f"✅ All resources were successfully created!")
+    if TTL_ENABLED and STORE_STATE:
+        # print(f"📅 Scheduled deletion task for {ttl} from now.")
+        print(f"📅 Resources will be deleted automatically after the defined TTL expires")
+    else:
+        print("📅 Automatic deletion is not enabled - resources will not be deleted. Ask the operator who configured this workflow to enable it by setting ENABLE_TTL environment variable")
     task_statuses["Scheduling Deletion Task"]["status"] = "Resources created successfully"
     task_statuses["Scheduling Deletion Task"]["is_completed"] = True
+    update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
+    task_statuses["Completed"] = {"status": "All operations were completed successfully! 🎉", "is_terraform": False, "is_completed": True}
     update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statuses):

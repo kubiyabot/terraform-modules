@@ -22,21 +22,26 @@ class SlackMessage:
         self.blocks = blocks
         self.send_message(update=True)
 
-    def update_step(self, step_name, status):
+    def update_step(self, step_name, status, is_terraform=False):
         emoji = {
             "in_progress": "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif",
             "completed": "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png",
             "failed": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png",
-            "waiting": ""
+            "pending": ""
         }.get(status, "")
+
+        if is_terraform:
+            step_prefix = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
+        else:
+            step_prefix = ""
 
         step_block = {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": f"{emoji} *{step_name}*"}
+            "text": {"type": "mrkdwn", "text": f"{step_prefix} {emoji} *{step_name}*"}
         }
 
         # Update the existing step block if it exists, otherwise add a new one
-        step_index = next((index for (index, d) in enumerate(self.blocks) if 'text' in d and d["text"]["text"].endswith(f"*{step_name}*")), None)
+        step_index = next((index for (index, d) in enumerate(self.blocks) if 'text' in d and f"*{step_name}*" in d["text"]["text"]), None)
         if step_index is not None:
             self.blocks[step_index] = step_block
         else:
@@ -49,7 +54,7 @@ class SlackMessage:
         self.blocks.extend(blocks)
         self.send_message(update=True)
 
-    def send_message(self, text=None, update=False):
+    def send_message(self, update=False):
         if not self.api_key:
             if os.getenv('KUBIYA_DEBUG'):
                 print("No SLACK_API_TOKEN set. Slack messages will not be sent.")
