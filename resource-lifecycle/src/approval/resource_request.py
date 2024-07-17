@@ -36,6 +36,7 @@ UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower
 
 # Global variable to store the Slack message object
 slack_msg = None
+task_statuses = {}
 
 # Signal handler for termination signals
 def signal_handler(sig, frame):
@@ -44,7 +45,7 @@ def signal_handler(sig, frame):
         for task in task_statuses:
             if task_statuses[task]["status"] == "Pending":
                 task_statuses[task]["status"] = "Aborted"
-        task_statuses["Completed"] = {"status": "Aborted", "is_terraform": False, "is_failed": True}
+        task_statuses["🥳 Completed - all done!"] = {"status": "Aborted", "is_terraform": False, "is_failed": True}
         update_slack_progress(task_statuses)
     sys.exit(0)
 
@@ -111,10 +112,8 @@ def update_slack_progress(task_statuses, initial=False):
 
     slack_msg.blocks = blocks
     if initial:
-        print("Sending initial Slack message...")
         slack_msg.send_initial_message(blocks)
     else:
-        print("Updating Slack message...")
         slack_msg.update_message()
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, task_statuses):
@@ -228,15 +227,15 @@ def manage_resource_request(user_input, purpose, ttl):
     global slack_msg
 
     task_statuses = {
-        "Understanding Request": {"status": "In Progress", "is_terraform": False},
+        "🔎 Analyze Request": {"status": "In Progress", "is_terraform": False},
         "Generating Terraform Code": {"status": "Pending", "is_terraform": True},
         "Creating Terraform Plan": {"status": "Pending", "is_terraform": True},
-        "Estimating Costs": {"status": "Pending", "is_terraform": False},
-        "Comparing Costs": {"status": "Pending", "is_terraform": False},
+        "💰 Estimate resources cost": {"status": "Pending", "is_terraform": False},
+        "💰🧑‍⚖️ Compare cost with budget": {"status": "Pending", "is_terraform": False},
         "Requesting Approval": {"status": "Pending", "is_terraform": False},
         "Applying Terraform": {"status": "Pending", "is_terraform": True},
-        "Storing State": {"status": "Pending", "is_terraform": False},
-        "Scheduling Deletion Task": {"status": "Pending", "is_terraform": False}
+        "🗄️ Store Resources State": {"status": "Pending", "is_terraform": False},
+        "📅 Schedule future deletion task": {"status": "Pending", "is_terraform": False}
     }
 
     # Remove "Requesting Approval" if approval workflow is not enabled
@@ -247,13 +246,13 @@ def manage_resource_request(user_input, purpose, ttl):
     update_slack_progress(task_statuses, initial=True)
 
     try:
-        print("🔍 Understanding your request...")
+        print("🔎 Understanding your request...")
         parsed_request, error_message = parse_user_request(user_input)
 
         if error_message:
             print(f"Failed to parse request: {error_message}")
-            task_statuses["Understanding Request"]["status"] = f"Failed: {error_message}"
-            task_statuses["Understanding Request"]["is_failed"] = True
+            task_statuses["🔎 Analyze Request"]["status"] = f"Failed: {error_message}"
+            task_statuses["🔎 Analyze Request"]["is_failed"] = True
             update_slack_progress(task_statuses)
             return
 
@@ -261,8 +260,8 @@ def manage_resource_request(user_input, purpose, ttl):
         request_id = uuid.uuid4().hex
 
         print(f"📝 Created request entry with ID: {request_id}")
-        task_statuses["Understanding Request"]["status"] = "Completed"
-        task_statuses["Understanding Request"]["is_completed"] = True
+        task_statuses["🔎 Analyze Request"]["status"] = "Completed"
+        task_statuses["🔎 Analyze Request"]["is_completed"] = True
         task_statuses["Generating Terraform Code"]["status"] = "In Progress"
         update_slack_progress(task_statuses)
 
@@ -346,28 +345,28 @@ def manage_resource_request(user_input, purpose, ttl):
             update_slack_progress(task_statuses)
             return
 
-        print(f"💰 Estimating costs for the specified resources...")
-        task_statuses["Estimating Costs"]["status"] = "In Progress"
+        print(f"💰 💰 Estimate resources cost for the specified resources...")
+        task_statuses["💰 Estimate resources cost"]["status"] = "In Progress"
         update_slack_progress(task_statuses)
         estimation, cost_data = estimate_resource_cost(plan_json)
         slack_cost_data = format_cost_data_for_slack(cost_data)
         slack_msg.blocks.extend(slack_cost_data)
         slack_msg.update_message()
         print(f"💰 The estimated cost for this resources is ${estimation:.2f}.")
-        task_statuses["Estimating Costs"]["status"] = f"Estimated cost: ${estimation:.2f}"
-        task_statuses["Estimating Costs"]["is_completed"] = True
+        task_statuses["💰 Estimate resources cost"]["status"] = f"Estimated cost: ${estimation:.2f}"
+        task_statuses["💰 Estimate resources cost"]["is_completed"] = True
         update_slack_progress(task_statuses)
 
         print("📊 Comparing the estimated cost with the average monthly cost...")
-        task_statuses["Comparing Costs"]["status"] = "In Progress"
+        task_statuses["💰🧑‍⚖️ Compare cost with budget"]["status"] = "In Progress"
         update_slack_progress(task_statuses)
         comparison_result = compare_cost_with_avg(estimation)
         average_monthly_cost = get_average_monthly_cost()
 
         if comparison_result == "greater":
             print(f"🔔 The estimated cost of ${estimation:.2f} exceeds the average monthly cost by more than 10% (Average: ${average_monthly_cost:.2f}).")
-            task_statuses["Comparing Costs"]["status"] = f"Cost ${estimation:.2f} exceeds average (${average_monthly_cost:.2f})"
-            task_statuses["Comparing Costs"]["is_warning"] = True
+            task_statuses["💰🧑‍⚖️ Compare cost with budget"]["status"] = f"Cost ${estimation:.2f} exceeds average (${average_monthly_cost:.2f})"
+            task_statuses["💰🧑‍⚖️ Compare cost with budget"]["is_warning"] = True
             update_slack_progress(task_statuses)
             if APPROVAL_WORKFLOW:
                 print("🔔 Requesting approval for resources creation...")
@@ -377,23 +376,23 @@ def manage_resource_request(user_input, purpose, ttl):
                 print("🔔 Approval request sent successfully.")
             else:
                 print("⚠️ Approval workflow not enabled. Proceeding without approval but warning about the budget.")
-                task_statuses["Comparing Costs"]["status"] = "Proceeding without approval (not enabled)"
-                task_statuses["Comparing Costs"]["is_warning"] = True
+                task_statuses["💰🧑‍⚖️ Compare cost with budget"]["status"] = "Proceeding without approval (not enabled)"
+                task_statuses["💰🧑‍⚖️ Compare cost with budget"]["is_warning"] = True
                 update_slack_progress(task_statuses)
                 print(f"⚠️ Warning: Estimated cost ${estimation:.2f} exceeds the budget.")
                 apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, task_statuses)
         else:
             print(f"🚀 The estimated cost of ${estimation:.2f} is within the acceptable range (Average: ${average_monthly_cost:.2f}).")
-            task_statuses["Comparing Costs"]["status"] = f"Cost ${estimation:.2f} within acceptable range"
-            task_statuses["Comparing Costs"]["is_completed"] = True
+            task_statuses["💰🧑‍⚖️ Compare cost with budget"]["status"] = f"Cost ${estimation:.2f} within acceptable range"
+            task_statuses["💰🧑‍⚖️ Compare cost with budget"]["is_completed"] = True
             update_slack_progress(task_statuses)
             print("🚀 Attempting to create the resource(s)...")
             apply_resources(request_id, resource_details, resource_details["tf_files"], ttl, task_statuses)
 
     except Exception as e:
         print(f"Failed to complete the operation. Error: {e}")
-        task_statuses["Understanding Request"]["status"] = f"Operation failed: {e}"
-        task_statuses["Understanding Request"]["is_failed"] = True
+        task_statuses["🔎 Analyze Request"]["status"] = f"Operation failed: {e}"
+        task_statuses["🔎 Analyze Request"]["is_failed"] = True
         for task in task_statuses:
             if task_statuses[task]["status"] == "Pending":
                 task_statuses[task]["status"] = "Aborted"
@@ -406,7 +405,7 @@ def ttl_to_seconds(ttl, task_statuses):
     if ttl_seconds is None:
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
-        task_statuses["Scheduling Deletion Task"] = {"status": error_message, "is_terraform": False, "is_failed": True}
+        task_statuses["📅 Schedule future deletion task"] = {"status": error_message, "is_terraform": False, "is_failed": True}
         update_slack_progress(task_statuses)
         exit(1)
     return int(ttl_seconds)
@@ -475,13 +474,13 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
 
     if STORE_STATE:
         print("📦 Attempting to store resources state")
-        task_statuses["Storing State"]["status"] = "In Progress"
+        task_statuses["🗄️ Store Resources State"]["status"] = "In Progress"
         update_slack_progress(task_statuses)
         store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statuses)
     
     if TTL_ENABLED and STORE_STATE:
-        print("⏰ Scheduling deletion task...")
-        task_statuses["Scheduling Deletion Task"]["status"] = "In Progress"
+        print("⏰ 📅 Schedule future deletion task...")
+        task_statuses["📅 Schedule future deletion task"]["status"] = "In Progress"
         update_slack_progress(task_statuses)
         ttl_seconds = ttl_to_seconds(ttl, task_statuses)
         schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
@@ -491,14 +490,14 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
         print(f"📦 Resource state stored and the resources will get deleted automatically when the TTL expires")
     else:
         print(f"📦 Resource state was not stored or TTL was not enabled. Please ensure to manage the resources manually.\n\n* Ask the operators (platform or DevOps team) to enable this feature by setting TTL_ENABLED on the agent environment")
-    task_statuses["Scheduling Deletion Task"]["status"] = "Resources created successfully"
-    task_statuses["Scheduling Deletion Task"]["is_completed"] = True
+    task_statuses["📅 Schedule future deletion task"]["status"] = "Resources created successfully"
+    task_statuses["📅 Schedule future deletion task"]["is_completed"] = True
     update_slack_progress(task_statuses)
-    task_statuses["Completed"] = {"status": "All operations were completed successfully! 🎉", "is_terraform": False, "is_completed": True}
+    task_statuses["🥳 Completed - all done!"] = {"status": "All operations were completed successfully! 🎉", "is_terraform": False, "is_completed": True}
     update_slack_progress(task_statuses)
 
 def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statuses):
-    print("📦 Storing state")
+    print("📦 🗄️ Store Resources State")
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
 
@@ -506,7 +505,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statu
     if ttl_seconds is None:
         error_message = "Invalid TTL format provided."
         print(f"❌ {error_message}")
-        task_statuses["Storing State"] = {"status": error_message, "is_terraform": False, "is_failed": True}
+        task_statuses["🗄️ Store Resources State"] = {"status": error_message, "is_terraform": False, "is_failed": True}
         update_slack_progress(task_statuses)
         exit(1)
 
@@ -518,7 +517,7 @@ def store_resource_in_db(request_id, resource_details, tf_state, ttl, task_statu
               (request_id, json.dumps(resource_details), tf_state, expiry_time.isoformat()))
     conn.commit()
     conn.close()
-    task_statuses["Storing State"] = {"status": "Resource state stored in database", "is_terraform": False, "is_completed": True}
+    task_statuses["🗄️ Store Resources State"] = {"status": "Resource state stored in database", "is_terraform": False, "is_completed": True}
     update_slack_progress(task_statuses)
 
 if __name__ == "__main__":
