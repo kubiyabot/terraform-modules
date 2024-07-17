@@ -33,7 +33,7 @@ KUBIYA_USER_ORG = os.getenv('KUBIYA_USER_ORG')
 KUBIYA_API_KEY = os.getenv('KUBIYA_API_KEY')
 APPROVAL_SLACK_CHANNEL = os.getenv('APPROVAL_SLACK_CHANNEL')
 MAX_TTL = os.getenv('MAX_TTL', '30d')
-UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'false').lower() == 'true'
+UNRECOVERABLE_ERROR_CHECK = os.getenv('UNRECOVERABLE_ERROR_CHECK', 'true').lower() == 'true'
 
 # Function to request approval for resource creation
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts):
