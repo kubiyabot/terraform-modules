@@ -135,7 +135,6 @@ def request_resource_creation_approval(request_id, purpose, resource_details, es
 def manage_resource_request(user_input, purpose, ttl):
     try:
         # Step 1: Understand the request
-        send_slack_message("🔍 Understanding your request...")
         print("🔍 Understanding your request...")
         parsed_request, error_message = parse_user_request(user_input)
 
