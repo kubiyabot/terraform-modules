@@ -44,24 +44,20 @@ def signal_handler(sig, frame):
         slack_msg = SlackMessage(SLACK_CHANNEL_ID, SLACK_THREAD_TS)
         blocks = [
             {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Resource Creation Progress"
-                }
-            },
-            {
                 "type": "divider"
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*ABORTED*"
-                }
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "Resource Creation Progress: *ABORTED*"
+                    }
+                ]
             }
         ]
-        slack_msg.update_message(blocks)
+        slack_msg.blocks = blocks
+        slack_msg.update_message()
     sys.exit(0)
 
 # Register signal handlers
@@ -74,43 +70,63 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
 
     blocks = [
         {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Resource Creation Progress"
-            }
+            "type": "divider"
         },
         {
-            "type": "divider"
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "Working on your request.."
+                }
+            ]
         }
     ]
 
     for task, status in task_statuses.items():
         if status["is_terraform"]:
-            prefix = ":terraform:"
+            image_url = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
         else:
-            prefix = ""
+            image_url = ""
 
         if status["status"] == "In Progress":
-            status_emoji = ":hourglass_flowing_sand:"
+            status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
         elif status.get("is_completed"):
-            status_emoji = ":white_check_mark:"
+            status_image = "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png"
         elif status.get("is_failed"):
-            status_emoji = ":x:"
+            status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
         else:
-            status_emoji = ":hourglass:"
+            status_image = ""
 
         task_block = {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"{prefix} *{task}*: {status_emoji} {status['status']}"}
+            "type": "context",
+            "elements": [
+                {
+                    "type": "image",
+                    "image_url": image_url,
+                    "alt_text": "terraform"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*{task}*"
+                }
+            ]
         }
+
+        if status_image:
+            task_block["elements"].append({
+                "type": "image",
+                "image_url": status_image,
+                "alt_text": "status"
+            })
 
         blocks.append(task_block)
 
     if initial:
         slack_msg.send_initial_message(blocks)
     else:
-        slack_msg.update_message(blocks)
+        slack_msg.blocks = blocks
+        slack_msg.update_message()
 
 def request_resource_creation_approval(request_id, purpose, resource_details, estimated_cost, tf_plan, cost_data, ttl, slack_thread_ts, task_statuses):
     requested_at = datetime.utcnow()
