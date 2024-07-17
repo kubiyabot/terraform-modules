@@ -87,42 +87,28 @@ def update_slack_progress(slack_channel_id, thread_ts, task_statuses, initial=Fa
 
     for task, status in task_statuses.items():
         if status["is_terraform"]:
-            image_url = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
+            prefix = ":terraform:"
         else:
-            image_url = ""
+            prefix = ""
 
         if status["status"] == "In Progress":
-            status_image = "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif"
+            status_emoji = ":hourglass_flowing_sand:"
         elif status.get("is_completed"):
-            status_image = "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png"
+            status_emoji = ":white_check_mark:"
         elif status.get("is_failed"):
-            status_image = "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png"
+            status_emoji = ":x:"
         else:
-            status_image = ""
+            status_emoji = ":hourglass:"
 
         task_block = {
-            "type": "context",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": f"{image_url} *{task}*: {status['status']}"
-                }
-            ]
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"{prefix} *{task}*: {status_emoji} {status['status']}"}
         }
-
-        if status_image:
-            task_block["elements"].append({
-                "type": "image",
-                "image_url": status_image,
-                "alt_text": "status"
-            })
 
         blocks.append(task_block)
 
     if initial:
-        response = slack_msg.send_block_message(blocks)
-        if response and 'ts' in response:
-            SLACK_MESSAGE_TS = response['ts']
+        slack_msg.send_initial_message(blocks)
     else:
         slack_msg.update_message(blocks)
 
@@ -489,12 +475,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
         ttl_seconds = ttl_to_seconds(ttl, task_statuses)
         schedule_deletion_task(request_id, ttl_seconds, SLACK_THREAD_TS)
     
-    print(f"✅ All resources were successfully created!")
-    if TTL_ENABLED and STORE_STATE:
-        # print(f"📅 Scheduled deletion task for {ttl} from now.")
-        print(f"📅 Resources will be deleted automatically after the defined TTL expires")
-    else:
-        print("📅 Automatic deletion is not enabled - resources will not be deleted. Ask the operator who configured this workflow to enable it by setting ENABLE_TTL environment variable")
+    print(f"✅ All resources were successfully created! Request will be deleted after the TTL expires.")
     task_statuses["Scheduling Deletion Task"]["status"] = "Resources created successfully"
     task_statuses["Scheduling Deletion Task"]["is_completed"] = True
     update_slack_progress(SLACK_CHANNEL_ID, SLACK_THREAD_TS, task_statuses)

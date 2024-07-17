@@ -9,49 +9,13 @@ class SlackMessage:
         self.api_key = os.getenv('SLACK_API_TOKEN')
         self.message_ts = None  # To store the timestamp of the message
 
-    def send_initial_message(self, text):
-        self.blocks = [
-            {"type": "section", "text": {"type": "mrkdwn", "text": text}},
-            {"type": "divider"}
-        ]
+    def send_initial_message(self, blocks):
+        self.blocks = blocks
         response = self.send_message()
         if response and 'ts' in response:
             self.message_ts = response['ts']
 
-    def update_message(self, blocks):
-        self.blocks = blocks
-        self.send_message(update=True)
-
-    def update_step(self, step_name, status, is_terraform=False):
-        emoji = {
-            "in_progress": "https://discuss.wxpython.org/uploads/default/original/2X/6/6d0ec30d8b8f77ab999f765edd8866e8a97d59a3.gif",
-            "completed": "https://static-00.iconduck.com/assets.00/checkmark-running-icon-2048x2048-8081bf4v.png",
-            "failed": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-512.png",
-            "pending": ""
-        }.get(status, "")
-
-        if is_terraform:
-            step_prefix = "https://static-00.iconduck.com/assets.00/terraform-icon-902x1024-397ze1ub.png"
-        else:
-            step_prefix = ""
-
-        step_block = {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"{step_prefix} {emoji} *{step_name}*"}
-        }
-
-        # Update the existing step block if it exists, otherwise add a new one
-        step_index = next((index for (index, d) in enumerate(self.blocks) if 'text' in d and f"*{step_name}*" in d["text"]["text"]), None)
-        if step_index is not None:
-            self.blocks[step_index] = step_block
-        else:
-            self.blocks.append(step_block)
-            self.blocks.append({"type": "divider"})
-
-        self.send_message(update=True)
-
-    def send_block_message(self, blocks):
-        self.blocks.extend(blocks)
+    def update_message(self):
         self.send_message(update=True)
 
     def send_message(self, update=False):
