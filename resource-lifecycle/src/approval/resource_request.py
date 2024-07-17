@@ -41,22 +41,11 @@ slack_msg = None
 def signal_handler(sig, frame):
     global slack_msg
     if slack_msg and slack_msg.message_ts:
-        blocks = [
-            {
-                "type": "divider"
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "Resource Creation Progress: *ABORTED*"
-                    }
-                ]
-            }
-        ]
-        slack_msg.blocks = blocks
-        slack_msg.update_message()
+        for task in task_statuses:
+            if task_statuses[task]["status"] == "Pending":
+                task_statuses[task]["status"] = "Aborted"
+        task_statuses["Completed"] = {"status": "Aborted", "is_terraform": False, "is_failed": True}
+        update_slack_progress(task_statuses)
     sys.exit(0)
 
 # Register signal handlers
@@ -405,6 +394,9 @@ def manage_resource_request(user_input, purpose, ttl):
         print(f"Failed to complete the operation. Error: {e}")
         task_statuses["Understanding Request"]["status"] = f"Operation failed: {e}"
         task_statuses["Understanding Request"]["is_failed"] = True
+        for task in task_statuses:
+            if task_statuses[task]["status"] == "Pending":
+                task_statuses[task]["status"] = "Aborted"
         update_slack_progress(task_statuses)
         print("This is most likely a problem with the tool implementation or the infrastructure it is running on. Please contact the operator who configured this tool.")
         exit(1)

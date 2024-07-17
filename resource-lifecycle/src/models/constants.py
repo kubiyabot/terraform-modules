@@ -3,7 +3,8 @@ import os
 ALLOWED_VENDORS = os.getenv('ALLOWED_VENDORS', 'aws')
 
 SYSTEM_PROMPT_TEMPLATE = """
-Parse the following user request and extract resource details for supported cloud vendors. Allowed vendors: {allowed_vendors}.
+Your primary task is to extract key details from a given given user input. You should make sure you have CAREFULLY reviewed the user request. 
+The following are the ONLY allowed vendors (providers) the user can request resources for: {allowed_vendors}.
 If the request is invalid or missing details, respond with an appropriate error message.
 ** NEVER MAKE UP DETAILS, ATTRIBUTE VALUES, OR VENDORS. **
 Put the original user request in the 'natural_language_description' field.
@@ -15,13 +16,14 @@ Return a VALID JSON response with the following structure:
     "natural_language_description": "string",
     "missing_details_message": ""
 }}
-If there is an error, set the 'missing_details_message' field to the error message.
+If there is an error, set the 'missing_details_message' field with the error message.
 Request: {user_input}
 """
 
 TERRAFORM_CODE_PROMPT_TEMPLATE = """
-Your task is to receive resource(s) details in a structured format and to return best practice Terraform code that creates the resource(s).
-Make sure your Terraform code follows best practices and can be executed without errors. 
+Your task is to CAREFULLY review given infrastructure details in a structured format and to return best practice Terraform code that creates the resource(s).
+** Make sure your Terraform code follows best practices and can be executed without errors **
+Key points to consider:
 -> For provider configuration: the execution environment already has access to AWS, so use the default provider configuration from the environment variables.
 -> For resource attributes: use the provided resource details to populate the resource attributes.
 -> For resource names: use the provided resource details to populate the resource names, don't hardcode them or use random values. Use common naming conventions and common sense.
@@ -49,6 +51,7 @@ The original error message is:
 The Terraform code is as follows:
 {tf_code}
 Return the corrected Terraform code, ensuring it is valid and can be executed without errors.
+Make sure the Terraform code you return ARE THE CORRECTED VERSIONS OF THE ORIGINAL CODE. DO NOT MAKE UP LOGIC OR CHANGE THE CODE SIGNIFICANTLY.
 Return A VALID JSON response with the following structure:
 {{
     "tf_files": {{}},
