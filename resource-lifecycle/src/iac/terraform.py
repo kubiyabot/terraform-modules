@@ -115,11 +115,16 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
             # TODO: show here a nicer message, with possible confirmation button
             graph_path = generate_graph(plan_path, request_id, use_state=True)
             send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
-
-        # Upload to GitHub Gist
-        gist_url = upload_to_gist(tf_files, plan_output)
-        print(f"Terraform project uploaded to GitHub Gist: {gist_url}")
-
+        try:
+            # Upload to GitHub Gist
+            gist_url = upload_to_gist(tf_files, plan_output)
+            print(f"Terraform project uploaded to GitHub Gist: {gist_url}")
+        except Exception as e:
+            logging.error(f"Error uploading to GitHub Gist: {e} - enable GitHub integration to upload the Terraform project.")
+            # Print the Terraform files
+            if SHOW_TF_OUTPUT:
+                print("\n".join(tf_files.values()))
+            gist_url = None
         return True, plan_output, plan_json
     except subprocess.CalledProcessError as e:
         error_output = e.stderr.decode('utf-8')
