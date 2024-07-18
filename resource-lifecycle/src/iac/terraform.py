@@ -246,8 +246,8 @@ def parse_ttl(ttl: str) -> int:
 
 def send_files_to_slack(tf_files: Dict[str, str], plan_output: str, request_id: str) -> None:
     # Send the Terraform files and plan output to Slack
-    for filename, content in tf_files.items():
-        send_file_to_slack(content, filename, request_id)
+    #for filename, content in tf_files.items():
+        #send_file_to_slack(content, filename, request_id)
 
     send_file_to_slack(plan_output, "terraform_plan_output.txt", request_id)
 
