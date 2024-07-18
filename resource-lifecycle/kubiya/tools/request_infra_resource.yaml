@@ -106,7 +106,7 @@ tools:
         required: true
       - name: ttl
         description: 'For how long the resources are needed. Can be in hours, days, weeks, or months. User can define it as "for 2 weeks", "for 1 month", etc but the expected format to be passed is "2h", "1d", "2w", "1m" etc.'
-        required: false
+        required: true
     env:
       - KUBIYA_USER_EMAIL # Email of the user making the request
       - AWS_PROFILE # AWS profile to use for the operation
