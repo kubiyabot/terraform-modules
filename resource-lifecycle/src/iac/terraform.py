@@ -251,11 +251,6 @@ def send_files_to_slack(tf_files: Dict[str, str], plan_output: str, request_id: 
 
     send_file_to_slack(plan_output, "terraform_plan_output.txt", request_id)
 
-    # Add the source code of the script to the Slack upload
-    with open(__file__, 'r') as script_file:
-        source_code = script_file.read()
-    send_file_to_slack(source_code, "terraform_script.py", request_id)
-
 def send_file_to_slack(file_content: str, filename: str, request_id: str) -> None:
     response = requests.post(
         "https://slack.com/api/files.upload",
