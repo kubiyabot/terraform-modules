@@ -11,7 +11,7 @@ from pytimeparse.timeparse import timeparse
 SHOW_TF_OUTPUT = os.getenv("SHOW_TF_OUTPUT", "true").lower() == "true"
 LOGS_PATH = os.getenv("LOGS_PATH", "/tf_logs")
 LOGS_ENABLED = os.getenv("LOGS_ENABLED", "false").lower() == "true"
-GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "false").lower() == "true" # requires Graphviz, see https://graphviz.org/download/
+GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "false").lower() == "true"  # requires Graphviz, see https://graphviz.org/download/
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 SLACK_THREAD_TS = os.getenv("SLACK_THREAD_TS")
 MAX_TTL = os.getenv('MAX_TTL', '30d')
@@ -33,22 +33,18 @@ COMMON_ERRORS = {
 def run_terraform_command(command: list) -> Tuple[bool, str]:
     # Print the command being run
     print(f"🏃 {' '.join(command)}")
-    
+
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout_lines = []
     stderr_lines = []
-    
+
     for stdout_line in iter(process.stdout.readline, ""):
-        if SHOW_TF_OUTPUT and ("apply" in command or "plan" in command):
-            filtered_line = filter_terraform_output(stdout_line.strip())
-            if filtered_line:
-                print(filtered_line)
         stdout_lines.append(stdout_line.strip())
-    
+        filter_and_print(stdout_line.strip())
+
     for stderr_line in iter(process.stderr.readline, ""):
-        if SHOW_TF_OUTPUT and ("apply" in command or "plan" in command):
-            print(stderr_line.strip())
         stderr_lines.append(stderr_line.strip())
+        filter_and_print(stderr_line.strip(), is_error=True)
 
     process.stdout.close()
     process.stderr.close()
@@ -61,8 +57,16 @@ def run_terraform_command(command: list) -> Tuple[bool, str]:
         specific_error = check_common_errors(error_output)
         return False, specific_error
 
+def filter_and_print(line: str, is_error: bool = False) -> None:
+    filtered_line = filter_terraform_output(line)
+    if filtered_line:
+        if is_error:
+            print(filtered_line)
+        else:
+            print(filtered_line)
+
 def filter_terraform_output(line: str) -> str:
-    keywords = ["Plan:", "Changes to", "Apply complete", "resource"]
+    keywords = ["Plan:", "Changes to", "Apply complete", "resource", "Error:", "Warning:"]
     for keyword in keywords:
         if keyword in line:
             return line
@@ -89,7 +93,7 @@ def write_tf_files(tf_files: Dict[str, str], plan_path: str) -> None:
 def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bool, str, str]:
     plan_path = prepare_plan_path(request_id)
     write_tf_files(tf_files, plan_path)
-    
+
     os.chdir(plan_path)
     os.environ["TF_IN_AUTOMATION"] = "true"
     os.environ["TF_CLI_ARGS"] = "-no-color"
@@ -108,7 +112,7 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
             return False, plan_json, None
 
         if GENERATE_GRAPH:
-            # TODO:: show here a nicer message, with possible confimation button
+            # TODO: show here a nicer message, with possible confirmation button
             graph_path = generate_graph(plan_path, request_id, use_state=True)
             send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
 
@@ -122,7 +126,7 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
 def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = False) -> Tuple[str, str]:
     plan_path = prepare_plan_path(request_id)
     write_tf_files(tf_files, plan_path)
-    
+
     os.chdir(plan_path)
     os.environ["TF_IN_AUTOMATION"] = "true"
     os.environ["TF_CLI_ARGS"] = "-no-color"
@@ -139,12 +143,12 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
         success, apply_output = run_terraform_command(['terraform', 'apply', '-auto-approve', f'{request_id}.tfplan'])
         if not success:
             raise subprocess.CalledProcessError(returncode=1, cmd='terraform apply', output=apply_output)
-        
+
         log_path = os.path.join(LOGS_PATH, request_id)
         os.makedirs(log_path, exist_ok=True)
         with open(os.path.join(log_path, "apply.log"), "w") as log_file:
             log_file.write(apply_output)
-        
+
         # For now, we're not generating the graph for apply
         # if GENERATE_GRAPH:
             # graph_path = generate_graph(plan_path, request_id, use_state=True)
@@ -157,11 +161,11 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
 def destroy_terraform(request_id: str) -> str:
     conn = sqlite3.connect('/sqlite_data/approval_requests.db')
     c = conn.cursor()
-    
+
     c.execute("SELECT tf_state, resource_details FROM resources WHERE request_id = ?", (request_id,))
     result = c.fetchone()
     conn.close()
-    
+
     if result is None:
         error_message = f"No Terraform state found for request ID {request_id}."
         logging.error(error_message)
@@ -172,12 +176,12 @@ def destroy_terraform(request_id: str) -> str:
 
     plan_path = prepare_plan_path(request_id)
     write_tf_files(resource_details["tf_files"], plan_path)
-    
+
     # Write the state file
     state_file_path = os.path.join(plan_path, "terraform.tfstate")
     with open(state_file_path, "w") as state_file:
         state_file.write(tf_state)
-    
+
     os.chdir(plan_path)
     os.environ["TF_IN_AUTOMATION"] = "true"
     os.environ["TF_CLI_ARGS"] = "-no-color"
@@ -189,7 +193,7 @@ def destroy_terraform(request_id: str) -> str:
     success, destroy_output = run_terraform_command(['terraform', 'destroy', '-auto-approve'])
     if not success:
         raise subprocess.CalledProcessError(returncode=1, cmd='terraform destroy', output=destroy_output)
-    
+
     log_path = os.path.join(LOGS_PATH, request_id)
     os.makedirs(log_path, exist_ok=True)
     with open(os.path.join(log_path, "destroy.log"), "w") as log_file:
@@ -200,13 +204,13 @@ def generate_graph(plan_path: str, request_id: str, use_state: bool) -> str:
     print("📊 Generating graph representation..")
     dot_file = os.path.join(plan_path, f'{request_id}.dot')
     png_file = os.path.join(plan_path, f'{request_id}.png')
-    
+
     # Generate the DOT file using terraform graph
     command = ['terraform', 'graph']
-    
+
     with open(dot_file, 'w') as file:
         subprocess.run(command, stdout=file, cwd=plan_path, check=True)
-    
+
     # Convert the DOT file to PNG using Graphviz
     command = ['dot', '-Tpng', dot_file, '-o', png_file]
     subprocess.run(command, check=True)
