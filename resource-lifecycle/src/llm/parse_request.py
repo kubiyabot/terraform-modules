@@ -103,8 +103,8 @@ def generate_terraform_code(resource_details):
 
     raise ValueError("Exceeded maximum retry attempts for generating Terraform code.")
 
-def fix_terraform_code(tf_files, error_message):
-    sys_prompt = TERRAFORM_CODE_FIX_PROMPT_TEMPLATE.format(error_message=error_message, tf_code=json.dumps(tf_files))
+def fix_terraform_code(tf_files, error_message, resource_details):
+    sys_prompt = TERRAFORM_CODE_FIX_PROMPT_TEMPLATE.format(error_message=error_message, tf_code=json.dumps(tf_files), resource_details=json.dumps(resource_details, indent=2))
 
     messages = [{"content": sys_prompt, "role": "system"}]
 

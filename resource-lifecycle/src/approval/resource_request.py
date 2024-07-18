@@ -329,7 +329,7 @@ def manage_resource_request(user_input, purpose, ttl):
             task_statuses["Creating Terraform Plan"]["status"] = "Attempting to fix Terraform code..."
             update_slack_progress(task_statuses)
             try:
-                fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error)
+                fixed_tf_code_details = fix_terraform_code(resource_details["tf_files"], plan_output_or_error, resource_details)
                 resource_details["tf_files"] = fixed_tf_code_details.tf_files
                 resource_details["tf_code_explanation"] = fixed_tf_code_details.tf_code_explanation
             except Exception as e:
@@ -458,7 +458,7 @@ def apply_resources(request_id, resource_details, tf_files, ttl, task_statuses):
             task_statuses["Applying Terraform"]["status"] = "Attempting to fix Terraform code..."
             update_slack_progress(task_statuses)
             try:
-                fixed_tf_code_details = fix_terraform_code(tf_files, apply_output)
+                fixed_tf_code_details = fix_terraform_code(tf_files, apply_output, resource_details)
                 tf_files = fixed_tf_code_details.tf_files
             except Exception as e:
                 print(f"Failed to fix Terraform code. Error: {e}")

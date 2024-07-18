@@ -46,6 +46,8 @@ Return A VALID JSON response with the following structure:
 
 TERRAFORM_CODE_FIX_PROMPT_TEMPLATE = """
 The following Terraform code did not work due to the error provided. Please correct the code and ensure it is valid.
+The definition of what the user requested is as follows:
+{resource_details}
 The original error message is:
 {error_message}
 The Terraform code is as follows:
