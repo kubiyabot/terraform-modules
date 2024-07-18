@@ -30,7 +30,7 @@ variable "agent_llm_model" {
 variable "agent_image" {
   type        = string
   description = "Docker image for the agent"
-  default     = "kubiya/base-agent:tools-v5"
+  default     = "kubiya/base-agent:tools-v6"
 }
 variable "agent_secrets" {
   type        = list(string)
