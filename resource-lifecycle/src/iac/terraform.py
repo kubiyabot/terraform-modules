@@ -116,6 +116,10 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
             graph_path = generate_graph(plan_path, request_id, use_state=True)
             send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
 
+        # Upload to GitHub Gist
+        gist_url = upload_to_gist(tf_files, plan_output)
+        print(f"Terraform project uploaded to GitHub Gist: {gist_url}")
+
         return True, plan_output, plan_json
     except subprocess.CalledProcessError as e:
         error_output = e.stderr.decode('utf-8')
@@ -244,3 +248,35 @@ def parse_ttl(ttl: str) -> int:
     if ttl_seconds is None:
         raise ValueError(f"Invalid TTL format: {ttl}")
     return ttl_seconds
+
+def upload_to_gist(tf_files: Dict[str, str], plan_output: str) -> str:
+    # Create a GitHub Gist with the Terraform files, plan output, and source code
+    gist_files = {
+        filename: {
+            "content": content
+        } for filename, content in tf_files.items()
+    }
+    gist_files["terraform_plan_output.txt"] = {
+        "content": plan_output
+    }
+
+    # Add the source code of the script to the Gist
+    with open(__file__, 'r') as script_file:
+        source_code = script_file.read()
+    gist_files["terraform_script.py"] = {
+        "content": source_code
+    }
+
+    gist_data = {
+        "description": "Terraform project files, plan, and source code",
+        "public": True,
+        "files": gist_files
+    }
+
+    response = requests.post("https://api.github.com/gists", json=gist_data)
+    if response.status_code == 201:
+        gist_url = response.json().get("html_url")
+        return gist_url
+    else:
+        logging.error(f"Error creating GitHub Gist: {response.status_code} - {response.text}")
+        raise Exception(f"Failed to create GitHub Gist: {response.status_code}")
