@@ -14,6 +14,7 @@ LOGS_ENABLED = os.getenv("LOGS_ENABLED", "false").lower() == "true"
 GENERATE_GRAPH = os.getenv("GENERATE_GRAPH", "false").lower() == "true"  # requires Graphviz, see https://graphviz.org/download/
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 SLACK_THREAD_TS = os.getenv("SLACK_THREAD_TS")
+SLACK_API_TOKEN = os.getenv("SLACK_API_TOKEN")
 MAX_TTL = os.getenv('MAX_TTL', '30d')
 
 # Configure logging based on LOGS_ENABLED
@@ -112,19 +113,13 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
             return False, plan_json, None
 
         if GENERATE_GRAPH:
-            # TODO: show here a nicer message, with possible confirmation button
             graph_path = generate_graph(plan_path, request_id, use_state=True)
             send_graph_to_slack(graph_path, request_id, "👇 Here's a preview of the Terraform plan")
-        try:
-            # Upload to GitHub Gist
-            gist_url = upload_to_gist(tf_files, plan_output)
-            print(f"Terraform project uploaded to GitHub Gist: {gist_url}")
-        except Exception as e:
-            logging.error(f"Error uploading to GitHub Gist: {e} - enable GitHub integration to upload the Terraform project.")
-            # Print the Terraform files
-            if SHOW_TF_OUTPUT:
-                print("\n".join(tf_files.values()))
-            gist_url = None
+
+        # Send files to Slack
+        send_files_to_slack(tf_files, plan_output, request_id)
+        print(f"Terraform project files and plan output sent to Slack.")
+
         return True, plan_output, plan_json
     except subprocess.CalledProcessError as e:
         error_output = e.stderr.decode('utf-8')
@@ -157,11 +152,6 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
         os.makedirs(log_path, exist_ok=True)
         with open(os.path.join(log_path, "apply.log"), "w") as log_file:
             log_file.write(apply_output)
-
-        # For now, we're not generating the graph for apply
-        # if GENERATE_GRAPH:
-            # graph_path = generate_graph(plan_path, request_id, use_state=True)
-            # send_graph_to_slack(graph_path, request_id, "👇 Terraform Apply Preview")
 
         return apply_output, plan_path
 
@@ -254,34 +244,36 @@ def parse_ttl(ttl: str) -> int:
         raise ValueError(f"Invalid TTL format: {ttl}")
     return ttl_seconds
 
-def upload_to_gist(tf_files: Dict[str, str], plan_output: str) -> str:
-    # Create a GitHub Gist with the Terraform files, plan output, and source code
-    gist_files = {
-        filename: {
-            "content": content
-        } for filename, content in tf_files.items()
-    }
-    gist_files["terraform_plan_output.txt"] = {
-        "content": plan_output
-    }
+def send_files_to_slack(tf_files: Dict[str, str], plan_output: str, request_id: str) -> None:
+    # Send the Terraform files and plan output to Slack
+    for filename, content in tf_files.items():
+        send_file_to_slack(content, filename, request_id)
 
-    # Add the source code of the script to the Gist
+    send_file_to_slack(plan_output, "terraform_plan_output.txt", request_id)
+
+    # Add the source code of the script to the Slack upload
     with open(__file__, 'r') as script_file:
         source_code = script_file.read()
-    gist_files["terraform_script.py"] = {
-        "content": source_code
-    }
+    send_file_to_slack(source_code, "terraform_script.py", request_id)
 
-    gist_data = {
-        "description": "Terraform project files, plan, and source code",
-        "public": True,
-        "files": gist_files
-    }
+def send_file_to_slack(file_content: str, filename: str, request_id: str) -> None:
+    response = requests.post(
+        "https://slack.com/api/files.upload",
+        headers={
+            'Authorization': f'Bearer {SLACK_API_TOKEN}'
+        },
+        data={
+            'channels': SLACK_CHANNEL_ID,
+            'thread_ts': SLACK_THREAD_TS,
+            'initial_comment': f"File related to request {request_id}: {filename}",
+            'filename': filename,
+        },
+        files={
+            'file': (filename, file_content)
+        }
+    )
 
-    response = requests.post("https://api.github.com/gists", json=gist_data)
-    if response.status_code == 201:
-        gist_url = response.json().get("html_url")
-        return gist_url
-    else:
-        logging.error(f"Error creating GitHub Gist: {response.status_code} - {response.text}")
-        raise Exception(f"Failed to create GitHub Gist: {response.status_code}")
+    if response.status_code >= 300:
+        logging.error(f"Error uploading file to Slack: {response.status_code} - {response.text}")
+        if os.getenv('KUBIYA_DEBUG'):
+            print(f"Error uploading file to Slack: {response.status_code} - {response.text}")

@@ -97,7 +97,7 @@ tools:
 
       # Run the script
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
-      exec python approval/destroy_resources.py --request_id "{{ .request_id }}"
+      exec python approval/destroy_resources.py "{{ .request_id }}"
     args:
         - name: request_id
           description: "Unique request ID for the resource to be destroyed"
