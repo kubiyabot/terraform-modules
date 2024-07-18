@@ -74,7 +74,7 @@ variable "agent_tasks" {
 variable "agent_tool_sources" {
   description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
   type        = list(string)
-  default     = [""]
+  default     = ["https://raw.githubusercontent.com/kubiyabot/terraform-modules/DEV-948-convert-the-solution-to-tools/jira/jira-tools/jira-enrichment-tool.yaml"]
 }
 
 variable "agent_users" {
