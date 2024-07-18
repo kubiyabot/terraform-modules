@@ -96,7 +96,7 @@ tools:
 
       # Run the script
       export PYTHONPATH="${PYTHONPATH}:/${REPO_DIR}/${SOURCE_CODE_DIR}"
-      exec python approval/resource_request.py "{{ .user_input }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
+      exec python approval/resource_request.py "{{ .natural_language_statement }}" --purpose "{{ .purpose }}" --ttl "{{ .ttl }}"
     args:
       - name: natural_language_statement
         description: 'The natural language statement describing the infrastructure resources to be created. Can also include specific requirements like region, instance type, etc. Need to validate with the user if the request is not clear.'
