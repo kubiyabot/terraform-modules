@@ -403,8 +403,8 @@ def manage_resource_request(user_input, purpose, ttl):
 def ttl_to_seconds(ttl, task_statuses):
     ttl_seconds = timeparse(ttl)
     if ttl_seconds is None:
-        error_message = "Invalid TTL format provided."
-        print(f"❌ {error_message}")
+        error_message = "Invalid TTL format provided or TTL is missing."
+        print(f"❌ {error_message}, this is required to schedule the deletion task.")
         task_statuses["📅 Schedule future deletion task"] = {"status": error_message, "is_terraform": False, "is_failed": True}
         update_slack_progress(task_statuses)
         exit(1)
