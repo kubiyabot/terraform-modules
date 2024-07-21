@@ -108,11 +108,11 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
         if not success:
             return False, output, None
 
-        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=True)
+        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=False)
         if not success:
             return False, plan_output, None
 
-        success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'], silent=True)
+        success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'], silent=False)
         if not success:
             return False, plan_json, None
 
