@@ -31,7 +31,7 @@ COMMON_ERRORS = {
     "out of memory": "Out of memory error occurred.",
 }
 
-def run_terraform_command(command: list) -> Tuple[bool, str]:
+def run_terraform_command(command: list, silent=False) -> Tuple[bool, str]:
     # Print the command being run
     print(f"🏃 {' '.join(command)}")
 
@@ -50,6 +50,9 @@ def run_terraform_command(command: list) -> Tuple[bool, str]:
     process.stdout.close()
     process.stderr.close()
     process.wait()
+
+    if silent:
+        return process.returncode == 0, f"command: {' '.join(command)} finished with return code {process.returncode}"
 
     if process.returncode == 0:
         return True, "\n".join(stdout_lines)
@@ -104,11 +107,11 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
         if not success:
             return False, output, None
 
-        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'])
+        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=True)
         if not success:
             return False, plan_output, None
 
-        success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'])
+        success, plan_json = run_terraform_command(['terraform', 'show', '-json', f'{request_id}.tfplan'], silent=True)
         if not success:
             return False, plan_json, None
 
@@ -139,7 +142,7 @@ def apply_terraform(tf_files: Dict[str, str], request_id: str, apply: bool = Fal
     if not success:
         raise subprocess.CalledProcessError(returncode=1, cmd='terraform init', output=output)
 
-    success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'])
+    success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=True)
     if not success:
         raise subprocess.CalledProcessError(returncode=1, cmd='terraform plan', output=plan_output)
 
