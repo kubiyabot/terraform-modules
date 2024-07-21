@@ -53,7 +53,7 @@ def run_terraform_command(command: list, silent=False) -> Tuple[bool, str]:
     process.wait()
 
     if silent:
-        return process.returncode == 0, f"command: {' '.join(command)} finished with return code {process.returncode}"
+        return process.returncode == 0, process.stdout.read()
 
     if process.returncode == 0:
         return True, "\n".join(stdout_lines)
