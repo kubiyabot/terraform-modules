@@ -13,7 +13,7 @@ tools:
       app = Flask(__name__)
 
       # Suppress specific warnings
-      warnings.filterwarnings("ignore", category=UserWarning, module='urllib3')
+      #warnings.filterwarnings("ignore", category=UserWarning, module='urllib3')
 
       # Function to create a new Jira issue in a specified project
       def create_jira_issue(summary, description, project, issue_type_name, jira_base_url, jira_auth_token, issue_cat,
@@ -60,7 +60,7 @@ tools:
                       'value': issue_cat
                   },
                   'customfield_10062': [af_customer]
-              },
+               },
               'update': {
                   'issuelinks': [
                       {
@@ -183,9 +183,9 @@ tools:
               description = "{{ .description }}"
               display_name = "{{ .display_name}}"
               handle_payload(description, original_issue_key, summary, display_name, auth0_domain, management_api_token, project, issue_type_name, jira_base_url, jira_auth_token)
-              # print(jsonify({'message': 'Payload processed successfully'}))
+            #   print(jsonify({'message': 'Payload processed successfully'}))
           except Exception as e:
-              # print(jsonify({'error': str(e)}))
+            #   print(jsonify({'error': str(e)}))
               print("error")
 
     dependencies: |

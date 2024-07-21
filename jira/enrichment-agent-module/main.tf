@@ -16,8 +16,8 @@ resource "kubiya_agent" "agent" {
   environment_variables = var.agent_environment_variables
   integrations          = var.agent_integrations
   links                 = var.agent_links
-  starters              = var.agent_starters
-  tasks                 = var.agent_tasks
+  # starters              = var.agent_starters
+  # tasks                 = var.agent_tasks
   tool_sources          = var.agent_tool_sources
   //Access Control
   users  = var.agent_users
@@ -27,7 +27,7 @@ resource "kubiya_agent" "agent" {
 }
 
 resource "kubiya_webhook" "webhook" {
-  count = var.create_webhook == "true" ? 1 : 0
+  # count = var.create_webhook == "true" ? 1 : 0
 
   name = var.webhook_name
   //Please specify the source of the webhook - e.g: 'pull request opened on repository foo'

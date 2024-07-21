@@ -3,7 +3,7 @@ terraform {
   required_providers {
     kubiya = {
       source  = "kubiya-terraform/kubiya"
-      version = "0.3.8"
+      version = "0.4.2"
     }
   }
 }
