@@ -39,13 +39,7 @@ def run_terraform_command(command: list, silent=False) -> Tuple[bool, str]:
     stdout_lines = []
     stderr_lines = []
 
-    process.stdout.close()
-    process.stderr.close()
-    process.wait()
-
-    if silent:
-        return process.returncode == 0, f"command: {' '.join(command)} finished with return code {process.returncode}"
-    else:
+    if not silent:
         for stdout_line in iter(process.stdout.readline, ""):
             stdout_lines.append(stdout_line.strip())
             filter_and_print(stdout_line.strip())
@@ -54,12 +48,19 @@ def run_terraform_command(command: list, silent=False) -> Tuple[bool, str]:
             stderr_lines.append(stderr_line.strip())
             filter_and_print(stderr_line.strip(), is_error=True)
 
-        if process.returncode == 0:
-            return True, "\n".join(stdout_lines)
-        else:
-            error_output = "\n".join(stderr_lines)
-            specific_error = check_common_errors(error_output)
-            return False, specific_error
+    process.stdout.close()
+    process.stderr.close()
+    process.wait()
+
+    if silent:
+        return process.returncode == 0, f"command: {' '.join(command)} finished with return code {process.returncode}"
+
+    if process.returncode == 0:
+        return True, "\n".join(stdout_lines)
+    else:
+        error_output = "\n".join(stderr_lines)
+        specific_error = check_common_errors(error_output)
+        return False, specific_error
 
 def filter_and_print(line: str, is_error: bool = False) -> None:
     filtered_line = filter_terraform_output(line)
@@ -107,7 +108,7 @@ def create_terraform_plan(tf_files: Dict[str, str], request_id: str) -> Tuple[bo
         if not success:
             return False, output, None
 
-        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=False)
+        success, plan_output = run_terraform_command(['terraform', 'plan', '-out', f'{request_id}.tfplan'], silent=True)
         if not success:
             return False, plan_output, None
 
