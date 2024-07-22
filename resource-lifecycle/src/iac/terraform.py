@@ -47,20 +47,26 @@ def run_terraform_command(command: list, silent=False) -> Tuple[bool, str]:
         for stderr_line in iter(process.stderr.readline, ""):
             stderr_lines.append(stderr_line.strip())
             filter_and_print(stderr_line.strip(), is_error=True)
+        
+        process.stdout.close()
+        process.stderr.close()
+        process.wait()
 
-    process.stdout.close()
-    process.stderr.close()
-    process.wait()
+        if process.returncode == 0:
+            return True, "\n".join(stdout_lines)
+        else:
+            error_output = "\n".join(stderr_lines)
+            specific_error = check_common_errors(error_output)
+            return False, specific_error
 
-    if silent:
-        return process.returncode == 0, process.stdout.read()
-
-    if process.returncode == 0:
-        return True, "\n".join(stdout_lines)
     else:
-        error_output = "\n".join(stderr_lines)
-        specific_error = check_common_errors(error_output)
-        return False, specific_error
+        stdout, stderr = process.communicate()
+        process.wait()
+        if process.returncode == 0:
+            return True, stdout
+        else:
+            specific_error = check_common_errors(stderr)
+            return False, specific_error
 
 def filter_and_print(line: str, is_error: bool = False) -> None:
     filtered_line = filter_terraform_output(line)
