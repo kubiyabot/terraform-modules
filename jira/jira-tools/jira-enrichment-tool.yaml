@@ -28,56 +28,56 @@ tools:
           }
           payload = {
               'fields': {
-                  'project': {
-                      'key': project  # Set the project key dynamically
-                  },
-                  'summary': summary,
-                  "description": {
-                      "type": "doc",
-                      "version": 1,
-                      "content": [
-                      {
-                          "type": "paragraph",
-                          "content": [
-                          {
-                              "type": "text",
-                              "text": "description"
-                          }
-                          ]
-                      }
-                      ]
-                  },
-                  'issuetype': {
-                      'name': issue_type_name  # Use the configured issue type name
-                  },
-                  "priority": {
-                      "self": "https://api.atlassian.com/ex/jira/bfc30b91-e9ae-4dc7-a21d-e70197efd2db/rest/api/3/priority/2",
-                      "iconUrl": "https://kubiya.atlassian.net/images/icons/priorities/high.svg",
-                      "name": "High",
-                      "id": "2"
-                  },
-                  'customfield_10079': {
-                      'value': issue_cat
-                  },
-                  'customfield_10062': [af_customer]
-               },
-              'update': {
-                  'issuelinks': [
-                      {
-                          'add': {
-                              'type': {
-                                  "name": "Problem/Incident",
-                                  "inward": "is caused by",
-                                  "outward": "causes",
-                              },
-                              'inwardIssue': {
-                                  'key': original_issue_key  # Key of the original issue
-                              }
-                          }
-                      }
-                  ]
-              }
-          }
+                    'project': {
+                        'key': project  # Set the project key dynamically
+                    },
+                    'summary': summary,
+                    "description": {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                            {
+                                "type": "text",
+                                "text": "description"
+                            }
+                            ]
+                        }
+                        ]
+                    },
+                    'issuetype': {
+                        'name': issue_type_name  # Use the configured issue type name
+                    },
+                    "priority": {
+                        "self": "https://api.atlassian.com/ex/jira/bfc30b91-e9ae-4dc7-a21d-e70197efd2db/rest/api/3/priority/2",
+                        "iconUrl": "https://kubiya.atlassian.net/images/icons/priorities/high.svg",
+                        "name": "High",
+                        "id": "2"
+                    },
+                    'customfield_10079': {
+                        'value': issue_cat
+                    },
+                    'customfield_10062': [af_customer]
+                 },
+                'update': {
+                    'issuelinks': [
+                        {
+                            'add': {
+                                'type': {
+                                    "name": "Problem/Incident",
+                                    "inward": "is caused by",
+                                    "outward": "causes",
+                                },
+                                'inwardIssue': {
+                                    'key': original_issue_key  # Key of the original issue
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
 
           try:
               response = requests.post(url, headers=headers, json=payload)
