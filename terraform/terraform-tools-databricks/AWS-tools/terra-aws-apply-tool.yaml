@@ -1,0 +1,29 @@
+tools:
+- name: terraform--aws-apply-tool
+  image: hashicorp/terraform              ##### needs custom image with git
+  description: "Used to execute the 'terraform apply' command on AWS."
+  type: docker
+  alias: ter-aws-apply
+  content: |
+      git clone -b {{ .BRANCH }} {{ .GIT_URL}} {{ .DIR}}
+      cd {{ .DIR}}
+      terraform apply \
+      -var "databricks_account_id=${DB_ACCOUNT_ID}" \
+      -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
+      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
+
+  git_repo:
+      url: {{ .GIT_URL }}
+      branch: {{ .BRANCH }}
+      dir: {{ .DIR }}  
+  env:
+    - "DB_ACCOUNT_ID"
+    - "DB_ACCOUNT_CLIENT_ID"
+    - "DB_ACCOUNT_CLIENT_SECRET"
+    - "GIT_URL"
+    - "BRANCH"
+    - "DIR"
+    - "AWS_ACCESS_KEY_ID"
+    - "AWS_SECRET_ACCESS_KEY"
+    - "AWS_DEFAULT_REGION"
+    
