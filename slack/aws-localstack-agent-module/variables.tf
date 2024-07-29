@@ -7,7 +7,7 @@ variable "agent_name" {
 variable "agent_runners" {
   type        = string
   description = "Name of the Local Runners for the agent to be deployed on"
-  default     = "slack-test-runner"
+  default     = "slack-approve-runner"
 }
 
 variable "agent_description" {
@@ -59,7 +59,7 @@ variable "agent_environment_variables" {
 variable "agent_integrations" {
   type        = list(string)
   description = "List of integrations to be added to the agent"
-  default     = ["jira"]
+  default     = []
 }
 
 variable "agent_links" {
