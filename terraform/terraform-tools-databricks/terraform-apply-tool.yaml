@@ -1,0 +1,29 @@
+tools:
+- name: terraform-apply-tool
+  image: hashicorp/terraform              
+  description: "Used to execute the 'terraform apply' command on the given CLI."
+  type: docker
+  alias: ter-apply
+  content: |
+      git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
+      cd $DIR/aux/databricks/terraform/"{{ .provider }}"
+      ls -la 
+      terraform init 
+      terraform apply -auto-approve
+  args:
+    provider:
+      description: "The cloud provider to use."
+      required: true  
+  env:
+    - "DB_ACCOUNT_ID"
+    - "DB_ACCOUNT_CLIENT_ID"
+    - "DB_ACCOUNT_CLIENT_SECRET"
+    - "GIT_ORG"
+    - "GIT_REPO"
+    - "BRANCH"
+    - "DIR"
+    - "ARM_CLIENT_ID"
+    - "ARM_CLIENT_SECRET"
+    - "ARM_TENANT_ID"
+    - "ARM_SUBSCRIPTION_ID"
+    - "PAT"
