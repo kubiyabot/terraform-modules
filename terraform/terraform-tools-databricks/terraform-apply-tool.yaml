@@ -7,12 +7,18 @@ tools:
   content: |
       git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
       cd $DIR/aux/databricks/terraform/"{{ .provider }}"
+      if [ "{{ .provider }}" = "aws" ]; then
+        unset ARM_CLIENT_ID
+        unset ARM_CLIENT_SECRET
+        unset ARM_SUBSCRIPTION_ID
+        unset ARM_TENANT_ID
+      fi
       ls -la 
       terraform init 
       terraform apply -auto-approve
   args:
     provider:
-      description: "The cloud provider to use (only 'aws','azure', 'gcp' will be accepted)."
+      description: "The cloud provider to use."
       required: true  
   env:
     - "DB_ACCOUNT_ID"
@@ -29,5 +35,4 @@ tools:
     - "AWS_ACCESS_KEY_ID"
     - "AWS_DEFAULT_REGION"
     - "AWS_SECRET_ACCESS_KEY"
-    - "KUBIYA_TOOL_TIMEOUT"
     - "PAT"
