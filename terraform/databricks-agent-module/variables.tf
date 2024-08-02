@@ -96,37 +96,3 @@ variable "agent_groups" {
   type        = list(string)
   default     = ["Admin"]
 }
-################# Webhook Variables #################
-# variable "create_webhook" {
-#   description = "Create a webhook"
-#   type        = string
-#   default     = "false"
-# }
-# variable "webhook_name" {
-#   description = "Name of the webhook"
-#   type        = string
-#   default     = "github-argocd-pr-webhook"
-# }
-# variable "webhook_source" {
-#   description = "Source of the webhook - e.g: 'pull request opened on repository foo"
-#   type        = string
-#   default     = "Github pull request opened on repository 'deployments'"
-# }
-# variable "webhook_prompt" {
-#   description = "Provide AI instructions prompt for the agent to follow upon incoming webhook."
-#   type        = string
-#   default     = "Run argo diff against the following revision: {{.event.pull_request.head.ref}}"
-# }
-
-# variable "webhook_destination" {
-#   description = "Slack channel for notifications, should start with `#` or `@`."
-#   type        = string
-#   default     = "#general"
-# }
-
-# variable "webhook_filter" {
-#   description = "Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org."
-#   type        = string
-#   default     = "pull_request[?state == 'open']"
-# }
-
