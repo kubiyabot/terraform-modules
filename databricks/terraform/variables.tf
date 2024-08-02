@@ -83,7 +83,7 @@ variable "agent_tasks" {
 variable "agent_tool_sources" {
   description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
   type        = list(string)
-  default     = ["https://raw.githubusercontent.com/kubiyabot/terraform-modules/POC-22-create-a-terraform-for-the-agent/terraform/terraform-tools-databricks/terraform-apply-tool.yaml"]
+  default     = ["https://raw.githubusercontent.com/kubiyabot/terraform-modules/POC-22-conditional-one-tool/databricks/kubiya/tools/terraform-apply-tool.yaml"]
 }
 
 variable "agent_users" {
