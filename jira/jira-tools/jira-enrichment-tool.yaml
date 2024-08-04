@@ -54,12 +54,12 @@ tools:
                     "id": "2"
                 },
                 'issuetype': {
-                    'name': "Support"  # Use the configured issue type name
+                    'name': issue_type_name  # Use the configured issue type name
                 },
-                # 'customfield_10079': {
-                #     'value': "Regression"
-                # },
-                # 'customfield_10062': [Kubiya]
+                'customfield_10079': {
+                    'value': "Regression"
+                },
+                'customfield_10062': ["Kubiya"]
             },
             'update': {
                 'issuelinks': [
