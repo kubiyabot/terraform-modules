@@ -57,9 +57,9 @@ tools:
                     'name': issue_type_name  # Use the configured issue type name
                 },
                 'customfield_10079': {
-                    'value': "Regression"
+                    'value': issue_cat
                 },
-                'customfield_10062': ["Kubiya"]
+                'customfield_10062': [af_customer]
             },
             'update': {
                 'issuelinks': [
