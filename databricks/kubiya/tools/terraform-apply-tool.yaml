@@ -15,7 +15,10 @@ tools:
       fi
       ls -la 
       terraform init 
-      terraform apply -auto-approve
+      terraform apply -auto-approve \
+      -var "databricks_account_id=${DB_ACCOUNT_ID}" \
+      -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
+      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
   args:
     provider:
       description: "The cloud provider to use."
