@@ -17,79 +17,82 @@ tools:
 
       # Function to create a new Jira issue in a specified project
       def create_jira_issue(summary, description, project, issue_type_name, jira_base_url, jira_auth_token, issue_cat,
-                          af_customer, original_issue_key):
-          if not jira_base_url or not jira_auth_token:
-              raise ValueError("JIRA_BASE_URL and JIRA_AUTH_TOKEN must be provided.")
+                      af_customer, original_issue_key):
+        if not jira_base_url or not jira_auth_token:
+            raise ValueError("JIRA_BASE_URL and JIRA_AUTH_TOKEN must be provided.")
 
-          url = f'https://{jira_base_url}/rest/api/3/issue/'
-          headers = {
-              'Authorization': f'Bearer {jira_auth_token}',
-              'Content-Type': 'application/json'
-          }
-          payload = {
-              'fields': {
-                  'project': {
-                      'key': project  # Set the project key dynamically
-                  },
-                  'summary': summary,
-                  "description": {
-                      "type": "doc",
-                      "version": 1,
-                      "content": [
-                      {
-                          "type": "paragraph",
-                          "content": [
-                          {
-                              "type": "text",
-                              "text": "description"
-                          }
-                          ]
-                      }
-                      ]
-                  },
-                  'issuetype': {
-                      'name': issue_type_name  # Use the configured issue type name
-                  },
-                  "priority": {
-                      "self": "https://api.atlassian.com/ex/jira/bfc30b91-e9ae-4dc7-a21d-e70197efd2db/rest/api/3/priority/2",
-                      "iconUrl": "https://kubiya.atlassian.net/images/icons/priorities/high.svg",
-                      "name": "High",
-                      "id": "2"
-                  },
-                  'customfield_10079': {
-                      'value': issue_cat
-                  },
-                  'customfield_10062': [af_customer]
-               },
-              'update': {
-                  'issuelinks': [
-                      {
-                          'add': {
-                              'type': {
-                                  "name": "Problem/Incident",
-                                  "inward": "is caused by",
-                                  "outward": "causes",
-                              },
-                              'inwardIssue': {
-                                  'key': original_issue_key  # Key of the original issue
-                              }
-                          }
-                      }
-                  ]
-              }
-          }
+        url = f'https://{jira_base_url}/rest/api/3/issue/'
+        headers = {
+            'Authorization': f'Bearer {jira_auth_token}',
+            'Content-Type': 'application/json'
+        }
+        payload = {
+            'fields': {
+                'project': {
+                    'key': project  # Set the project key dynamically
+                },
+                'summary': summary,
+                "description": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": description  # Use the description parameter
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "priority": {
+                    "self": "https://api.atlassian.com/ex/jira/bfc30b91-e9ae-4dc7-a21d-e70197efd2db/rest/api/3/priority/2",
+                    "iconUrl": "https://kubiya.atlassian.net/images/icons/priorities/high.svg",
+                    "name": "High",
+                    "id": "2"
+                },
+                'issuetype': {
+                    'name': "Support"  # Use the configured issue type name
+                },
+                # 'customfield_10079': {
+                #     'value': "Regression"
+                # },
+                # 'customfield_10062': [Kubiya]
+            },
+            'update': {
+                'issuelinks': [
+                    {
+                        'add': {
+                            'type': {
+                                "name": "Problem/Incident",
+                                "inward": "is caused by",
+                                "outward": "causes",
+                            },
+                            'inwardIssue': {
+                                'key': original_issue_key  # Key of the original issue
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+        
 
-          try:
-              response = requests.post(url, headers=headers, json=payload)
-              print(response.text)
-              response.raise_for_status()  # Raise exception for non-2xx status codes
-              new_issue_key = response.json()['key']
-              print(f'New Jira issue created successfully in project {project}. Issue key: {new_issue_key}')
-              return new_issue_key
 
-          except requests.exceptions.RequestException as e:
-              print(f'Error creating new Jira issue: {e}')
-              return None
+        try:
+            print("got here")
+            response = requests.post(url, headers=headers, json=payload)
+            print(response.text)
+            response.raise_for_status()  # Raise exception for non-2xx status codes
+            new_issue_key = response.json()['key']
+            print(f'New Jira issue created successfully in project {project}. Issue key: {new_issue_key}')
+            return new_issue_key
+
+        except requests.exceptions.RequestException as e:
+            print(f'Error creating new Jira issue: {e}')
+            return None
 
 
       # Function to get users from Auth0
