@@ -34,17 +34,17 @@ variable "agent_secrets" {
   type        = list(string)
   description = "List of existing secrets to be used by the agent"
   default = [
-    "ARM_CLIENT_ID",     # Configure this secret on Kubiya web app before deploying the agent.
-    "ARM_CLIENT_SECRET",
-    "ARM_SUBSCRIPTION_ID",
-    "ARM_TENANT_ID",
+    "ARM_CLIENT_ID_KUBI",     # Configure this secret on Kubiya web app before deploying the agent.
+    "ARM_CLIENT_SECRET_KUBI",
+    "ARM_SUBSCRIPTION_ID_KUBI",
+    "ARM_TENANT_ID_KUBI",
     "DB_ACCOUNT_CLIENT_ID",
     "DB_ACCOUNT_CLIENT_SECRET",
     "DB_ACCOUNT_ID",
     "PAT",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_DEFAULT_REGION",
+    "AWS_ACCESS_KEY_ID_KUBI",
+    "AWS_SECRET_ACCESS_KEY_KUBI",
+    "AWS_DEFAULT_REGION_KUBI",
   ]
 }
 variable "agent_environment_variables" {

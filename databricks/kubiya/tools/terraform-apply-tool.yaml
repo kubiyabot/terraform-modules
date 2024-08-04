@@ -7,12 +7,24 @@ tools:
   content: |
       git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
       cd $DIR/aux/databricks/terraform/"{{ .provider }}"
+
+      export ARM_CLIENT_ID_TMP=$ARM_CLIENT_ID
+      export ARM_CLIENT_SECRET_TMP=$ARM_CLIENT_SECRET
+      export ARM_SUBSCRIPTION_ID_TMP=$ARM_SUBSCRIPTION_ID
+
       if [ "{{ .provider }}" = "aws" ]; then
         unset ARM_CLIENT_ID
         unset ARM_CLIENT_SECRET
         unset ARM_SUBSCRIPTION_ID
         unset ARM_TENANT_ID
+
       fi
+      if [ "{{ .provider }}" = "azure" ]; then
+        export ARM_CLIENT_ID=$ARM_CLIENT_ID_TMP
+        export ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET_TMP
+        export ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID_TMP
+      fi
+
       ls -la 
       terraform init 
       terraform apply -auto-approve \
@@ -39,3 +51,17 @@ tools:
     - "AWS_DEFAULT_REGION"
     - "AWS_SECRET_ACCESS_KEY"
     - "PAT"
+    - "ARM_CLIENT_ID_KUBI"
+    - "ARM_CLIENT_SECRET_KUBI"
+    - "ARM_TENANT_ID_KUBI"
+    - "ARM_SUBSCRIPTION_ID_KUBI"
+    - "AWS_ACCESS_KEY_ID_KUBI"
+    - "AWS_DEFAULT_REGION_KUBI"
+    - "AWS_SECRET_ACCESS_KEY_KUBI"
+
+
+
+
+
+
+
