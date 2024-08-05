@@ -5,35 +5,53 @@ tools:
   type: docker
   alias: ter-apply
   content: |
-      git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
-      cd $DIR/aux/databricks/terraform/"{{ .provider }}"
+    git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
+    cd $DIR/aux/databricks/terraform/"{{ .provider }}"
 
-      export ARM_CLIENT_ID_TMP=$ARM_CLIENT_ID
-      export ARM_CLIENT_SECRET_TMP=$ARM_CLIENT_SECRET
-      export ARM_SUBSCRIPTION_ID_TMP=$ARM_SUBSCRIPTION_ID
+    if [ "{{ .provider }}" = "aws" ]; then
+        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_KUBI}
+        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_KUBI}
+        export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION_KUBI}
 
-      if [ "{{ .provider }}" = "aws" ]; then
-        unset ARM_CLIENT_ID
-        unset ARM_CLIENT_SECRET
-        unset ARM_SUBSCRIPTION_ID
-        unset ARM_TENANT_ID
+        unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
 
-      fi
-      if [ "{{ .provider }}" = "azure" ]; then
-        export ARM_CLIENT_ID=$ARM_CLIENT_ID_TMP
-        export ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET_TMP
-        export ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID_TMP
-      fi
+    elif [ "{{ .provider }}" = "azure" ]; then
+        export ARM_CLIENT_ID=${ARM_CLIENT_ID_KUBI}
+        export ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET_KUBI}
+        export ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID_KUBI}
+        export ARM_TENANT_ID=${ARM_TENANT_ID_KUBI}
 
-      ls -la 
-      terraform init 
-      terraform apply -auto-approve \
-      -var "databricks_account_id=${DB_ACCOUNT_ID}" \
-      -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
-      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
+        unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
+
+    elif [ "{{ .provider }}" = "gcp" ]; then
+        cat > credentials.json <<EOF
+    {
+        "type": "service_account",
+        "project_id": "kubiya",
+        "private_key_id": "f4",
+        "private_key": "-----BEGIN",
+        "client_email": "",
+        "client_id": "1",
+        "auth_uri": "https://accounts.google.com/o/oauth2",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/",
+    } 
+    EOF
+
+        unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
+        unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
+    fi
+
+    terraform init
+    terraform apply -auto-approve \
+        -var "databricks_account_id=${DB_ACCOUNT_ID}" \
+        -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
+        -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
+
   args:
     provider:
-      description: "The cloud provider to use."
+      description: "The cloud provider to use. Only aws,azure and gcp are supported."
       required: true  
   env:
     - "DB_ACCOUNT_ID"
@@ -43,25 +61,21 @@ tools:
     - "GIT_REPO"
     - "BRANCH"
     - "DIR"
-    - "ARM_CLIENT_ID"
-    - "ARM_CLIENT_SECRET"
-    - "ARM_TENANT_ID"
-    - "ARM_SUBSCRIPTION_ID"
-    - "AWS_ACCESS_KEY_ID"
-    - "AWS_DEFAULT_REGION"
-    - "AWS_SECRET_ACCESS_KEY"
-    - "PAT"
+
     - "ARM_CLIENT_ID_KUBI"
     - "ARM_CLIENT_SECRET_KUBI"
     - "ARM_TENANT_ID_KUBI"
     - "ARM_SUBSCRIPTION_ID_KUBI"
+
     - "AWS_ACCESS_KEY_ID_KUBI"
     - "AWS_DEFAULT_REGION_KUBI"
     - "AWS_SECRET_ACCESS_KEY_KUBI"
 
-
-
-
-
-
-
+    - "GCP_TYPE"
+    - "GCP_PROJECT_ID"
+    - "GCP_PRIVATE_KEY_ID"
+    - "GCP_PRIVATE_KEY"
+    - "GCP_CLIENT_EMAIL"
+    - "GCP_CLIENT_ID"
+    
+    - "PAT"
