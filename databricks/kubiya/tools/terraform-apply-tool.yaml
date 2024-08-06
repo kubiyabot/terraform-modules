@@ -7,13 +7,19 @@ tools:
   content: |
     git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
     cd $DIR/aux/databricks/terraform/"{{ .provider }}"
-
+    export TF_VAR_PROVIDER="{{ .provider }}"                                        
+    export TF_VAR_WORKSPACE_NAME="{{ .workspace_name }}"                              
     if [ "{{ .provider }}" = "aws" ]; then
         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_KUBI}
         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_KUBI}
         export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION_KUBI}
 
         unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
+        terraform init
+        terraform apply -auto-approve \
+          -var "databricks_account_id=${DB_ACCOUNT_ID}" \
+          -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
+          -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
 
     elif [ "{{ .provider }}" = "azure" ]; then
         export ARM_CLIENT_ID=${ARM_CLIENT_ID_KUBI}
@@ -22,36 +28,37 @@ tools:
         export ARM_TENANT_ID=${ARM_TENANT_ID_KUBI}
 
         unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
+        terraform init
+        terraform apply -auto-approve                                                       
+    # elif [ "{{ .provider }}" = "gcp" ]; then
+    #     cat >credentials.json <<EOF                                                          #authentication needs to be redone
+    # {
+    #     "type": "service_account",
+    #     "project_id": "kubiya",
+    #     "private_key_id": "f4",
+    #     "private_key": "-----BEGIN",
+    #     "client_email": "",
+    #     "client_id": "1",
+    #     "auth_uri": "https://accounts.google.com/o/oauth2",
+    #     "token_uri": "https://oauth2.googleapis.com/token",
+    #     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    #     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/",
+    # } 
+    # EOF
 
-    elif [ "{{ .provider }}" = "gcp" ]; then
-        cat > credentials.json <<EOF
-    {
-        "type": "service_account",
-        "project_id": "kubiya",
-        "private_key_id": "f4",
-        "private_key": "-----BEGIN",
-        "client_email": "",
-        "client_id": "1",
-        "auth_uri": "https://accounts.google.com/o/oauth2",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/",
-    } 
-    EOF
-
-        unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
-        unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
+    #     unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
+    #     unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
+    #     terraform init
+    #     terraform apply -auto-approve                                                         
     fi
 
-    terraform init
-    terraform apply -auto-approve \
-        -var "databricks_account_id=${DB_ACCOUNT_ID}" \
-        -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
-        -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"
-
+    
   args:
     provider:
       description: "The cloud provider to use. Only aws,azure and gcp are supported."
+      required: true  
+    workspace_name:
+      description: "The name of the databricks workspace."
       required: true  
   env:
     - "DB_ACCOUNT_ID"
