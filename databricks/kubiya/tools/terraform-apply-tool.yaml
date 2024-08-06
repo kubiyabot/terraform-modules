@@ -19,7 +19,7 @@ tools:
         terraform apply -auto-approve \ 
           -var "databricks_account_id=${DB_ACCOUNT_ID}" \
           -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
-          -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" 1> /dev/null
+          -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" 
 
     elif [ "{{ .provider }}" = "azure" ]; then
         export ARM_CLIENT_ID=${ARM_CLIENT_ID_KUBI}
@@ -29,7 +29,7 @@ tools:
 
         unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
         terraform init
-        terraform apply -auto-approve  1> /dev/null                                                
+        terraform apply -auto-approve                                                
     # elif [ "{{ .provider }}" = "gcp" ]; then
     #     cat >credentials.json <<EOF                                                          #authentication needs to be redone
     # {
