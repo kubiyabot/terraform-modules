@@ -20,6 +20,7 @@ tools:
           -var "databricks_account_id=${DB_ACCOUNT_ID}" \
           -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
           -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" 
+        echo "The state file can be found here: https://my-test-backend-bucket.s3.us-west-2.amazonaws.com/aws/"
 
     elif [ "{{ .provider }}" = "azure" ]; then
         export ARM_CLIENT_ID=${ARM_CLIENT_ID_KUBI}
@@ -30,6 +31,7 @@ tools:
         unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
         terraform init
         terraform apply -auto-approve                                                
+        echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"
     # elif [ "{{ .provider }}" = "gcp" ]; then
     #     cat >credentials.json <<EOF                                                          #authentication needs to be redone
     # {
