@@ -3,6 +3,7 @@ tools:
     image: python:3.11
     description: "Create one or more infrastructure resources (eg. AWS) based on a natural language request. If the request exceeds the budget, it will be automatically sent for approval based on the approval rules"
     alias: request-infra-resources
+    long_running: true
     content: |
       # Set default values for environment variables
       REPO_URL="${REPO_URL:-https://github.com/kubiyabot/terraform-modules}"
