@@ -14,13 +14,13 @@ resource "kubiya_agent" "agent" {
   name         = var.agent_name
   runner       = var.kubiya_runner
   description  = var.agent_description
-  instructions = var.agent_instructions
-  model        = var.llm_model
-  image        = var.agent_image
-  secrets      = var.secrets
-  integrations = var.integrations
-  users        = var.users
-  groups       = var.groups
+  instructions = ""
+  model        = "azure/gpt-4o"
+  image        = "kubiya/base-agent:latest"
+  secrets      = var.kubiya_secrets
+  integrations = var.kubiya_integrations
+  users        = var.kubiya_users
+  groups       = var.kubiya_groups
   links        = var.links
   tool_sources = var.agent_tool_sources
 
@@ -33,7 +33,7 @@ resource "kubiya_agent" "agent" {
       TF_MODULES_URLS        = join(",", var.tf_modules_urls)
       ALLOWED_VENDORS        = var.allowed_vendors
       EXTENSION_PERIOD       = var.extension_period
-      APPROVING_USERS        = join(",", var.approving_users)
+      APPROVING_USERS        = join(",", var.kubiya_users_approving_users)
       KUBIYA_TOOL_TIMEOUT    = "5m"
     },
     var.store_tf_state_enabled ? { STORE_TF_STATE = "1" } : {},

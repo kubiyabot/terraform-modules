@@ -16,11 +16,10 @@ resource "kubiya_agent" "agent" {
   name         = var.agent_name
   runner       = var.kubiya_runner
   description  = var.agent_description
-  instructions = var.agent_instructions
-  model        = var.llm_model
-  image        = var.agent_image
-
-  secrets      = var.secrets
+  instructions = ""
+  model        = "azure/gpt-4o"
+  image        = "kubiya/base-agent:tools-v6"
+  secrets      = var.kubiya_secrets
   integrations = var.integrations
   users        = var.users
   groups       = var.groups
@@ -34,7 +33,7 @@ resource "kubiya_agent" "agent" {
     var.debug ? { DEBUG = "1", KUBIYA_DEBUG = "1" } : {},
     var.environment_variables,
     {
-      APPROVING_USERS        = join(",", var.approving_users)
+      APPROVING_USERS        = join(",", var.kubiya_users_approving_users)
       APPROVAL_SLACK_CHANNEL = var.approval_slack_channel
     }
   )
