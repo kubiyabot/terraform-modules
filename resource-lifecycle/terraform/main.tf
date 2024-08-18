@@ -11,7 +11,7 @@ provider "kubiya" {
 }
 
 resource "kubiya_source" "source" {
-  url = "https://github.com/kubiyabot/terraform-modules/tree/main/resource-lifecycle/kubiya/tools/*"
+  url = "https://github.com/kubiyabot/terraform-modules"
 }
 
 resource "kubiya_agent" "agent" {
