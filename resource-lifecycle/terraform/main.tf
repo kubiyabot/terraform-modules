@@ -10,19 +10,24 @@ provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
 
+resource "kubiya_source" "source" {
+  url = "https://github.com/kubiyabot/terraform-modules"
+}
+
 resource "kubiya_agent" "agent" {
   name         = var.agent_name
   runner       = var.kubiya_runner
   description  = var.agent_description
   instructions = ""
   model        = "azure/gpt-4o"
-  image        = "kubiya/base-agent:latest"
+  //image        = "kubiya/base-agent:tools-v7"
   secrets      = var.kubiya_secrets
   integrations = var.kubiya_integrations
   users        = var.kubiya_users
   groups       = var.kubiya_groups
   links        = var.links
-  tool_sources = var.agent_tool_sources
+  //tool_sources = var.agent_tool_sources
+  sources = [kubiya_source.source.name]
 
   environment_variables = merge(
     {

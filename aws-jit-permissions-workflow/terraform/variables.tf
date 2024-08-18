@@ -33,12 +33,6 @@ variable "kubiya_groups" {
   type        = list(string)
 }
 
-variable "agent_tool_sources" {
-  description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
-  type        = list(string)
-  default     = ["https://github.com/kubiyabot/community-tools"]
-}
-
 variable "links" {
   description = "Links for the agent"
   type        = list(string)
@@ -63,6 +57,12 @@ variable "log_level" {
 
 variable "debug" {
   description = "Enable debug mode"
+  type        = bool
+  default     = false
+}
+
+variable "dry_run" {
+  description = "Enable dry run mode (no changes will be made to infrastructure from the agent)"
   type        = bool
   default     = false
 }

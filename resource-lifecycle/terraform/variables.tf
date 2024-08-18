@@ -45,12 +45,6 @@ variable "kubiya_groups" {
   type        = list(string)
 }
 
-variable "agent_tool_sources" {
-  description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
-  type        = list(string)
-  default     = ["https://github.com/kubiyabot/community-tools"]
-}
-
 variable "links" {
   description = "Links for the agent"
   type        = list(string)

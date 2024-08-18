@@ -11,31 +11,35 @@ provider "kubiya" {
   // environment variable KUBIYA_API_KEY
   // To set the key, please use export KUBIYA_API_KEY="YOUR_API_KEY"
 }
+resource "kubiya_source" "source1" {
+  url = "https://github.com/kubiyabot/terraform-modules/tree/main/aws-jit-permissions-workflow/tools/approval_workflow/*"
+}
 
+resource "kubiya_source" "source2" {
+  url = "https://github.com/kubiyabot/terraform-modules/tree/main/aws-jit-permissions-workflow/tools/aws/*"
+}
 resource "kubiya_agent" "agent" {
   name         = var.agent_name
   runner       = var.kubiya_runner
   description  = var.agent_description
   instructions = ""
   model        = "azure/gpt-4o"
-  image        = "kubiya/base-agent:tools-v6"
+  //image        = "kubiya/base-agent:tools-v7"
   secrets      = var.kubiya_secrets
-  integrations = var.integrations
-  users        = var.users
-  groups       = var.groups
+  integrations = var.kubiya_integrations
+  users        = var.kubiya_users
+  groups       = var.kubiya_groups
   links        = var.links
-  tool_sources = var.agent_tool_sources
+  sources = [kubiya_source.source1.name, kubiya_source.source2.name]
   
   environment_variables = merge(
     {
-      LOG_LEVEL = var.log_level
+      LOG_LEVEL = var.log_level,
+      APPROVING_USERS = join(",", var.kubiya_users_approving_users)
+      APPROVAL_SLACK_CHANNEL = var.approval_slack_channel
     },
     var.debug ? { DEBUG = "1", KUBIYA_DEBUG = "1" } : {},
-    var.environment_variables,
-    {
-      APPROVING_USERS        = join(",", var.kubiya_users_approving_users)
-      APPROVAL_SLACK_CHANNEL = var.approval_slack_channel
-    }
+    var.dry_run ? { DRY_RUN_ENABLED = "1" } : {}
   )
 }
 
