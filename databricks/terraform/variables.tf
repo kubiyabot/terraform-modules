@@ -17,7 +17,7 @@ variable "agent_ai_instructions" {
   type        = string
   description = "AI instructions for the agent"
   default     = <<EOF
-  Use the tool terraform-apply-tool to apply the terraform module.
+  Use the tool terraform-apply-tool to apply the terraform module . prompt the user for the "provider" and "workspace_name" args . 
 EOF
 }
 variable "agent_llm_model" {
@@ -45,12 +45,7 @@ variable "agent_secrets" {
     "AWS_ACCESS_KEY_ID_KUBI",
     "AWS_SECRET_ACCESS_KEY_KUBI",
     "AWS_DEFAULT_REGION_KUBI",
-    "GCP_TYPE",
-    "GCP_PROJECT_ID",
-    "GCP_PRIVATE_KEY_ID",
-    "GCP_PRIVATE_KEY",
-    "GCP_CLIENT_EMAIL",
-    "GCP_CLIENT_ID",
+    
 
   ]
 }
@@ -59,11 +54,11 @@ variable "agent_environment_variables" {
   description = "Environment variables to be set for the agent"
   default = {
     LOG_LEVEL       = "INFO",
-    BRANCH          = "POC-15",
+    BRANCH          = "POC-23-adding-backend",
     DIR             = "~/test",
     GIT_REPO        = "deployments",
     GIT_ORG         = "kubiyabot",
-    KUBIYA_TOOL_TIMEOUT = "10m",
+    KUBIYA_TOOL_TIMEOUT = "20m",
   }
 }
 
