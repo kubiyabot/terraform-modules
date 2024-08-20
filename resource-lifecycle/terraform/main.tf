@@ -11,7 +11,7 @@ provider "kubiya" {
 }
 
 resource "kubiya_source" "source" {
-  url = "https://github.com/kubiyabot/terraform-modules"
+  url = "https://github.com/kubiyabot/terraform-modules/tree/main/resource-lifecycle/kubiya/tools"
 }
 
 resource "kubiya_agent" "agent" {
@@ -35,7 +35,6 @@ resource "kubiya_agent" "agent" {
       GRACE_PERIOD           = var.grace_period
       MAX_TTL                = var.max_ttl
       APPROVAL_SLACK_CHANNEL = var.approval_slack_channel
-      TF_MODULES_URLS        = join(",", var.tf_modules_urls)
       ALLOWED_VENDORS        = var.allowed_vendors
       EXTENSION_PERIOD       = var.extension_period
       APPROVING_USERS        = join(",", var.kubiya_users_approving_users)

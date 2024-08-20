@@ -74,12 +74,6 @@ variable "approval_slack_channel" {
   type        = string
 }
 
-variable "tf_modules_urls" {
-  description = "URLs for the Terraform modules"
-  type        = list(string)
-  default     = []
-}
-
 variable "allowed_vendors" {
   description = "Allowed cloud vendors"
   type        = string
