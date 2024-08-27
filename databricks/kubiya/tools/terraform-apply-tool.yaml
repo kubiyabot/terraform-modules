@@ -37,12 +37,13 @@ tools:
 
     
   args:
-    provider:
+    - name: "provider"
       description: "The cloud provider to use. Only aws and azure are supported."
       required: true  
-    workspace_name:
+    - name: "workspace_name"
       description: "The name of the databricks workspace."
-      required: true  
+      required: true
+
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
