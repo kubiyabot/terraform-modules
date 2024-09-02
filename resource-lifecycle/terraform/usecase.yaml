@@ -1,0 +1,4 @@
+- description: "test"
+- icon: "test1"
+- image: "test2"
+- name: "aws-jit-permissions-workflow"
