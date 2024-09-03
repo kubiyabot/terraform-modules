@@ -32,7 +32,7 @@ tools:
         unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
         terraform init \
           -var "PROVIDER={{ .provider }}" \
-          -var "WORKSPACE_NAME={{ .workspace_name }}" \
+          -var "WORKSPACE_NAME={{ .workspace_name }}" 
         terraform apply -auto-approve                                                
         echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"      
         echo "The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID_KUBI}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview"                             
