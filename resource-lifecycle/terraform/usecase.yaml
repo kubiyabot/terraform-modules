@@ -1,5 +1,7 @@
 name: "resource-lifecycle"
 icon: ""
+image: "test-1"
+description: "Advanced Workflow for Dynamic Approval Flow for Infrastructure Resources"
 mermaid: |
   graph TD
       URR["📩 User Requests Resource(s) (e.g., EC2 instance, S3 bucket, RDS instance)"] --> GTM["🧠 Generate Terraform Module (using LLM)"]
@@ -57,4 +59,4 @@ mermaid: |
       
       linkStyle default stroke:#2d7dd2,stroke-width:2px
       classDef default fill:#f9f9f9,stroke:#000,stroke-width:1px,font-family:Arial
-description: "Advanced Workflow for Dynamic Approval Flow for Infrastructure Resources"
+

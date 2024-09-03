@@ -1,4 +1,7 @@
 icon: ""
+image: "test2"
+name: "aws-jit-permissions-workflow"
+description: "Dynamic AWS IAM Policy Management Workflow"
 mermaid: |
   graph TD
       A[🙋 User Request: Access S3 bucket 'financial-reports'] --> B[🧠 AI Policy Generation]
@@ -38,5 +41,4 @@ mermaid: |
       style L fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
       style M fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 
-name: "aws-jit-permissions-workflow"
-description: "Dynamic AWS IAM Policy Management Workflow"
+
