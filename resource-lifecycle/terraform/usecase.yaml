@@ -1,4 +1,60 @@
-- description: "test"
-- icon: "test1"
-- image: "test2"
-- name: "aws-jit-permissions-workflow"
+name: "resource-lifecycle"
+icon: ""
+mermaid: |
+  graph TD
+      URR["📩 User Requests Resource(s) (e.g., EC2 instance, S3 bucket, RDS instance)"] --> GTM["🧠 Generate Terraform Module (using LLM)"]
+      GTM --> TFO["🧠 Generate Terraform Files"]
+      TFO --> GTP["🛠️ Generate Terraform Plan"]
+      GTP --> GPC["💰 Get Plan Cost (using Infracost)"]
+      GPC --> CAMC["⚖️ Compare with Average Monthly Cost"]
+      CAMC -->|">= 10%"| RA["🔔 Request Approval if >= 10%"]
+      CAMC -->|"< 10%"| CR["✅ Create Resource(s) if < 10%"]
+      CR --> SF["📅 Schedule Follow-up in a Week"]
+      SF --> AD["👨‍💻 Ask Developer to Keep or Delete Resource(s)"]
+      AD -->|Keep| KS["🔄 Keep Resource(s) and Schedule Next Follow-up"]
+      AD -->|Delete| DR["🗑️ Delete Resource(s)"]
+      KS --> SF
+      CR --> CD["📢 Communicate Decision to Developer"]
+      RA --> WBA["📬 Webhook to Approvers to Approve"]
+      WBA --> AAP["✔️ After Approval, Get Plan, Get TF Code"]
+      AAP --> TFA["🚀 Terraform Apply"]
+      TFA --> STF["📦 Store the TF State from the Apply"]
+      STF --> NR["🔔 Notify Requester"]
+      NR --> SF
+      CR --> SPR["📊 Store Plan, Store Request"]
+      TFO --> SPR
+      
+      SF --> GSD["🗄️ Get State from DB"]
+      GSD --> DR["🗑️ Destroy Resource(s) (TTL Expires)"]
+      DR --> UAP["🔔 Update All Parties"]
+      
+      TFA --> RC["🌐 Resource(s) Created"]
+      RC --> IU["🧠 Give User Instructions on How to Access (using LLM)"]
+      
+      style URR fill:#FFE5B4,stroke:#000,stroke-width:1px
+      style GTM fill:#ADD8E6,stroke:#000,stroke-width:1px
+      style TFO fill:#ADD8E6,stroke:#000,stroke-width:1px
+      style GTP fill:#FFB6C1,stroke:#000,stroke-width:1px
+      style GPC fill:#FFD700,stroke:#000,stroke-width:1px
+      style CAMC fill:#DDA0DD,stroke:#000,stroke-width:1px
+      style RA fill:#FFA07A,stroke:#000,stroke-width:1px
+      style CR fill:#98FB98,stroke:#000,stroke-width:1px
+      style SF fill:#AFEEEE,stroke:#000,stroke-width:1px
+      style AD fill:#FFDAB9,stroke:#000,stroke-width:1px
+      style KS fill:#E0FFFF,stroke:#000,stroke-width:1px
+      style DR fill:#FFC0CB,stroke:#000,stroke-width:1px
+      style CD fill:#E6E6FA,stroke:#000,stroke-width:1px
+      style WBA fill:#F5DEB3,stroke:#000,stroke-width:1px
+      style AAP fill:#FFB6C1,stroke:#000,stroke-width:1px
+      style TFA fill:#E0FFFF,stroke:#000,stroke-width:1px
+      style STF fill:#F0E68C,stroke:#000,stroke-width:1px
+      style NR fill:#FF69B4,stroke:#000,stroke-width:1px
+      style SPR fill:#FFA07A,stroke:#000,stroke-width:1px
+      style GSD fill:#98FB98,stroke:#000,stroke-width:1px
+      style UAP fill:#FFD700,stroke:#000,stroke-width:1px
+      style RC fill:#FFB6C1,stroke:#000,stroke-width:1px
+      style IU fill:#ADD8E6,stroke:#000,stroke-width:1px
+      
+      linkStyle default stroke:#2d7dd2,stroke-width:2px
+      classDef default fill:#f9f9f9,stroke:#000,stroke-width:1px,font-family:Arial
+description: "Advanced Workflow for Dynamic Approval Flow for Infrastructure Resources"
