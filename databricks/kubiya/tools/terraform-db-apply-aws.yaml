@@ -2,7 +2,7 @@ tools:
 - name: aws-db-apply-tool
   image: hashicorp/terraform              
   description: "Create a databricks workspace."
-  long_running: true
+  #long_running: true
   type: docker
   alias: ter-aws-apply
   content: |
