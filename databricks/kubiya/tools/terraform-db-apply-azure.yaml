@@ -42,9 +42,9 @@ tools:
       description: "The ID of the key vault key to use for managed disk encryption."
       required: false
       default: null
-      
+
     - name: "infrastructure_encryption_enabled"
-      description: "Enable infrastructure encryption, boolean."
+      description: "Enable infrastructure encryption, can be true or false."
       required: true
       
   env:
