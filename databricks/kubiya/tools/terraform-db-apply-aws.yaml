@@ -10,7 +10,7 @@ tools:
     cd $DIR/aux/databricks/terraform/aws  
 
     terraform init -backend-config="bucket=my-test-backend-bucket" \
-      -backend-config="key={{ .workspace_name}}/terraform.tfstate" \
+      -backend-config="key=databricks/{{ .workspace_name}}/terraform.tfstate" \
       -backend-config="region=us-west-2"
     terraform apply -auto-approve \
       -var "databricks_account_id=${DB_ACCOUNT_ID}" \
