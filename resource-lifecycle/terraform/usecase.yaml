@@ -1,4 +1,4 @@
-name: "resource-lifecycle"
+name: "Dynamic approval workflow for infra resources"
 icon: "https://static-00.iconduck.com/assets.00/file-type-terraform-icon-455x512-csyun60o.png"
 image: "test-1"
 description: |
