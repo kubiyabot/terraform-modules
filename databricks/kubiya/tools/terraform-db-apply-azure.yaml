@@ -15,7 +15,7 @@ tools:
       -backend-config="resource_group_name=kubi-ram" \
       -backend-config="subscription_id=${ARM_SUBSCRIPTION_ID}"
     terraform apply -auto-approve \
-      -var "WORKSPACE_NAME={{ .workspace_name }}" 
+      -var "WORKSPACE_NAME={{ .workspace_name }}" \
       -var "region={{ .azure_region }}"
 
     echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"      
