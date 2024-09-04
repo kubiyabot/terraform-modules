@@ -1,62 +1,54 @@
-name: "resource-lifecycle"
-icon: ""
-image: "test-1"
-description: "Advanced Workflow for Dynamic Approval Flow for Infrastructure Resources"
-mermaid: |
-  graph TD
-      URR["📩 User Requests Resource(s) (e.g., EC2 instance, S3 bucket, RDS instance)"] --> GTM["🧠 Generate Terraform Module (using LLM)"]
-      GTM --> TFO["🧠 Generate Terraform Files"]
-      TFO --> GTP["🛠️ Generate Terraform Plan"]
-      GTP --> GPC["💰 Get Plan Cost (using Infracost)"]
-      GPC --> CAMC["⚖️ Compare with Average Monthly Cost"]
-      CAMC -->|">= 10%"| RA["🔔 Request Approval if >= 10%"]
-      CAMC -->|"< 10%"| CR["✅ Create Resource(s) if < 10%"]
-      CR --> SF["📅 Schedule Follow-up in a Week"]
-      SF --> AD["👨‍💻 Ask Developer to Keep or Delete Resource(s)"]
-      AD -->|Keep| KS["🔄 Keep Resource(s) and Schedule Next Follow-up"]
-      AD -->|Delete| DR["🗑️ Delete Resource(s)"]
-      KS --> SF
-      CR --> CD["📢 Communicate Decision to Developer"]
-      RA --> WBA["📬 Webhook to Approvers to Approve"]
-      WBA --> AAP["✔️ After Approval, Get Plan, Get TF Code"]
-      AAP --> TFA["🚀 Terraform Apply"]
-      TFA --> STF["📦 Store the TF State from the Apply"]
-      STF --> NR["🔔 Notify Requester"]
-      NR --> SF
-      CR --> SPR["📊 Store Plan, Store Request"]
-      TFO --> SPR
-      
-      SF --> GSD["🗄️ Get State from DB"]
-      GSD --> DR["🗑️ Destroy Resource(s) (TTL Expires)"]
-      DR --> UAP["🔔 Update All Parties"]
-      
-      TFA --> RC["🌐 Resource(s) Created"]
-      RC --> IU["🧠 Give User Instructions on How to Access (using LLM)"]
-      
-      style URR fill:#FFE5B4,stroke:#000,stroke-width:1px
-      style GTM fill:#ADD8E6,stroke:#000,stroke-width:1px
-      style TFO fill:#ADD8E6,stroke:#000,stroke-width:1px
-      style GTP fill:#FFB6C1,stroke:#000,stroke-width:1px
-      style GPC fill:#FFD700,stroke:#000,stroke-width:1px
-      style CAMC fill:#DDA0DD,stroke:#000,stroke-width:1px
-      style RA fill:#FFA07A,stroke:#000,stroke-width:1px
-      style CR fill:#98FB98,stroke:#000,stroke-width:1px
-      style SF fill:#AFEEEE,stroke:#000,stroke-width:1px
-      style AD fill:#FFDAB9,stroke:#000,stroke-width:1px
-      style KS fill:#E0FFFF,stroke:#000,stroke-width:1px
-      style DR fill:#FFC0CB,stroke:#000,stroke-width:1px
-      style CD fill:#E6E6FA,stroke:#000,stroke-width:1px
-      style WBA fill:#F5DEB3,stroke:#000,stroke-width:1px
-      style AAP fill:#FFB6C1,stroke:#000,stroke-width:1px
-      style TFA fill:#E0FFFF,stroke:#000,stroke-width:1px
-      style STF fill:#F0E68C,stroke:#000,stroke-width:1px
-      style NR fill:#FF69B4,stroke:#000,stroke-width:1px
-      style SPR fill:#FFA07A,stroke:#000,stroke-width:1px
-      style GSD fill:#98FB98,stroke:#000,stroke-width:1px
-      style UAP fill:#FFD700,stroke:#000,stroke-width:1px
-      style RC fill:#FFB6C1,stroke:#000,stroke-width:1px
-      style IU fill:#ADD8E6,stroke:#000,stroke-width:1px
-      
-      linkStyle default stroke:#2d7dd2,stroke-width:2px
-      classDef default fill:#f9f9f9,stroke:#000,stroke-width:1px,font-family:Arial
 
+name: "resource-lifecycle"
+icon: "https://static-00.iconduck.com/assets.00/file-type-terraform-icon-455x512-csyun60o.png"
+image: "test-1"
+description: |
+  ### Delegation Task for Kubiya: End-to-End Dynamic Resource Provisioning and Management
+
+  This task allows users to delegate the entire process of infrastructure resource management to Kubiya with just a few dynamic variables. It provides an end-to-end solution, handling everything from requesting the resource to its approval and cost analysis, without needing user intervention after the initial setup.
+
+  #### How it works:
+  1. **Dynamic Input**: The user fills in variables (resource type, size, region) that are mapped to Terraform module variables behind the scenes.
+  2. **Automatic Module Generation**: An LLM generates the Terraform module and corresponding files dynamically, tailored to the user's inputs.
+  3. **Cost Estimation**: The workflow integrates with Infracost to evaluate the projected cost of the requested resources.
+  4. **Approval Process**: If the cost exceeds a configurable threshold, the system requests approval from authorized personnel.
+  5. **Resource Provisioning**: After approval, Terraform applies the necessary changes and provisions the resources.
+  6. **Post-Creation Management**: Resources are managed over time, with follow-up notifications for keeping or deleting them based on user preference.
+
+  Users can easily create different instances of this task to support various resource types (EC2, S3, RDS, etc.) and custom settings. The task is powered by Kubiya tools, Terraform CLI, and LLMs, ensuring smooth execution in the cloud environment.
+
+  #### Execution Flow:
+
+  ```mermaid
+  graph TD
+      URR["📩 User Requests Resource(s) (e.g., EC2, S3, RDS)"] --> GTM["🧠 Generate Terraform Module (LLM)"]
+      GTM --> TFO["📝 Generate Terraform Files"]
+      TFO --> GTP["🛠️ Generate Terraform Plan"]
+      GTP --> GPC["💰 Get Cost Estimate (Infracost)"]
+      GPC --> CAMC["⚖️ Compare Cost with Threshold"]
+      CAMC -->|">= 10%"| RA["🔔 Request Approval if Cost > 10%"]
+      CAMC -->|"< 10%"| CR["✅ Provision Resource if Cost < 10%"]
+      RA --> WBA["📬 Send Webhook to Approvers"]
+      WBA --> AAP["✔️ After Approval, Apply Plan"]
+      AAP --> TFA["🚀 Terraform Apply (Provision Resource)"]
+      TFA --> STF["📦 Store TF State"]
+      CR --> SF["📅 Schedule Follow-up for Resource"]
+      SF --> AD["👨‍💻 Ask Developer to Keep/Delete"]
+      AD -->|Keep| KS["🔄 Keep Resource & Schedule Next Follow-up"]
+      AD -->|Delete| DR["🗑️ Delete Resource"]
+      KS --> SF
+      DR --> UAP["🔔 Notify All Parties"]
+      CR --> IU["📢 Inform User about Resource Access"]
+  ```
+
+  #### Key Dependencies:
+  - **LLM**: Used to dynamically generate Terraform modules based on user inputs.
+  - **Terraform CLI**: Handles the plan, apply, and state management of infrastructure resources.
+  - **Infracost**: Provides cost estimation for the resources being requested.
+  - **Webhook**: Sends notifications to approvers if cost approval is needed.
+  - **Kubiya Tools**: Manages the end-to-end automation of this task, ensuring seamless execution.
+
+  This task ensures that the entire resource lifecycle is managed efficiently, allowing the user to focus on specifying variables while Kubiya automates the rest.
+
+mermaid: |
+  
