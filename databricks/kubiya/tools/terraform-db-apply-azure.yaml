@@ -35,14 +35,14 @@ tools:
 
     - name: "managed_services_cmk_key_vault_key_id "
       description: "The ID of the key vault key to use for managed services encryption."
-      required: true
+      required: false
 
     - name: "managed_disk_cmk_key_vault_key_id "
       description: "The ID of the key vault key to use for managed disk encryption."
-      required: true
+      required: false
 
     - name: "infrastructure_encryption_enabled"
-      description: "Enable infrastructure encryption."
+      description: "Enable infrastructure encryption, boolean."
       required: true
       
   env:
