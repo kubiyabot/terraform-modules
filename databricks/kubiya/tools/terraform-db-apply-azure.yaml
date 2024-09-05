@@ -20,7 +20,15 @@ tools:
       -var "managed_services_cmk_key_vault_key_id={{ .managed_services_cmk_key_vault_key_id }}" \
       -var "managed_disk_cmk_key_vault_key_id={{ .managed_disk_cmk_key_vault_key_id }}" \
       -var "infrastructure_encryption_enabled={{ .infrastructure_encryption_enabled }}" \
-      -var "no_public_ip={{ .no_public_ip }}"
+      -var "no_public_ip={{ .no_public_ip }}" \
+      -var "enable_vnet={{ .enable_vnet }}" \
+      -var "virtual_network_id={{ .virtual_network_id }}" \
+      -var "private_subnet_name={{ .private_subnet_name }}" \
+      -var "public_subnet_name={{ .public_subnet_name }}" \
+      -var "public_subnet_network_security_group_association_id={{ .public_subnet_network_security_group_association_id }}" \
+      -var "private_subnet_network_security_group_association_id={{ .private_subnet_network_security_group_association_id }}" \
+      -var "storage_account_name={{ .storage_account_name }}" \
+      
     echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"      
     echo "The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview"                             
     
@@ -50,6 +58,35 @@ tools:
     - name: "no_public_ip"
       description: "Secure cluster connectivity, no public ip, can be true or false."
       required: true
+
+    - name: "enable_vnet"
+      description: "Enable custom vnet use, boolean, can be true or false."
+      required: false
+      default: false
+
+    - name: "virtual_network_id"
+      description: "The virtual network id."
+      required: false
+
+    - name: "private_subnet_name"
+      description: "The name of the private subnet."
+      required: false
+
+    - name: "public_subnet_name"
+      description: "The name of the public subnet."
+      required: false  
+
+    - name: "public_subnet_network_security_group_association_id"
+      description: "The ID of the public subnet network security group association."
+      required: false  
+
+    - name: "private_subnet_network_security_group_association_id"
+      description: "The ID of the private subnet network security group association."
+      required: false  
+    
+    - name: "storage_account_name"
+      description: "The name of the storage account."
+      required: false  
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
