@@ -36,12 +36,12 @@ tools:
     - name: "managed_services_cmk_key_vault_key_id "
       description: "The ID of the key vault key to use for managed services encryption."
       required: false
-      default: null
+      
 
     - name: "managed_disk_cmk_key_vault_key_id "
       description: "The ID of the key vault key to use for managed disk encryption."
       required: false
-      default: null
+      
 
     - name: "infrastructure_encryption_enabled"
       description: "Enable infrastructure encryption, can be true or false."
@@ -50,6 +50,7 @@ tools:
     - name: "no_public_ip"
       description: "Secure cluster connectivity, no public ip, can be true or false."
       required: true
+      
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
