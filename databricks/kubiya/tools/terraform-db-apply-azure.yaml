@@ -12,7 +12,7 @@ tools:
     terraform init  -backend-config="storage_account_name=mytestbackendaccount" \
       -backend-config="container_name=mytestbackendblob" \
       -backend-config="key=databricks/{{ .workspace_name}}/terraform.tfstate" \
-      -backend-config="resource_group_name=kubi-ram" \
+      -backend-config="resource_group_name=app-staging" \
       -backend-config="subscription_id=${ARM_SUBSCRIPTION_ID}"
     terraform apply -auto-approve \
       -var "WORKSPACE_NAME={{ .workspace_name }}" \
