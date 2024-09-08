@@ -75,15 +75,15 @@ tools:
       required: true
 
     - name: "storage_account_name"
-      description: "The azure region for the workspace."
+      description: "The name of the storage account to use for the backend."
       required: true
 
     - name: "container_name"
-      description: "The azure region for the workspace."
+      description: "The name of the container to use for the backend."
       required: true
 
     - name: "resource_group_name"
-      description: "The azure region for the workspace."
+      description: "The name of the resource group to use for the backend."
       required: true
 
     - name: "managed_services_cmk_key_vault_key_id"
@@ -141,9 +141,7 @@ tools:
       description: "The ID of the private subnet network security group association."
       required: false  
 
-    - name: "storage_account_name"
-      description: "The name of the storage account."
-      required: false  
+  
 
   env:
     - "DB_ACCOUNT_ID"
