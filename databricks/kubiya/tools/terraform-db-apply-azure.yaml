@@ -20,11 +20,7 @@ tools:
       -var "managed_services_cmk_key_vault_key_id={{ .managed_services_cmk_key_vault_key_id }}" \
       -var "managed_disk_cmk_key_vault_key_id={{ .managed_disk_cmk_key_vault_key_id }}" \
       -var "infrastructure_encryption_enabled={{ .infrastructure_encryption_enabled }}" \
-      -var "
-      
-      
-      
-      ={{ .no_public_ip }}" \
+      -var "={{ .no_public_ip }}" \
       -var "enable_vnet={{ .enable_vnet }}" \
       -var "virtual_network_id={{ .virtual_network_id }}" \
       -var "private_subnet_name={{ .private_subnet_name }}" \
