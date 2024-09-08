@@ -67,24 +67,24 @@ tools:
       description: "The azure region for the workspace."
       required: true
 
-    - name: "managed_services_cmk_key_vault_key_id "
+    - name: "managed_services_cmk_key_vault_key_id"
       description: "The ID of the key vault key to use for managed services encryption."
       required: false
       
 
-    - name: "managed_disk_cmk_key_vault_key_id "
+    - name: "managed_disk_cmk_key_vault_key_id"
       description: "The ID of the key vault key to use for managed disk encryption."
       required: false
       
 
     - name: "infrastructure_encryption_enabled"
       description: "Enable infrastructure encryption, can be true or false."
-      required: true
+      required: false
       default: false
 
     - name: "no_public_ip"
       description: "Secure cluster connectivity, no public ip, can be true or false."
-      required: true
+      required: false
       default: false
 
     - name: "enable_vnet"
