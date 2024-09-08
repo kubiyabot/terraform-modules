@@ -53,12 +53,12 @@ tools:
 
     - name: "infrastructure_encryption_enabled"
       description: "Enable infrastructure encryption, can be true or false."
-      required: true
+      required: false
       default: false
 
     - name: "no_public_ip"
       description: "Secure cluster connectivity, no public ip, can be true or false."
-      required: true
+      required: false
       default: false
 
     - name: "enable_vnet"
