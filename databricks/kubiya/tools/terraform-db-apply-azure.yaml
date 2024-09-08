@@ -9,10 +9,10 @@ tools:
     git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
     cd $DIR/aux/databricks/terraform/azure
 
-    terraform init  -backend-config="storage_account_name=mytestbackendaccount" \
-      -backend-config="container_name=mytestbackendblob" \
+    terraform init  -backend-config="storage_account_name={{ .storage_account_name}}" \
+      -backend-config="container_name={{ .container_name}}" \
       -backend-config="key=databricks/{{ .workspace_name}}/terraform.tfstate" \
-      -backend-config="resource_group_name=app-staging" \
+      -backend-config="resource_group_name={{ .resource_group_name}}" \
       -backend-config="subscription_id=${ARM_SUBSCRIPTION_ID}"
     terraform apply -auto-approve \
       -var "WORKSPACE_NAME={{ .workspace_name }}" \
@@ -58,12 +58,25 @@ tools:
     -H "Authorization: Bearer $SLACK_API_KEY" \
     -H "Content-Type: application/json" \
     --data "$PAYLOAD"
+    
   args:
     - name: "workspace_name"
       description: "The name of the databricks workspace."
       required: true
       
     - name: "region"
+      description: "The azure region for the workspace."
+      required: true
+
+    - name: "storage_account_name"
+      description: "The azure region for the workspace."
+      required: true
+
+    - name: "container_name"
+      description: "The azure region for the workspace."
+      required: true
+
+    - name: "resource_group_name"
       description: "The azure region for the workspace."
       required: true
 
