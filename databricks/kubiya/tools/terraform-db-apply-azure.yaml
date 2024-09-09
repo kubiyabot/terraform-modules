@@ -161,10 +161,12 @@ tools:
     - name: "address_prefixes_public"
       description: "The address prefix for the public network."
       required: false
+      default: "10.0.1.0/24"
     
     - name: "address_prefixes_private"
       description: "The address prefix for the private network."
       required: false
+      default: "10.0.1.0/24"
 
     - name: "automatic_update"
       description: "Enable automatic update."
@@ -204,6 +206,6 @@ tools:
     - "ARM_TENANT_ID"
     - "ARM_SUBSCRIPTION_ID"
     - "PAT"
-    # - "SLACK_CHANNEL_ID"
-    # - "SLACK_THREAD_TS"
-    # - "SLACK_API_KEY"
+    - "SLACK_CHANNEL_ID"
+    - "SLACK_THREAD_TS"
+    - "SLACK_API_KEY"
