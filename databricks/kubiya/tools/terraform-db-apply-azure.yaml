@@ -33,9 +33,9 @@ tools:
       -var "azure_client_id=${ARM_CLIENT_ID}" \
       -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
       -var "azure_tenant_id=${ARM_TENANT_ID}" \
-      -var "address_space={{ .address_space }}" \
-      -var "address_prefixes_public={{ .address_prefixes_public }}" \
-      -var "address_prefixes_private={{ .address_prefixes_private }}" \
+      # -var "address_space={{ .address_space }}" \
+      # -var "address_prefixes_public={{ .address_prefixes_public }}" \
+      # -var "address_prefixes_private={{ .address_prefixes_private }}" \
       -var "automatic_update={{ .automatic_update }}" \
       -var "restart_no_updates={{ .restart_no_updates }}" \
       -var "day_of_week={{ .day_of_week }}" \
