@@ -39,9 +39,9 @@ tools:
       -var "frequency={{ .frequency }}" \
       -var "hours={{ .hours }}" \
       -var "minutes={{ .minutes }}" \
-      -var "address_space={{ .address_space }}" \
-      -var "address_prefixes_public={{ .address_prefixes_public }}" \
-      -var "address_prefixes_private={{ .address_prefixes_private }}" 
+      -var 'address_space={{ .address_space }}' \
+      -var 'address_prefixes_public={{ .address_prefixes_public }}' \
+      -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
       
     # echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"      
@@ -157,16 +157,16 @@ tools:
     - name: "address_space"
       description: "The address space to be used for the virtual network."
       required: false
-      default: "[\"10.0.0.0/16\"]"
+      default: '["10.0.0.0/16"]'
     - name: "address_prefixes_public"
       description: "The address prefix for the public network."
       required: false
-      default: "[\"10.0.2.0/24\"]"
+      default: '["10.0.2.0/24"]'
     
     - name: "address_prefixes_private"
       description: "The address prefix for the private network."
       required: false
-      default: "[\"10.0.1.0/24\"]"
+      default: '["10.0.1.0/24"]'
 
     - name: "automatic_update"
       description: "Enable automatic update."
