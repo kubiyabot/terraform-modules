@@ -48,7 +48,7 @@ tools:
     # echo "The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview"                             
     
     # write your message here
-    apt update && apt install -y curl
+    apk update && apk add curl
 
     MESSAGE=$(cat <<EOF
     The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob
