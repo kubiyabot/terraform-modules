@@ -42,12 +42,15 @@ tools:
       -var 'address_space={{ .address_space }}' \
       -var 'address_prefixes_public={{ .address_prefixes_public }}' \
       -var 'address_prefixes_private={{ .address_prefixes_private }}' 
- 
+
+    workspace_url=$(terraform output -raw databricks_host)
+
     # write your message here
     apk update && apk add curl
 
     MESSAGE=$(cat <<EOF
-    The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob
+    ${workspace_url}
+    The state file can be found here: https://{{ .storage_account_name}}.blob.core.windows.net/{{ .container_name}}
     The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview
     EOF
     )
