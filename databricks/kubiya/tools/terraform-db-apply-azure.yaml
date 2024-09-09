@@ -49,9 +49,8 @@ tools:
     apk update && apk add curl
 
     MESSAGE=$(cat <<EOF
-    The link to the workspace is:"${workspace_url}"
+    The link to the workspace is: $workspace_url
     The state file can be found here: https://{{ .storage_account_name}}.blob.core.windows.net/{{ .container_name}}
-    The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview
     EOF
     )
 
