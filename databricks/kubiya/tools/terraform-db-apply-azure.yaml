@@ -157,6 +157,7 @@ tools:
     - name: "address_space"
       description: "The address space to be used for the virtual network."
       required: false
+      default: "[\"10.0.0.0/16\"]"
 
     - name: "address_prefixes_public"
       description: "The address prefix for the public network."
