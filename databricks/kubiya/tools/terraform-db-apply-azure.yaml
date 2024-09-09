@@ -189,10 +189,12 @@ tools:
     - name: "hours"
       description: "Hours of window start time."
       required: false
+      default: "1"
     
     - name: "minutes"
       description: "Minutes of window start time."
       required: false
+      default: "0"
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
