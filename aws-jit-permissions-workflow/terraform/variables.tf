@@ -36,7 +36,6 @@ variable "kubiya_groups" {
 variable "links" {
   description = "Links for the agent"
   type        = list(string)
-  default     = []
 }
 
 variable "approval_slack_channel" {
