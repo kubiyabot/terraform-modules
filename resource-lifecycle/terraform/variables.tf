@@ -48,7 +48,6 @@ variable "kubiya_groups" {
 variable "links" {
   description = "Links for the agent"
   type        = list(string)
-  default     = []
 }
 
 variable "log_level" {
