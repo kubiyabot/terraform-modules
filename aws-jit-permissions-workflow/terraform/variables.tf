@@ -33,11 +33,6 @@ variable "kubiya_groups" {
   type        = list(string)
 }
 
-variable "links" {
-  description = "Links for the agent"
-  type        = list(string)
-}
-
 variable "approval_slack_channel" {
   description = "Slack channel for approval notifications"
   type        = string
