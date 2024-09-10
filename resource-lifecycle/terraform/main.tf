@@ -25,7 +25,6 @@ resource "kubiya_agent" "agent" {
   integrations = var.kubiya_integrations
   users        = var.kubiya_users
   groups       = var.kubiya_groups
-  links        = var.links
   //tool_sources = var.agent_tool_sources
   sources = [kubiya_source.source.name]
 

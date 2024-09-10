@@ -29,7 +29,6 @@ resource "kubiya_agent" "agent" {
   integrations = var.kubiya_integrations
   users        = var.kubiya_users
   groups       = var.kubiya_groups
-  links        = var.links
   sources = [kubiya_source.source1.name, kubiya_source.source2.name]
   
   environment_variables = merge(

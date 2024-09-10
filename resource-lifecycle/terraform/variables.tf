@@ -45,11 +45,6 @@ variable "kubiya_groups" {
   type        = list(string)
 }
 
-variable "links" {
-  description = "Links for the agent"
-  type        = list(string)
-}
-
 variable "log_level" {
   description = "Log level"
   type        = string
