@@ -55,8 +55,8 @@ tools:
     )
     ESCAPED_MESSAGE=$(echo "$MESSAGE" | jq -Rs .)
     # Ensure required environment variables are set
-    if [ -z "$SLACK_CHANNEL_ID" ] || [ -z "$SLACK_THREAD_TS" ] || [ -z "$SLACK_API_KEY" ]; then
-      echo "Error: SLACK_CHANNEL_ID, SLACK_THREAD_TS, and SLACK_API_KEY must be set."
+    if [ -z "$SLACK_CHANNEL_ID" ] || [ -z "$SLACK_THREAD_TS" ] || [ -z "$SLACK_API_TOKEN" ]; then
+      echo "Error: SLACK_CHANNEL_ID, SLACK_THREAD_TS, and SLACK_API_TOKEN must be set."
       exit 1
     fi
 
@@ -72,7 +72,7 @@ tools:
 
     # Send the message using Slack API
     curl -X POST "https://slack.com/api/chat.postMessage" \
-    -H "Authorization: Bearer $SLACK_API_KEY" \
+    -H "Authorization: Bearer $SLACK_API_TOKEN" \
     -H "Content-Type: application/json" \
     --data "$PAYLOAD"
 
@@ -208,4 +208,4 @@ tools:
     - "PAT"
     - "SLACK_CHANNEL_ID"
     - "SLACK_THREAD_TS"
-    - "SLACK_API_KEY"
+    - "SLACK_API_TOKEN"
