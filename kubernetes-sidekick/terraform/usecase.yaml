@@ -1,0 +1,5 @@
+name: "Kubernetes Sidekick"
+icons: "https://logos-world.net/wp-content/uploads/2023/06/Kubernetes-Symbol.png"
+# Description is fetched automatically from the README.md file
+# and will be displayed in the Kubiya Web App at https://app.kubiya.ai "tasks" section
+description: ""
