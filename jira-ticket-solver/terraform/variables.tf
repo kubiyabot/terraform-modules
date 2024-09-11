@@ -18,7 +18,7 @@ variable "jira_project_name" {
   type        = string
 }
 
-variable "jira_integration_instance" {
+variable "kubiya_jira_integration_instance" {
   description = "Kubiya integration field name for JIRA"
   type        = string
 }
