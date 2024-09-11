@@ -14,7 +14,7 @@ provider "kubiya" {
 # Add a source with tools and usecases
 # for the teammate to interact with
 resource "kubiya_source" "source" {
-  url = "https://github.com/kubiyabot/community-agents/tree/main/kubernetes"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
 }
 
 resource "kubiya_agent" "kubernetes_sidekick" {
