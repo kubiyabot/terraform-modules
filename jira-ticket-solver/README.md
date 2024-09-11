@@ -1,8 +1,6 @@
 
 # JIRA Ticket Solver
 
-![image](https://github.com/user-attachments/assets/bfdcc2b3-8db4-40b5-af78-e79e5c75d9ae)
-
 JIRA Ticket Solver is an intelligent automation feature within the Kubiya platform designed to solve routine JIRA tickets based on predefined criteria and actions. By handling repetitive issues, it allows your team to focus on more complex tasks, streamlining the ticket resolution process.
 
 **Take control of your JIRA workflows! With JIRA Ticket Solver, your team can handle tickets effortlessly, automatically resolving routine problems and sending updates via Slack.**
