@@ -1,4 +1,4 @@
-name: "Kubernetes Sidekick"
+name: "Put your Kubernetes cluster on autopilot"
 icons: "https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg"
 # Description is fetched automatically from the README.md file
 # and will be displayed in the Kubiya Web App at https://app.kubiya.ai "tasks" section
