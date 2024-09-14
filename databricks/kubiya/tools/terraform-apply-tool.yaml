@@ -1,0 +1,75 @@
+tools:
+- name: terraform-apply-tool
+  image: hashicorp/terraform              
+  description: "Create a databricks workspace."
+  #long_running: true
+  type: docker
+  alias: ter-apply
+  content: |
+    git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
+    cd $DIR/aux/databricks/terraform/"{{ .provider }}"
+    export TF_VAR_PROVIDER="{{ .provider }}"                                        
+    export TF_VAR_WORKSPACE_NAME="{{ .workspace_name }}"                              
+    if [ "{{ .provider }}" = "aws" ]; then
+        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_KUBI}
+        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_KUBI}
+        export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION_KUBI}
+
+        unset ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID || true
+        terraform init 
+        terraform apply -auto-approve \
+          -var "databricks_account_id=${DB_ACCOUNT_ID}" \
+          -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
+          -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" 
+        echo "The state file can be found here: https://my-test-backend-bucket.s3.us-west-2.amazonaws.com/aws/"
+        echo "The databricks workspace can be found here: https://accounts.cloud.databricks.com/workspaces?account_id=${DB_ACCOUNT_ID}"
+    elif [ "{{ .provider }}" = "azure" ]; then
+        export ARM_CLIENT_ID=${ARM_CLIENT_ID_KUBI}
+        export ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET_KUBI}
+        export ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID_KUBI}
+        export ARM_TENANT_ID=${ARM_TENANT_ID_KUBI}
+
+        unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION || true
+        terraform init \
+          -var "PROVIDER={{ .provider }}" \
+          -var "WORKSPACE_NAME={{ .workspace_name }}" 
+        terraform apply -auto-approve                                                
+        echo "The state file can be found here: https://mytestbackendaccount.blob.core.windows.net/mytestbackendblob"      
+        echo "The workspace can be found here: https://portal.azure.com/#@kubiya.ai/resource/subscriptions/${ARM_SUBSCRIPTION_ID_KUBI}/resourceGroups/databricks-{{ .workspace_name }}-rg/providers/Microsoft.Databricks/workspaces/databricks-{{ .workspace_name }}-workspace/overview"                             
+    fi
+
+    
+  args:
+    - name: "provider"
+      description: "The cloud provider to use. Only aws and azure are supported."
+      required: true  
+    - name: "workspace_name"
+      description: "The name of the databricks workspace."
+      required: true
+
+  env:
+    - "DB_ACCOUNT_ID"
+    - "DB_ACCOUNT_CLIENT_ID"
+    - "DB_ACCOUNT_CLIENT_SECRET"
+    - "GIT_ORG"
+    - "GIT_REPO"
+    - "BRANCH"
+    - "DIR"
+
+    - "ARM_CLIENT_ID_KUBI"
+    - "ARM_CLIENT_SECRET_KUBI"
+    - "ARM_TENANT_ID_KUBI"
+    - "ARM_SUBSCRIPTION_ID_KUBI"
+
+    - "AWS_ACCESS_KEY_ID_KUBI"
+    - "AWS_DEFAULT_REGION_KUBI"
+    - "AWS_SECRET_ACCESS_KEY_KUBI"
+
+    # - "GCP_TYPE"
+    # - "GCP_PROJECT_ID"
+    # - "GCP_PRIVATE_KEY_ID"
+    # - "GCP_PRIVATE_KEY"
+    # - "GCP_CLIENT_EMAIL"
+    # - "GCP_CLIENT_ID"
+    
+    - "PAT"
