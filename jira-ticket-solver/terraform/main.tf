@@ -11,8 +11,7 @@ provider "kubiya" {
 }
 
 resource "kubiya_source" "sources" {
-  count = length(var.kubiya_sources)
-  url   = var.kubiya_sources[count.index]
+    url = "https://github.com/kubiyabot/community-tools/tree/shaked/python-sdk-support/jira"
 }
 
 resource "kubiya_agent" "jira_ticket_solver" {

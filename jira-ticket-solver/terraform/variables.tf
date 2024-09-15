@@ -34,12 +34,6 @@ variable "jira_jql" {
   default     = ""
 }
 
-variable "kubiya_sources" {
-  description = "List of sources to add for the teammate"
-  type        = list(string)
-  default     = ["https://github.com/kubiyabot/community-tools/troubleshooting"]
-}
-
 variable "issues_check_interval" {
   description = "Interval for checking issues"
   type        = string
