@@ -15,7 +15,7 @@ tools:
     terraform apply -auto-approve \
       -var "databricks_account_id=${DB_ACCOUNT_ID}" \
       -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
-      -var "WORKSPACE_NAME={{ .workspace_name }}" \
+      -var "workspace_name={{ .workspace_name }}" \
       -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
       -var "aws_region={{ .aws_region }}"\
       -var "enable_vpc={{ .enable_vpc }}"\
