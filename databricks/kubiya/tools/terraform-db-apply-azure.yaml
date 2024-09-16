@@ -117,99 +117,99 @@ tools:
       required: true
 
     - name: "managed_services_cmk_key_vault_key_id"
-      description: "The ID of the key vault key to use for managed services encryption."
+      description: "The ID of the key vault key to use for managed services encryption.advanced."
       required: false
       
 
     - name: "managed_disk_cmk_key_vault_key_id"
-      description: "The ID of the key vault key to use for managed disk encryption."
+      description: "The ID of the key vault key to use for managed disk encryption.advanced"
       required: false
       
 
     - name: "infrastructure_encryption_enabled"
-      description: "Enable infrastructure encryption, can be true or false."
+      description: "Enable infrastructure encryption, can be true or false.advanced."
       required: false
       default: false
 
     - name: "no_public_ip"
-      description: "Secure cluster connectivity, no public ip, can be true or false."
+      description: "Secure cluster connectivity, no public ip, can be true or false.advanced."
       required: false
       default: false
 
     - name: "enable_vnet"
-      description: "Enable custom vnet use, boolean, can be true or false."
+      description: "Enable custom vnet use, boolean, can be true or false.advanced."
       required: false
       default: false
 
     - name: "security_profile_enabled"
-      description: "Enable security profile, boolean, can be true or false."
+      description: "Enable security profile, boolean, can be true or false.advanced."
       required: false
       default: false
 
     - name: "enhanced_monitoring_enabled"
-      description: "Enable enhanced monitoring, boolean, can be true or false."
+      description: "Enable enhanced monitoring, boolean, can be true or false.advanced."
       required: false
       default: false
 
     - name: "virtual_network_id"
-      description: "The virtual network id."
+      description: "The virtual network id.advanced and only relevant if enable_vnet is true."
       required: false
 
     - name: "private_subnet_name"
-      description: "The name of the private subnet."
+      description: "The name of the private subnet.advanced and only relevant if enable_vnet is true."
       required: false
 
     - name: "public_subnet_name"
-      description: "The name of the public subnet."
+      description: "The name of the public subnet.advanced and only relevant if enable_vnet is true."
       required: false  
 
     - name: "public_subnet_network_security_group_association_id"
-      description: "The ID of the public subnet network security group association."
+      description: "The ID of the public subnet network security group association.advanced and only relevant if enable_vnet is true."
       required: false  
 
     - name: "private_subnet_network_security_group_association_id"
-      description: "The ID of the private subnet network security group association."
+      description: "The ID of the private subnet network security group association.advanced and only relevant if enable_vnet is true."
       required: false  
 
     - name: "address_space"
-      description: "The address space to be used for the virtual network."
+      description: "The address space to be used for the virtual network.advanced and only relevant if enable_vnet is true."
       required: false
       default: '["10.0.0.0/16"]'
     - name: "address_prefixes_public"
-      description: "The address prefix for the public network."
+      description: "The address prefix for the public network.advanced and only relevant if enable_vnet is true."
       required: false
       default: '["10.0.2.0/24"]'
     
     - name: "address_prefixes_private"
-      description: "The address prefix for the private network."
+      description: "The address prefix for the private network.advanced and only relevant if enable_vnet is true."
       required: false
       default: '["10.0.1.0/24"]'
 
     - name: "automatic_update"
-      description: "Enable automatic update."
+      description: "Enable automatic update.advanced."
       required: false
       default: false
 
     - name: "restart_no_updates"
-      description: "Enable restart even if there are no updates."
+      description: "Enable restart even if there are no updates.advanced."
       required: false
       default: false
 
     - name: "day_of_week"
-      description: "Day of the week to apply updates."
+      description: "Day of the week to apply updates.advanced and only relevant if automatic_update is true."
       required: false
     
     - name: "frequency"
-      description: "Frequency of updates."
+      description: "Frequency of updates.advanced and only relevant if automatic_update is true.  "
       required: false
 
     - name: "hours"
-      description: "Hours of window start time."
+      description: "Hours of window start time.advanced and only relevant if automatic_update is true.  "
       required: false
       default: "1"
-    
+
     - name: "minutes"
-      description: "Minutes of window start time."
+      description: "Minutes of window start time.advanced and only relevant if automatic_update is true.  "
       required: false
       default: "0"
   env:
