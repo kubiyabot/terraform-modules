@@ -1,70 +1,86 @@
 
-# JIRA Ticket Solver
+# CI/CD Pipeline Diagnosis
 
-JIRA Ticket Solver is an intelligent automation feature within the Kubiya platform designed to solve routine JIRA tickets based on predefined criteria and actions. By handling repetitive issues, it allows your team to focus on more complex tasks, streamlining the ticket resolution process.
+Are your developers drowning in CI failures every day? Is your Slack exploding with DMs about pipeline issues? Enough is enough! 🛑
 
-**Take control of your JIRA workflows! With JIRA Ticket Solver, your team can handle tickets effortlessly, automatically resolving routine problems and sending updates via Slack.**
+Introducing the Kubiya CI/CD Pipeline Diagnosis TeamMate - your virtual DevOps expert that never sleeps! 🦸‍♂️
 
-## Features
+This use case provides automated diagnosis and troubleshooting for CI/CD pipeline failures across multiple providers. Say goodbye to endless debugging sessions and hello to swift, intelligent problem-solving! 🚀
 
-- **Automatic ticket solving** based on custom criteria
-- **Configurable actions** for successful and failed ticket resolutions
-- **Integration with JIRA and Slack** for seamless notifications
-- **Customizable check intervals** to suit your team’s needs
-- **Support for custom JIRA fields** to fit your specific workflows
+## Why You Need This Delegation 🌟
 
-## User Flows
+Imagine a world where:
+- 😌 Your Slack is peaceful, free from constant CI failure notifications
+- 🏖️ Developers can focus on coding, not debugging pipelines
+- 🤖 A tireless TeamMate handles the heavy lifting of CI/CD troubleshooting
 
-### 1. Automatic Ticket Solving
+This module installs everything you need to sit back, relax, and let Kubiya TeamMates take care of your CI/CD headaches. No more exploding Slack DMs, no more constant interruptions - just smooth, efficient development workflows.
 
-The JIRA Ticket Solver continuously checks for tickets that meet your predefined criteria, runs the appropriate actions, and sends notifications when a ticket is resolved or an issue arises.
+## Key Benefits 🎉
 
+- ⏱️ Reduce downtime and accelerate issue resolution
+- 🤖 Automate routine diagnostics and troubleshooting
+- 🌐 Support for multiple CI/CD providers (GitHub, GitLab, Bitbucket)
+- 📢 Intelligent Slack notifications - only when human intervention is needed
+- 🎫 Automatic JIRA ticket creation for seamless issue tracking
+- 🧠 AI-powered suggestions for quick fixes
+- 🏗️ Continuous learning and improvement of diagnosis capabilities
+
+## Workflow Diagrams
+
+### 1. CI/CD Failure Detection Flow
 ```mermaid
 graph TD
-    A[Start Checking Tickets] --> B{Does Ticket Match Criteria?}
-    B --> |Yes| C[Solve Ticket]
-    B --> |No| D[Continue Checking]
-    C --> E[Send Slack Notification]
-    C --> F{Was Solved Successfully?}
-    F --> |Yes| G[Mark Ticket as Solved]
-    F --> |No| H[Run Failure Action]
-    H --> I[Notify Team]
+    A[CI/CD Failure Detected] --> B{Check CI Provider}
+    B -->|GitHub| C[Retrieve Logs from GitHub]
+    B -->|GitLab| D[Retrieve Logs from GitLab]
+    B -->|Bitbucket| E[Retrieve Logs from Bitbucket]
+
+    C --> F{Check for Common Issues}
+    D --> F
+    E --> F
+
+    F --> G{Known Issue?}
+    G -->|Yes| H[Apply Known Fix]
+    G -->|No| I[Run Diagnostics]
+    
+    I --> J[Create Diagnostic Report]
+    J --> K[Notify Developer on Slack]
+
+    click A href "https://github.com/kubiyabot/community-tools/ci-cd-diagnosis"
 ```
 
-### 2. Integration with Slack
-
-Get real-time updates when tickets are resolved or when manual intervention is required, all within your team’s Slack channel. Customize actions for solved and unresolved tickets, ensuring efficient handling of issues.
-
+### 2. Error Notification Flow
 ```mermaid
 graph TD
-    A[Monitor JIRA Tickets] --> B{Ticket Solved?}
-    B --> |Yes| C[Send Success Message to Slack]
-    B --> |No| D[Send Failure Alert to Slack]
+    A[Pipeline Failure Detected] --> B{Is Manual Fix Needed?}
+    B -->|Yes| C[Send Slack Notification]
+    B -->|No| D[Run Automated Fix]
+
+    C --> E{Slack Channel Set?}
+    E -->|Yes| F[Send to Slack Channel: var.slack_channel_id]
+    E -->|No| G[Skip Notification]
+    D --> H[Auto-Fix Applied]
+    
+    click C href "https://github.com/kubiyabot/community-tools/ci-cd-diagnosis"
 ```
 
-## Terraform Configuration
+### 3. JIRA Ticket Creation Flow
+```mermaid
+graph TD
+    A[Critical Failure Detected] --> B[Generate JIRA Ticket]
+    B --> C{Ticket Details Complete?}
+    C -->|Yes| D[Send Ticket to JIRA]
+    C -->|No| E[Gather More Info from Logs]
 
-Below are the key variables used to configure the JIRA Ticket Solver agent:
+    D --> F[Ticket Created Successfully]
+    E --> G[Add Missing Details]
+    
+    click B href "https://github.com/kubiyabot/community-tools/ci-cd-diagnosis"
+```
 
-| Variable Name                 | Description                                       | Type         | Default    |
-|--------------------------------|---------------------------------------------------|--------------|------------|
-| `teammate_name`                | Name of the JIRA Ticket Solver teammate           | `string`     |            |
-| `kubiya_runner`                | Runner (environment) to use for the agent         | `string`     |            |
-| `jira_integration_instance`    | JIRA integration instance for authentication      | `string`     |            |
-| `jira_project_name`            | JIRA project to check for tickets                 | `string`     |            |
-| `jira_jql`                     | JQL query to filter tickets for solving           | `string`     |            |
-| `issues_check_interval`        | Interval for checking tickets                     | `string`     | `"1h"`     |
-| `on_solve_action`              | Action to take after solving a ticket             | `string`     | `"close"`  |
-| `custom_field_name`            | Custom JIRA field to use for ticket identification| `string`     | `""`       |
-| `on_failure_action`            | Action to take after failure to solve a ticket    | `string`     | `"alert"`  |
-| `slack_notification_channel`   | Slack channel for notifications                   | `string`     | `""`       |
-| `log_level`                    | Log level for the agent                           | `string`     | `"INFO"`   |
-| `debug`                        | Enable debug mode                                | `bool`       | `false`    |
-| `dry_run`                      | Enable dry run mode (no real actions)             | `bool`       | `false`    |
-
-## Terraform Code Example
-
-```terraform
+### 4. Terraform Module Reference
+```hcl
 terraform {
   required_providers {
     kubiya = {
@@ -77,38 +93,45 @@ provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
 
-resource "kubiya_source" "sources" {
-  count = length(var.kubiya_sources)
-  url   = var.kubiya_sources[count.index]
+resource "kubiya_source" "ci_cd_diagnosis_tools" {
+  url = "https://github.com/kubiyabot/community-tools/ci-cd-diagnosis"
 }
 
-resource "kubiya_agent" "jira_ticket_solver" {
-  name         = var.teammate_name
+resource "kubiya_agent" "ci_cd_diagnosis" {
+  name         = var.agent_name
   runner       = var.kubiya_runner
-  description  = var.teammate_description
-  instructions = ""
+  description  = var.agent_description
+  instructions = var.diagnosis_instructions
   model        = "azure/gpt-4o"
-  integrations = [var.jira_integration_instance, "slack"]
-  sources      = kubiya_source.sources[*].name
+  integrations = concat(
+    var.enabled_integrations,
+    var.create_jira_ticket ? ["jira"] : []
+  )
+  users        = var.kubiya_users
+  groups       = var.kubiya_groups
+  sources      = [kubiya_source.ci_cd_diagnosis_tools.name]
 
   environment_variables = {
-    JIRA_PROJECT_NAME          = var.jira_project_name
-    JIRA_INTEGRATION           = var.jira_integration_instance
-    ISSUE_DESCRIPTION          = var.issue_description
-    JIRA_JQL                   = var.jira_jql
-    ISSUES_CHECK_INTERVAL      = var.issues_check_interval
-    ON_SOLVE_ACTION            = var.on_solve_action
-    CUSTOM_FIELD_NAME          = var.custom_field_name
-    ON_FAILURE_ACTION          = var.on_failure_action
-    SLACK_NOTIFICATION_CHANNEL = var.slack_notification_channel
+    REPOSITORY_URL           = var.repository_url
+    WATCH_EVENTS             = join(",", var.watch_events)
+    SLACK_CHANNEL_ID         = var.slack_channel_id
+    LOG_LEVEL                = var.log_level
+    KUBIYA_TOOL_TIMEOUT      = var.tool_timeout
+    TROUBLESHOOTING_DOCS_URL = var.troubleshooting_docs_url
+    GITHUB_API_TOKEN         = var.github_api_token
+    GITLAB_API_TOKEN         = var.gitlab_api_token
+    BITBUCKET_API_TOKEN      = var.bitbucket_api_token
+    UPDATE_SLACK             = var.update_slack
+    CREATE_JIRA_TICKET       = var.create_jira_ticket
+    JIRA_PROJECT_KEY         = var.jira_project_key
+    JIRA_ISSUE_TYPE          = var.jira_issue_type
   }
-}
-
-output "jira_ticket_solver" {
-  value = kubiya_agent.jira_ticket_solver
 }
 ```
 
----
-
-With **JIRA Ticket Solver**, automate your JIRA ticket resolution and focus on what matters most. Delegate routine tasks, stay informed, and ensure that no ticket is left unresolved!
+# Outputs
+```hcl
+output "agent" {
+  value = kubiya_agent.ci_cd_diagnosis
+}
+```
