@@ -6,7 +6,7 @@ Introducing the Kubiya CI/CD Pipeline Diagnosis TeamMate - your virtual DevOps e
 
 This Kubiya use case provides automated diagnosis and troubleshooting for CI/CD pipeline failures across multiple providers. Say goodbye to endless debugging sessions and hello to swift, intelligent problem-solving! 🚀
 
-![image](https://github.com/user-attachments/assets/bfbae800-1f0f-456d-836d-cb9aeb28f4a4)
+![image](https://github.com/user-attachments/assets/e57384f9-6416-4337-a962-0d66597c7c87)
 
 ## Why You Need This Delegation 🌟
 
