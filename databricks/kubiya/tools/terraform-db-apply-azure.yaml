@@ -43,7 +43,7 @@ tools:
       -var 'address_prefixes_public={{ .address_prefixes_public }}' \
       -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
-      workspace_url=$(terraform output -raw workspace_url)
+      workspace_url=$(terraform output -raw databricks_host)
       # Ensure workspace_url is properly escaped for JSON
       workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @json)
 
