@@ -19,9 +19,14 @@ tools:
       -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
       -var "aws_region={{ .aws_region }}"\
       -var "enable_vpc={{ .enable_vpc }}"\
-      -var "enable_privatelink={{ .enable_privatelink }}"\
-      -vae "enable_firewall={{ .enable_firewall }}"\
-      -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"
+      -var "vpc_id={{ .vpc_id }}"\
+      # -var "enable_privatelink={{ .enable_privatelink }}"\
+      # -vae "enable_firewall={{ .enable_firewall }}"\
+      # -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"\
+      # -var "vpc_id={{ .vpc_id }}"\
+      # -var "private_subnet_id={{ .private_subnet_id }}"\
+      # -var "public_subnet_id={{ .public_subnet_id }}"\
+      # -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
 
       
       
@@ -82,20 +87,41 @@ tools:
       required: false
       default: true
 
-    - name: "enable_privatelink"
-      description: "Enables private link.Boolean can only be true or false."
-      required: false
-      default: false
+    # - name: "enable_privatelink"
+    #   description: "Enables private link. Boolean can only be true or false."
+    #   required: false
+    #   default: false
 
-    - name: "enable_firewall"
-      description: "Enables firewall .Boolean can only be true or false."
-      required: false
-      default: false
+    # - name: "enable_firewall"
+    #   description: "Enables firewall. Boolean can only be true or false."
+    #   required: false
+    #   default: false
 
-    - name: "enable_hub_and_spoke"
-      description: "Enables hub and spoke configuration .Boolean can only be true or false."
+    # - name: "enable_hub_and_spoke"
+    #   description: "Enables hub and spoke configuration. Boolean can only be true or false."
+    #   required: false
+    #   default: false
+
+    - name: "vpc_id"                                                  ##############
+      description: "The id of the vpc to use for the workspace."      
       required: false
-      default: false
+      default: ""
+
+    # - name: "private_subnet_id"
+    #   description: "The id of the private subnet to use for the workspace."
+    #   required: false
+    #   default: ""
+
+    # - name: "public_subnet_id"
+    #   description: "The id of the public subnet to use for the workspace."
+    #   required: false
+    #   default: ""
+
+    # - name: "public_subnet_network_security_group_id"
+    #   description: "The id of the public subnet network security group to use for the workspace."
+    #   required: false
+    #   default: ""
+
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
