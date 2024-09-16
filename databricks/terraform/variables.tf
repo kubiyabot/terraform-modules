@@ -1,51 +1,43 @@
 variable "agent_name" {
   type        = string
-  description = "Name of the agent"
+  description = "Name of the agent."
   default     = "databricks-tf-agent"
 }
 variable "agent_runners" {
   type        = string
-  description = "Name of the Local Runners for the agent to be deployed on"
-  default     = "classicv1"
+  description = "Name of the Local Runners for the agent to be deployed on."
+  default     = "runnerv2-5-vcluster"
 }
 variable "agent_description" {
   type        = string
   description = "Description of the agent"
-  default     = "Uses the terraform-azure-apply-tool tool to apply a terraform module to azure."
+  default     = "use the tools to apply a terraform module to the specified provider."
 }
-variable "agent_ai_instructions" {
-  type        = string
-  description = "AI instructions for the agent"
-  default     = <<EOF
-  Use the tool terraform-apply-tool to apply the terraform module . prompt the user for the "provider" and "workspace_name" args . 
-EOF
-}
+
 variable "agent_llm_model" {
   type        = string
-  description = "LLM model to be used by the agent"
-  default     = "azure/gpt-4"
+  description = "LLM model to be used by the agent."
+  default     = "azure/gpt-4o"
 }
-variable "agent_image" {
-  type        = string
-  description = "Docker image for the agent"
-  default     = "kubiya/base-agent:tools-v6"
-}
+
 variable "agent_secrets" {
   type        = list(string)
-  description = "List of existing secrets to be used by the agent"
+  description = "List of existing secrets to be used by the agent."
   default = [
-    "ARM_CLIENT_ID_KUBI",     # Configure this secret on Kubiya web app before deploying the agent.
-    "ARM_CLIENT_SECRET_KUBI",
-    "ARM_SUBSCRIPTION_ID_KUBI",
-    "ARM_TENANT_ID_KUBI",
-    "DB_ACCOUNT_CLIENT_ID",
-    "DB_ACCOUNT_CLIENT_SECRET",
-    "DB_ACCOUNT_ID",
-    "PAT",
-    "AWS_ACCESS_KEY_ID_KUBI",
-    "AWS_SECRET_ACCESS_KEY_KUBI",
-    "AWS_DEFAULT_REGION_KUBI",
-    
+    # "ARM_CLIENT_ID",     # Configure this secret on Kubiya web app before deploying the agent.
+    # "ARM_CLIENT_SECRET",
+    # "ARM_SUBSCRIPTION_ID",
+    # "ARM_TENANT_ID",
+    # "DB_ACCOUNT_CLIENT_ID",
+    # "DB_ACCOUNT_CLIENT_SECRET",
+    # "DB_ACCOUNT_ID",
+    # "PAT",
+    # "AWS_ACCESS_KEY_ID",
+    # "AWS_SECRET_ACCESS_KEY",
+    # "AWS_DEFAULT_REGION",
+    # "SLACK_CHANNEL_ID",
+    # "SLACK_THREAD_TS",  
+    # "SLACK_API_TOKEN"
 
   ]
 }
@@ -65,7 +57,7 @@ variable "agent_environment_variables" {
 variable "agent_integrations" {
   type        = list(string)
   description = "List of integrations to be added to the agent"
-  default     = []
+  default     = ["slack"]
 }
 variable "agent_links" {
   description = "List of links to be added to the agent"
@@ -78,23 +70,23 @@ variable "agent_starters" {
   default     = []
 }
 variable "agent_tasks" {
-  description = "List of tasks to be added to the agent"
+  description = "List of tasks to be added to the agent."
   type        = list(any)
   default     = []
 }
 variable "agent_tool_sources" {
-  description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent"
+  description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent."
   type        = list(string)
-  default     = ["https://raw.githubusercontent.com/kubiyabot/terraform-modules/POC-22-conditional-one-tool/databricks/kubiya/tools/terraform-apply-tool.yaml"]
+  default     = ["https://raw.githubusercontent.com/kubiyabot/terraform-modules/POC-22-conditional-one-tool/databricks/kubiya/tools/terraform-apply-tool.yaml","https://raw.githubusercontent.com/kubiyabot/terraform-modules/POC-22-conditional-one-tool/databricks/kubiya/tools/terraform-apply-tool.yaml"]
 }
 
 variable "agent_users" {
-  description = "List of users to be added to the agent"
+  description = "List of users to be added to the agent."
   type        = list(string)
   default     = []
 }
 variable "agent_groups" {
-  description = "List of groups to be added to the agent"
+  description = "List of groups to be added to the agent."
   type        = list(string)
   default     = ["Admin"]
 }

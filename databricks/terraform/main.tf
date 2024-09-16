@@ -4,12 +4,12 @@ resource "kubiya_agent" "agent" {
   name         = var.agent_name
   runner       = var.agent_runners
   description  = var.agent_description
-  instructions = var.agent_ai_instructions
+  instructions = ""
 
   //Optional fields, String
   model = var.agent_llm_model // If not provided, Defaults to "azure/gpt-4"
   //If not provided, Defaults to "ghcr.io/kubiyabot/kubiya-agent:stable"
-  image = var.agent_image
+  # image = var.agent_image
 
   //Optional Fields (omitting will retain the current values): 
   secrets               = var.agent_secrets

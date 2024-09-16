@@ -9,24 +9,93 @@ tools:
     git clone -b "$BRANCH" https://"$PAT"@github.com/"$GIT_ORG"/"$GIT_REPO".git $DIR
     cd $DIR/aux/databricks/terraform/aws  
 
-    terraform init -backend-config="bucket=my-test-backend-bucket" \
+    terraform init -backend-config="bucket={{ .backend_bucket}}" \
       -backend-config="key=databricks/{{ .workspace_name}}/terraform.tfstate" \
-      -backend-config="region=us-west-2"
+      -backend-config="region={{ .backend_region}}"
     terraform apply -auto-approve \
       -var "databricks_account_id=${DB_ACCOUNT_ID}" \
       -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
       -var "WORKSPACE_NAME={{ .workspace_name }}" \
-      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" 
+      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
+      -var "aws_region={{ .aws_region }}"\
+      -var "enable_vpc={{ .enable_vpc }}"\
+      -var "enable_privatelink={{ .enable_privatelink }}"\
+      -vae "enable_firewall={{ .enable_firewall }}"\
+      -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"
+
+      
       
 
-    echo "The state file can be found here: https://my-test-backend-bucket.s3.us-west-2.amazonaws.com/aws/"
-    echo "The databricks workspace can be found here: https://accounts.cloud.databricks.com/workspaces?account_id=${DB_ACCOUNT_ID}"
+    workspace_url=$(terraform output -raw databricks_host)
+    echo "The link to the workspace is: $workspace_url"
+    # write your message here
+    apk update && apk add curl jq
+
+    MESSAGE=$(cat <<EOF
+    The link to the workspace is: ${workspace_url}
+    EOF
+    )
+    ESCAPED_MESSAGE=$(echo "$MESSAGE" | jq -Rs .)
+    # Ensure required environment variables are set
+    if [ -z "$SLACK_CHANNEL_ID" ] || [ -z "$SLACK_THREAD_TS" ] || [ -z "$SLACK_API_TOKEN" ]; then
+      echo "Error: SLACK_CHANNEL_ID, SLACK_THREAD_TS, and SLACK_API_TOKEN must be set."
+      exit 1
+    fi
+
+    # Prepare the payload for sending a multiline message in a thread
+    PAYLOAD=$(cat <<EOF
+    {
+        "channel": "$SLACK_CHANNEL_ID",
+        "text": $ESCAPED_MESSAGE,
+        "thread_ts": "$SLACK_THREAD_TS"
+    }
+    EOF
+    )
+
+    # Send the message using Slack API
+    curl -X POST "https://slack.com/api/chat.postMessage" \
+    -H "Authorization: Bearer $SLACK_API_TOKEN" \
+    -H "Content-Type: application/json" \
+    --data "$PAYLOAD"
+
+    
    
   args:
     - name: "workspace_name"
       description: "The name of the databricks workspace."
       required: true
 
+    - name: "aws_region"
+      description: "The region of the databricks workspace."
+      required: true
+
+    - name: "backend_bucket"
+      description: "The bucket to use for the backend."
+      required: true
+
+    - name: "backend_region"
+      description: "The region to use for the backend."
+      required: true
+
+    - name: "enable_vpc"
+      description: "Enables vpc cration. Boolean can only be true or false"
+      required: false
+      default: true
+
+    - name: "enable_privatelink"
+      description: "Enables private link.Boolean can only be true or false."
+      required: false
+      default: false
+
+    - name: "enable_firewall"
+      description: "Enables firewall .Boolean can only be true or false."
+      required: false
+      default: false
+
+    - name: "enable_hub_and_spoke"
+      description: "Enables hub and spoke configuration .Boolean can only be true or false."
+      required: false
+      default: false
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
