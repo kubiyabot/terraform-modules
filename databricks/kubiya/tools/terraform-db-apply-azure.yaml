@@ -57,6 +57,7 @@ tools:
     # Prepare the Block Kit payload
     PAYLOAD=$(cat <<EOF
     {
+      "channel": "$SLACK_CHANNEL_ID",
       "blocks": [
         {
           "type": "section",
