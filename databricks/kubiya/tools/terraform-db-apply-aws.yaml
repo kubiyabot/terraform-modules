@@ -19,7 +19,7 @@ tools:
       -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
       -var "aws_region={{ .aws_region }}"\
       -var "enable_vpc={{ .enable_vpc }}"\
-      -var "vpc_id={{ .vpc_id }}"\
+      -var "vpc_id={{ .vpc_id }}"
       # -var "enable_privatelink={{ .enable_privatelink }}"\
       # -vae "enable_firewall={{ .enable_firewall }}"\
       # -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"\
