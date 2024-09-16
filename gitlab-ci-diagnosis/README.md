@@ -8,6 +8,8 @@ This Kubiya use case provides automated diagnosis and troubleshooting for CI/CD 
 
 ![image](https://github.com/user-attachments/assets/e57384f9-6416-4337-a962-0d66597c7c87)
 
+![image](https://github.com/user-attachments/assets/e57384f9-6416-4337-a962-0d66597c7c87)
+
 ## Why You Need This Delegation 🌟
 
 Imagine a world where:
@@ -35,4 +37,6 @@ Look no further! Our CI/CD Pipeline Diagnosis delegation is here to save the day
 - 🧠 AI-powered suggestions for quick fixes
 - 🏗️ Continuous learning and improvement of diagnosis capabilities
 
-## Workflow
+## Workflow Diagrams
+
+### 1. Overall CI/CD Diagnosis Flow
