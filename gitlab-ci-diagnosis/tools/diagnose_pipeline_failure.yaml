@@ -1,0 +1,72 @@
+tools:
+  - name: diagnose_pipeline_failure
+    alias: diagnose-pipeline-failure
+    description: "Analyzes a failed GitLab CI pipeline and provides diagnosis and suggestions"
+    type: python
+    content: |
+      import os
+      import sys
+      import gitlab
+      import requests
+
+      GITLAB_API_TOKEN = os.getenv('GITLAB_API_TOKEN')
+      GITLAB_PROJECT_ID = os.getenv('GITLAB_PROJECT_ID')
+      SLACK_CHANNEL_ID = os.getenv('SLACK_CHANNEL_ID')
+      SLACK_API_TOKEN = os.getenv('SLACK_API_TOKEN')
+
+      def analyze_pipeline_failure(pipeline_id):
+          gl = gitlab.Gitlab('https://gitlab.com', private_token=GITLAB_API_TOKEN)
+          project = gl.projects.get(GITLAB_PROJECT_ID)
+          pipeline = project.pipelines.get(pipeline_id)
+          
+          failed_jobs = [job for job in pipeline.jobs.list() if job.status == 'failed']
+          
+          diagnosis = []
+          for job in failed_jobs:
+              job_details = project.jobs.get(job.id)
+              log = job_details.trace().decode('utf-8')
+              
+              # Analyze log for common issues (customize this based on your needs)
+              if "No space left on device" in log:
+                  diagnosis.append(f"Job '{job.name}' failed due to insufficient disk space.")
+              elif "Connection timed out" in log:
+                  diagnosis.append(f"Job '{job.name}' failed due to a network timeout.")
+              else:
+                  diagnosis.append(f"Job '{job.name}' failed. Please check the logs for more details.")
+          
+          return "\n".join(diagnosis)
+
+      def send_slack_notification(diagnosis):
+          payload = {
+              "channel": SLACK_CHANNEL_ID,
+              "text": f"GitLab CI Pipeline Failure Diagnosis:\n{diagnosis}"
+          }
+          response = requests.post(
+              "https://slack.com/api/chat.postMessage",
+              headers={
+                  'Content-Type': 'application/json',
+                  'Authorization': f'Bearer {SLACK_API_TOKEN}'
+              },
+              json=payload
+          )
+          if response.status_code >= 300:
+              print(f"Error sending Slack message: {response.status_code} - {response.text}")
+
+      if __name__ == "__main__":
+          pipeline_id = "{{.pipeline_id}}"
+          diagnosis = analyze_pipeline_failure(pipeline_id)
+          send_slack_notification(diagnosis)
+          print(f"Diagnosis complete. Results sent to Slack channel {SLACK_CHANNEL_ID}.")
+
+    args:
+      pipeline_id:
+        description: The ID of the failed GitLab CI pipeline
+        required: true
+    env:
+      - GITLAB_API_TOKEN
+      - GITLAB_PROJECT_ID
+      - SLACK_CHANNEL_ID
+      - SLACK_API_TOKEN
+    dependencies: |
+      python-gitlab
+      requests
