@@ -22,11 +22,9 @@ tools:
       -var "vpc_id={{ .vpc_id }}"\
       -var "enable_privatelink={{ .enable_privatelink }}"\
       -var "vpc_id={{ .vpc_id }}"\
-      -var "private_subnet_id={{ .private_subnet_id }}"\
-      -var "public_subnet_id={{ .public_subnet_id }}"
-      -var "private_subnet_id={{ .private_subnet_id }}"\
-      -var "public_subnet_id={{ .public_subnet_id }}"\
-      -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
+      # -var "private_subnet_id={{ .private_subnet_id }}"\
+      # -var "public_subnet_id={{ .public_subnet_id }}"\
+      # -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
 
       
 
