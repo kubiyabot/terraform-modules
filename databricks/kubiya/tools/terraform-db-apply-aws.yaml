@@ -22,6 +22,7 @@ tools:
       -var "vpc_id={{ .vpc_id }}"\
       -var "enable_privatelink={{ .enable_privatelink }}"\
       -var "vpc_id={{ .vpc_id }}"\
+      -var "kubiyauser_email=${KUBIYA_USER_EMAIL}"
       # -var "private_subnet_id={{ .private_subnet_id }}"\
       # -var "public_subnet_id={{ .public_subnet_id }}"\
       # -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
@@ -122,6 +123,7 @@ tools:
       description: "Optional: ID of an existing private subnet network security group for the workspace."
       required: false
       default: ""
+    
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
@@ -137,3 +139,4 @@ tools:
     - "SLACK_CHANNEL_ID"
     - "SLACK_THREAD_TS"
     - "SLACK_API_TOKEN"
+    - "KUBIYA_USER_EMAIL"
