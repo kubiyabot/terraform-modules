@@ -46,7 +46,8 @@ tools:
       # workspace_url=$(terraform output -raw databricks_host)
       workspace_url="adb-3324437401067790.10.azuredatabricks.net"
       apk update && apk add --no-cache jq
-      workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @json)
+
+      workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @uri)
 
       echo "Debug: workspace_url = $workspace_url"
       echo "Debug: workspace_url_escaped = $workspace_url_escaped"
@@ -77,7 +78,7 @@ tools:
                   "text": "Open Databricks Workspace",
                   "emoji": true
                 },
-                "url": $workspace_url_escaped,
+                "url": "https://$workspace_url_escaped",
                 "action_id": "open_workspace"
               }
             ]
@@ -90,8 +91,7 @@ tools:
       echo "Debug: PAYLOAD = $PAYLOAD"
 
       # Validate JSON
-      echo "$PAYLOAD" | jq . > /dev/null
-      if [ $? -ne 0 ]; then
+      if ! echo "$PAYLOAD" | jq . > /dev/null; then
           echo "Invalid JSON payload"
           exit 1
       fi
