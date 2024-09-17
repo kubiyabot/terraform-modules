@@ -44,9 +44,12 @@ tools:
       -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
       workspace_url=$(terraform output -raw databricks_host)
-      echo "The link to the workspace is: $workspace_url"
+      # echo "The link to the workspace is: $workspace_url"
       # write your message here
       apk update && apk add curl jq
+      echo $SLACK_API_TOKEN
+      echo $SLACK_CHANNEL_ID
+      echo $SLACK_THREAD_TS
 
       MESSAGE=$(cat <<EOF
       The link to the workspace is: ${workspace_url}
