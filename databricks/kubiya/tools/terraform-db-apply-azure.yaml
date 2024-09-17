@@ -44,6 +44,7 @@ tools:
       -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
       workspace_url=$(terraform output -raw databricks_host)
+      apk update && apk add --no-cache jq
       # Ensure workspace_url is properly escaped for JSON
       workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @json)
 
