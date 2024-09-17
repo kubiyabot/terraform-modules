@@ -24,7 +24,10 @@ tools:
       -var "vpc_id={{ .vpc_id }}"\
       -var "private_subnet_id={{ .private_subnet_id }}"\
       -var "public_subnet_id={{ .public_subnet_id }}"
-      
+      -var "private_subnet_id={{ .private_subnet_id }}"\
+      -var "public_subnet_id={{ .public_subnet_id }}"\
+      -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
+
       
 
     workspace_url=$(terraform output -raw databricks_host)
@@ -132,6 +135,15 @@ tools:
       required: false
       default: ""
 
+    - name: "public_subnet_network_security_group_id"
+      description: "Optional: ID of an existing public subnet network security group for the workspace."
+      required: false
+      default: ""
+
+    - name: "private_subnet_network_security_group_id"
+      description: "Optional: ID of an existing private subnet network security group for the workspace."
+      required: false
+      default: ""
   env:
     - "DB_ACCOUNT_ID"
     - "DB_ACCOUNT_CLIENT_ID"
