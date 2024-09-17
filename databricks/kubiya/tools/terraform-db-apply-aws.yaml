@@ -32,27 +32,51 @@ tools:
       
 
     workspace_url=$(terraform output -raw databricks_host)
-    echo "The link to the workspace is: $workspace_url"
-    # write your message here
+
+    # Install required packages
     apk update && apk add curl jq
 
-    MESSAGE=$(cat <<EOF
-    The link to the workspace is: ${workspace_url}
-    EOF
-    )
-    ESCAPED_MESSAGE=$(echo "$MESSAGE" | jq -Rs .)
     # Ensure required environment variables are set
     if [ -z "$SLACK_CHANNEL_ID" ] || [ -z "$SLACK_THREAD_TS" ] || [ -z "$SLACK_API_TOKEN" ]; then
       echo "Error: SLACK_CHANNEL_ID, SLACK_THREAD_TS, and SLACK_API_TOKEN must be set."
       exit 1
     fi
 
-    # Prepare the payload for sending a multiline message in a thread
+    # Prepare the Block Kit message payload
     PAYLOAD=$(cat <<EOF
     {
         "channel": "$SLACK_CHANNEL_ID",
-        "text": $ESCAPED_MESSAGE,
-        "thread_ts": "$SLACK_THREAD_TS"
+        "text": "This message will be ignored because we're using blocks.",
+        "thread_ts": "$SLACK_THREAD_TS",
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": ":tada: *Databricks Workspace Provisioned Successfully!* :rocket:\\n\\nYour Databricks workspace is ready! You can access it using the link below."
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ55dIioVp7t63K5UzEbQRXg3FxJodU_IiN9w&s",
+                    "alt_text": "Databricks Logo"
+                }
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Open Databricks Workspace",
+                            "emoji": true
+                        },
+                        "url": "$workspace_url",
+                        "action_id": "open_workspace"
+                    }
+                ]
+            }
+        ]
     }
     EOF
     )
@@ -60,7 +84,7 @@ tools:
     # Send the message using Slack API
     curl -X POST "https://slack.com/api/chat.postMessage" \
     -H "Authorization: Bearer $SLACK_API_TOKEN" \
-    -H "Content-Type: application/json" \
+    -H "Content-Type: application/json; charset=utf-8" \
     --data "$PAYLOAD"
 
     
