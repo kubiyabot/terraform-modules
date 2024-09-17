@@ -43,7 +43,7 @@ tools:
       -var 'address_prefixes_public={{ .address_prefixes_public }}' \
       -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
-      # workspace_url=$(terraform output -raw databricks_host)
+      workspace_url=$(terraform output -raw databricks_host)
       echo "The link to the workspace is: $workspace_url"
       # write your message here
       apk update && apk add curl jq
