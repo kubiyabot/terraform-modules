@@ -45,11 +45,12 @@ tools:
 
       workspace_url=$(terraform output -raw databricks_host)
       apk update && apk add --no-cache jq
-      # Ensure workspace_url is properly escaped for JSON
       workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @json)
 
-      # Prepare the Block Kit payload
-      PAYLOAD=$(cat <<EOF
+      echo "Debug: workspace_url = $workspace_url"
+      echo "Debug: workspace_url_escaped = $workspace_url_escaped"
+
+      PAYLOAD=$(cat << "EOF"
       {
         "channel": "$SLACK_CHANNEL_ID",
         "blocks": [
@@ -87,7 +88,13 @@ tools:
 
       echo "Debug: PAYLOAD = $PAYLOAD"
 
-      # Send the message using Slack API
+      # Validate JSON
+      echo "$PAYLOAD" | jq . > /dev/null
+      if [ $? -ne 0 ]; then
+          echo "Invalid JSON payload"
+          exit 1
+      fi
+
       response=$(curl -s -X POST "https://slack.com/api/chat.postMessage" \
       -H "Authorization: Bearer $SLACK_API_TOKEN" \
       -H "Content-Type: application/json; charset=utf-8" \
@@ -95,11 +102,7 @@ tools:
 
       echo "Debug: Slack API Response = $response"
 
-    # Send the message using Slack API
-    curl -X POST "https://slack.com/api/chat.postMessage" \
-    -H "Authorization: Bearer $SLACK_API_TOKEN" \
-    -H "Content-Type: application/json; charset=utf-8" \
-    --data "$PAYLOAD"
+
   args:
     - name: "workspace_name"
       description: "The name of the databricks workspace."
