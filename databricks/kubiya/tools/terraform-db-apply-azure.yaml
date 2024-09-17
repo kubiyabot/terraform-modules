@@ -50,7 +50,6 @@ tools:
 
       MESSAGE=$(cat <<EOF
       The link to the workspace is: ${workspace_url}
-      The state file can be found here: https://{{ .storage_account_name}}.blob.core.windows.net/{{ .container_name}}
       EOF
       )
       ESCAPED_MESSAGE=$(echo "$MESSAGE" | jq -Rs .)
