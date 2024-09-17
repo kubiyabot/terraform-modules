@@ -44,65 +44,38 @@ tools:
     #   -var 'address_prefixes_private={{ .address_prefixes_private }}' 
 
       # workspace_url=$(terraform output -raw databricks_host)
-      workspace_url="adb-3324437401067790.10.azuredatabricks.net"
-      apk update && apk add --no-cache jq
+      workspace_url=adb-3324437401067790.10.azuredatabricks.net
+      echo "The link to the workspace is: $workspace_url"
+      # write your message here
+      apk update && apk add curl jq
 
-      workspace_url_escaped=$(echo "$workspace_url" | jq -Rr @uri)
+      MESSAGE=$(cat <<EOF
+      The link to the workspace is: ${workspace_url}
+      The state file can be found here: https://{{ .storage_account_name}}.blob.core.windows.net/{{ .container_name}}
+      EOF
+      )
+      ESCAPED_MESSAGE=$(echo "$MESSAGE" | jq -Rs .)
+      # Ensure required environment variables are set
+      if [ -z "$SLACK_CHANNEL_ID" ] || [ -z "$SLACK_THREAD_TS" ] || [ -z "$SLACK_API_TOKEN" ]; then
+        echo "Error: SLACK_CHANNEL_ID, SLACK_THREAD_TS, and SLACK_API_TOKEN must be set."
+        exit 1
+      fi
 
-      echo "Debug: workspace_url = $workspace_url"
-      echo "Debug: workspace_url_escaped = $workspace_url_escaped"
-
-      PAYLOAD=$(cat << EOF
+      # Prepare the payload for sending a multiline message in a thread
+      PAYLOAD=$(cat <<EOF
       {
-        "channel": "$SLACK_CHANNEL_ID",
-        "blocks": [
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": ":tada: *Databricks Workspace Provisioned Successfully!* :rocket:\n\nYour Databricks workspace is ready! You can access it using the link below."
-            },
-            "accessory": {
-              "type": "image",
-              "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ55dIioVp7t63K5UzEbQRXg3FxJodU_IiN9w&s",
-              "alt_text": "Databricks Logo"
-            }
-          },
-          {
-            "type": "actions",
-            "elements": [
-              {
-                "type": "button",
-                "text": {
-                  "type": "plain_text",
-                  "text": "Open Databricks Workspace",
-                  "emoji": true
-                },
-                "url": "https://$workspace_url_escaped",
-                "action_id": "open_workspace"
-              }
-            ]
-          }
-        ]
+          "channel": "$SLACK_CHANNEL_ID",
+          "text": $ESCAPED_MESSAGE,
+          "thread_ts": "$SLACK_THREAD_TS"
       }
       EOF
       )
 
-      echo "Debug: PAYLOAD = $PAYLOAD"
-
-      # Validate JSON
-      if ! echo "$PAYLOAD" | jq . > /dev/null; then
-          echo "Invalid JSON payload"
-          exit 1
-      fi
-
-      response=$(curl -s -X POST "https://slack.com/api/chat.postMessage" \
+      # Send the message using Slack API
+      curl -X POST "https://slack.com/api/chat.postMessage" \
       -H "Authorization: Bearer $SLACK_API_TOKEN" \
-      -H "Content-Type: application/json; charset=utf-8" \
-      --data "$PAYLOAD")
-
-      echo "Debug: Slack API Response = $response"
-
+      -H "Content-Type: application/json" \
+      --data "$PAYLOAD"
 
   args:
     - name: "workspace_name"
