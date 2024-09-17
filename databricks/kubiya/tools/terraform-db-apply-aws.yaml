@@ -144,3 +144,6 @@ tools:
     - "AWS_DEFAULT_REGION"
     - "AWS_SECRET_ACCESS_KEY"
     - "PAT"
+    - "SLACK_CHANNEL_ID"
+    - "SLACK_THREAD_TS"
+    - "SLACK_API_TOKEN"
