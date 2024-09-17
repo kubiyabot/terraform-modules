@@ -51,7 +51,7 @@ tools:
       echo "Debug: workspace_url = $workspace_url"
       echo "Debug: workspace_url_escaped = $workspace_url_escaped"
 
-      PAYLOAD=$(cat << "EOF"
+      PAYLOAD=$(cat << EOF
       {
         "channel": "$SLACK_CHANNEL_ID",
         "blocks": [
@@ -84,7 +84,7 @@ tools:
           }
         ]
       }
-      "EOF"
+      EOF
       )
 
       echo "Debug: PAYLOAD = $PAYLOAD"
