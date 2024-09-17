@@ -61,12 +61,7 @@ tools:
     -H "Content-Type: application/json" \
     --data "$PAYLOAD"
 
-    # Send the message using Slack API
-    curl -X POST "https://slack.com/api/chat.postMessage" \
-    -H "Authorization: Bearer $SLACK_API_TOKEN" \
-    -H "Content-Type: application/json" \
-    --data "$PAYLOAD"
-
+   
   args:
     - name: "workspace_name"
       description: "The name of the Databricks workspace."
