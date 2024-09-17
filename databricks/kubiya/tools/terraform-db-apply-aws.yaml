@@ -87,48 +87,48 @@ tools:
    
   args:
     - name: "workspace_name"
-      description: "The name of the databricks workspace."
+      description: "The name of the Databricks workspace."
       required: true
 
     - name: "aws_region"
-      description: "The region of the databricks workspace."
+      description: "The AWS region for the Databricks workspace."
       required: true
 
     - name: "backend_bucket"
-      description: "The bucket to use for the backend."
+      description: "The S3 bucket to use for Terraform state backend."
       required: true
 
     - name: "backend_region"
-      description: "The region to use for the backend."
+      description: "The AWS region for the Terraform state backend."
       required: true
 
     - name: "enable_vpc"
-      description: "Enables vpc cration. Boolean can only be true or false"
+      description: "Optional: Enable VPC creation (true/false)."
       required: false
       default: true
 
     - name: "vpc_id"                                                  
-      description: "The id of the vpc to use for the workspace."      
+      description: "Optional: Existing VPC ID to use for the workspace."      
       required: false
       default: ""
 
     - name: "enable_privatelink"
-      description: "Enable PrivateLink for the Databricks workspace"
+      description: "Advanced: Enable AWS PrivateLink for the Databricks workspace."
       required: false
       default: false
 
     - name: "enable_cmk"
-      description: "Enable Customer Managed Keys for the Databricks workspace"
+      description: "Advanced: Enable Customer Managed Keys for the Databricks workspace."
       required: false
       default: false
 
     - name: "private_subnet_id"
-      description: "The id of the private subnet to use for the workspace."
+      description: "Optional: ID of an existing private subnet for the workspace."
       required: false
       default: ""
 
     - name: "public_subnet_id"
-      description: "The id of the public subnet to use for the workspace."
+      description: "Optional: ID of an existing public subnet for the workspace."
       required: false
       default: ""
 
