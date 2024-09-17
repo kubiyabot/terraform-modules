@@ -20,13 +20,13 @@ tools:
       -var "aws_region={{ .aws_region }}"\
       -var "enable_vpc={{ .enable_vpc }}"\
       -var "vpc_id={{ .vpc_id }}"
-      # -var "enable_privatelink={{ .enable_privatelink }}"\
+      -var "enable_privatelink={{ .enable_privatelink }}"\
       # -vae "enable_firewall={{ .enable_firewall }}"\
       # -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"\
-      # -var "vpc_id={{ .vpc_id }}"\
-      # -var "private_subnet_id={{ .private_subnet_id }}"\
-      # -var "public_subnet_id={{ .public_subnet_id }}"\
-      # -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
+      -var "vpc_id={{ .vpc_id }}"\
+      -var "private_subnet_id={{ .private_subnet_id }}"\
+      -var "public_subnet_id={{ .public_subnet_id }}"\
+      -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
 
       
       
@@ -92,6 +92,15 @@ tools:
       required: false
       default: ""
 
+    - name: "enable_privatelink"
+      description: "Enable PrivateLink for the Databricks workspace"
+      required: false
+      default: false
+
+    - name: "enable_cmk"
+      description: "Enable Customer Managed Keys for the Databricks workspace"
+      required: false
+      default: false
    
 
   env:
