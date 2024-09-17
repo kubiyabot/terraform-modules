@@ -19,15 +19,11 @@ tools:
       -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
       -var "aws_region={{ .aws_region }}"\
       -var "enable_vpc={{ .enable_vpc }}"\
-      -var "vpc_id={{ .vpc_id }}"
+      -var "vpc_id={{ .vpc_id }}"\
       -var "enable_privatelink={{ .enable_privatelink }}"\
-      # -vae "enable_firewall={{ .enable_firewall }}"\
-      # -var "enable_hub_and_spoke={{ .enable_hub_and_spoke }}"\
       -var "vpc_id={{ .vpc_id }}"\
       -var "private_subnet_id={{ .private_subnet_id }}"\
-      -var "public_subnet_id={{ .public_subnet_id }}"\
-      -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
-
+      -var "public_subnet_id={{ .public_subnet_id }}"
       
       
 
@@ -125,7 +121,16 @@ tools:
       description: "Enable Customer Managed Keys for the Databricks workspace"
       required: false
       default: false
-   
+
+    - name: "private_subnet_id"
+      description: "The id of the private subnet to use for the workspace."
+      required: false
+      default: ""
+
+    - name: "public_subnet_id"
+      description: "The id of the public subnet to use for the workspace."
+      required: false
+      default: ""
 
   env:
     - "DB_ACCOUNT_ID"
