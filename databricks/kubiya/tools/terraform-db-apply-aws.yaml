@@ -21,7 +21,7 @@ tools:
       -var "enable_vpc={{ .enable_vpc }}" \
       -var "vpc_id={{ .vpc_id }}" \
       -var "enable_privatelink={{ .enable_privatelink }}" \
-      -var "vpc_id={{ .vpc_id }}" \
+      -var "vpc_id={{ .vpc_id }}" 
       
 
 
