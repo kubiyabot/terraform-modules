@@ -22,7 +22,7 @@ tools:
       -var "vpc_id={{ .vpc_id }}" \
       -var "enable_privatelink={{ .enable_privatelink }}" \
       -var "vpc_id={{ .vpc_id }}" \
-      -var "kubiya_user_email=${KUBIYA_USER_EMAIL}"
+      
 
 
     workspace_url=$(terraform output -raw databricks_host)
@@ -130,4 +130,3 @@ tools:
     - "SLACK_CHANNEL_ID"
     - "SLACK_THREAD_TS"
     - "SLACK_API_TOKEN"
-    - "KUBIYA_USER_EMAIL"
