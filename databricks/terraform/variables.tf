@@ -6,7 +6,7 @@ variable "agent_name" {
 variable "agent_runners" {
   type        = string
   description = "Name of the Local Runners for the agent to be deployed on."
-  default     = "runnerv2-5-vcluster"
+  default     = "databricks-runner"
 }
 variable "agent_description" {
   type        = string
@@ -24,20 +24,18 @@ variable "agent_secrets" {
   type        = list(string)
   description = "List of existing secrets to be used by the agent."
   default = [
-    # "ARM_CLIENT_ID",     # Configure this secret on Kubiya web app before deploying the agent.
-    # "ARM_CLIENT_SECRET",
-    # "ARM_SUBSCRIPTION_ID",
-    # "ARM_TENANT_ID",
-    # "DB_ACCOUNT_CLIENT_ID",
-    # "DB_ACCOUNT_CLIENT_SECRET",
-    # "DB_ACCOUNT_ID",
-    # "PAT",
-    # "AWS_ACCESS_KEY_ID",
-    # "AWS_SECRET_ACCESS_KEY",
-    # "AWS_DEFAULT_REGION",
-    # "SLACK_CHANNEL_ID",
-    # "SLACK_THREAD_TS",  
-    # "SLACK_API_TOKEN"
+    "ARM_CLIENT_ID",     # Configure this secret on Kubiya web app before deploying the agent.
+    "ARM_CLIENT_SECRET",
+    "ARM_SUBSCRIPTION_ID",
+    "ARM_TENANT_ID",
+    "DB_ACCOUNT_CLIENT_ID",
+    "DB_ACCOUNT_CLIENT_SECRET",
+    "DB_ACCOUNT_ID",
+    "PAT",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_DEFAULT_REGION",
+    
 
   ]
 }
@@ -46,11 +44,12 @@ variable "agent_environment_variables" {
   description = "Environment variables to be set for the agent"
   default = {
     LOG_LEVEL       = "INFO",
-    BRANCH          = "POC-23-adding-backend",
+    BRANCH          = "custom-vpc-costa-privatelink",
     DIR             = "~/test",
     GIT_REPO        = "deployments",
     GIT_ORG         = "kubiyabot",
-    KUBIYA_TOOL_TIMEOUT = "20m",
+    
+    
   }
 }
 
@@ -77,7 +76,7 @@ variable "agent_tasks" {
 variable "agent_tool_sources" {
   description = "Sources (can be URLs such as GitHub repositories or gist URLs) for the tools accessed by the agent."
   type        = list(string)
-  default     = ["databricks-azure-apply"]
+  default     = []
 }
 
 variable "agent_users" {
