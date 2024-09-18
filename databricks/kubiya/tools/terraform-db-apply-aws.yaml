@@ -16,18 +16,14 @@ tools:
       -var "databricks_account_id=${DB_ACCOUNT_ID}" \
       -var "databricks_client_id=${DB_ACCOUNT_CLIENT_ID}" \
       -var "workspace_name={{ .workspace_name }}" \
-      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}"\
-      -var "aws_region={{ .aws_region }}"\
-      -var "enable_vpc={{ .enable_vpc }}"\
-      -var "vpc_id={{ .vpc_id }}"\
-      -var "enable_privatelink={{ .enable_privatelink }}"\
-      -var "vpc_id={{ .vpc_id }}"\
+      -var "databricks_client_secret=${DB_ACCOUNT_CLIENT_SECRET}" \
+      -var "aws_region={{ .aws_region }}" \
+      -var "enable_vpc={{ .enable_vpc }}" \
+      -var "vpc_id={{ .vpc_id }}" \
+      -var "enable_privatelink={{ .enable_privatelink }}" \
+      -var "vpc_id={{ .vpc_id }}" \
       -var "kubiya_user_email=${KUBIYA_USER_EMAIL}"
-      # -var "private_subnet_id={{ .private_subnet_id }}"\
-      # -var "public_subnet_id={{ .public_subnet_id }}"\
-      # -var "public_subnet_network_security_group_id={{ .public_subnet_network_security_group_id }}"
 
-      
 
     workspace_url=$(terraform output -raw databricks_host)
     echo "The link to the workspace is: $workspace_url"
