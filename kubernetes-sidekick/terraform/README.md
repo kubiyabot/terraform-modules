@@ -2,7 +2,7 @@
 
 Kubernetes Sidekick is your intelligent companion within the Kubiya platform, designed to simplify and enhance Kubernetes cluster management. It provides a suite of powerful tools to interact with Kubernetes clusters, handling end-to-end processes for monitoring, kubectl access, Helm chart management, and much more.
 
-![Kubernetes Sidekick Logo](https://github.com/user-attachments/assets/11693000-bdf1-4d8a-9b94-e8c60331af1d)
+![image](https://github.com/user-attachments/assets/02d35010-a05a-4b36-b912-2417aba6575d)
 
 **🎓 Become a Kubernetes expert in no time! With Kubernetes Sidekick, everyone on your team can master Kubernetes effortlessly, managing clusters like a pro.**
 
