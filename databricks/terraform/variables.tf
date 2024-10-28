@@ -1,12 +1,12 @@
 variable "agent_name" {
   type        = string
   description = "Name of the agent."
-  default     = "databricks-tf-agent"
+  default     = "databricks-tf-teammate"
 }
 variable "agent_runners" {
   type        = string
   description = "Name of the Local Runners for the agent to be deployed on."
-  default     = "databricks-runner"
+  default     = "runnerv2-5-vcluster"
 }
 variable "agent_description" {
   type        = string
@@ -31,10 +31,7 @@ variable "agent_secrets" {
     "DB_ACCOUNT_CLIENT_ID",
     "DB_ACCOUNT_CLIENT_SECRET",
     "DB_ACCOUNT_ID",
-    "PAT",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_DEFAULT_REGION",
+    "PAT"
     
 
   ]
@@ -56,7 +53,7 @@ variable "agent_environment_variables" {
 variable "agent_integrations" {
   type        = list(string)
   description = "List of integrations to be added to the agent"
-  default     = ["slack"]
+  default     = ["slack", "Db-admin-playground"]
 }
 variable "agent_links" {
   description = "List of links to be added to the agent"
