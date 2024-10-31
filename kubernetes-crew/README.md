@@ -1,10 +1,10 @@
-# 🚀 Kubernetes Sidekick
+# 🚀 Kubernetes Crew
 
-Kubernetes Sidekick is your intelligent companion within the Kubiya platform, designed to simplify and enhance Kubernetes cluster management. It provides a suite of powerful tools to interact with Kubernetes clusters, handling end-to-end processes for monitoring, kubectl access, Helm chart management, and much more.
+Kubernetes Crew is your intelligent companion within the Kubiya platform, designed to simplify and enhance Kubernetes cluster management. It provides a suite of powerful tools to interact with Kubernetes clusters, handling end-to-end processes for monitoring, kubectl access, Helm chart management, and much more.
 
 ![image](https://github.com/user-attachments/assets/18503bac-9adf-43ea-96a1-ac0e9ca614f1)
 
-**🎓 Become a Kubernetes expert in no time! With Kubernetes Sidekick, everyone on your team can master Kubernetes effortlessly, managing clusters like a pro.**
+**🎓 Become a Kubernetes expert in no time! With Kubernetes Crew, everyone on your team can master Kubernetes effortlessly, managing clusters like a pro.**
 
 ## 🌟 Features
 
@@ -21,7 +21,7 @@ Kubernetes Sidekick is your intelligent companion within the Kubiya platform, de
 
 ### 1. 🩺 Cluster Health Monitoring
 
-Kubernetes Sidekick continuously monitors cluster health, scraping events, analyzing node and pod statuses, and sending alerts. This ensures timely detection of issues and automatic remediation processes.
+Kubernetes Crew continuously monitors cluster health, scraping events, analyzing node and pod statuses, and sending alerts. This ensures timely detection of issues and automatic remediation processes.
 
 ```mermaid
 graph TD
@@ -44,13 +44,13 @@ graph TD
 
 ### 2. 🎛️ kubectl Access
 
-Kubernetes Sidekick grants users direct access to kubectl commands without needing extensive Kubernetes knowledge. Manage deployments, services, and more right from Slack!
+Kubernetes Crew grants users direct access to kubectl commands without needing extensive Kubernetes knowledge. Manage deployments, services, and more right from Slack!
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant S as Slack
-    participant KS as Kubernetes Sidekick
+    participant KS as Kubernetes Crew
     participant K as Kubernetes Cluster
 
     U->>S: Request kubectl command
@@ -80,14 +80,14 @@ sequenceDiagram
 
 ### 3. 🚀 Deployment Workflow
 
-Here's an example of how Kubernetes Sidekick can streamline your deployment process:
+Here's an example of how Kubernetes Crew can streamline your deployment process:
 
 ```mermaid
 graph TD
     A[👩‍💻 Developer pushes code] --> B[🏗️ CI/CD pipeline triggered]
     B --> C[📦 Build Docker image]
     C --> D[🔄 Update Helm chart]
-    D --> E{🤖 Kubernetes Sidekick}
+    D --> E{🤖 Kubernetes Crew}
     E --> F[🔍 Validate Helm chart]
     F --> G[⛵ Deploy with Helm]
     G --> H[🩺 Monitor deployment health]
@@ -110,13 +110,13 @@ graph TD
 
 ## 🛠️ Configuration
 
-Below are the key variables used to configure the Kubernetes Sidekick agent:
+Below are the key variables used to configure the Kubernetes Crew agent:
 
 | Variable Name | Description | Type | Default |
 |---------------|-------------|------|---------|
-| `teammate_name` | Name of the Kubernetes Sidekick teammate | `string` | |
+| `teammate_name` | Name of the Kubernetes Crew teammate | `string` | |
 | `kubiya_runner` | Runner (cluster) to use for the teammate | `string` | |
-| `teammate_name` | Description of the Kubernetes Sidekick teammate | `string` | |
+| `teammate_name` | Description of the Kubernetes Crew teammate | `string` | |
 | `use_custom_kubeconfig` | Whether to use a custom kubeconfig | `bool` | `false` |
 | `custom_kubeconfig` | Custom kubeconfig as a string | `string` | `""` |
 | `use_in_cluster_context` | Whether to use in-cluster context | `bool` | `true` |
@@ -136,28 +136,28 @@ Below are the key variables used to configure the Kubernetes Sidekick agent:
 
 ## 🚀 Getting Started
 
-1. **Installation**: Deploy Kubernetes Sidekick to your cluster using Helm:
+1. **Installation**: Deploy Kubernetes Crew to your cluster using Helm:
    ```bash
    helm repo add kubiya https://charts.kubiya.ai
-   helm install k8s-sidekick kubiya/kubernetes-sidekick
+   helm install k8s-crew kubiya/kubernetes-crew
    ```
 
-2. **Configuration**: Customize your Kubernetes Sidekick instance by creating a `values.yaml` file:
+2. **Configuration**: Customize your Kubernetes Crew instance by creating a `values.yaml` file:
    ```yaml
-   teammate_name: "k8s-sidekick"
+   teammate_name: "k8s-crew"
    kubiya_runner: "prod-cluster"
    enable_cluster_health_monitoring: true
    notification_slack_channel: "#k8s-alerts"
    ```
 
-3. **Slack Integration**: Connect Kubernetes Sidekick to your Slack workspace:
+3. **Slack Integration**: Connect Kubernetes Crew to your Slack workspace:
    ```bash
    kubectl create secret generic slack-token --from-literal=token=xoxb-your-slack-token
    ```
 
-4. **Start Using**: Begin interacting with Kubernetes Sidekick in your Slack channel:
+4. **Start Using**: Begin interacting with Kubernetes Crew in your Slack channel:
    ```
-   @k8s-sidekick get pods -n production
+   @k8s-crew get pods -n production
    ```
 
 ## 🎭 Example Scenarios
@@ -166,28 +166,28 @@ Below are the key variables used to configure the Kubernetes Sidekick agent:
 
 ### Scenario 1: Troubleshooting a Failing Deployment
 
-1. **Alert**: Kubernetes Sidekick detects a failing deployment and sends a Slack alert.
+1. **Alert**: Kubernetes Crew detects a failing deployment and sends a Slack alert.
 2. **Investigation**: Team member asks for more details:
    ```
-   @k8s-sidekick describe deployment failing-app -n production
+   @k8s-crew describe deployment failing-app -n production
    ```
-3. **Root Cause**: Kubernetes Sidekick identifies a misconfigured environment variable.
+3. **Root Cause**: Kubernetes Crew identifies a misconfigured environment variable.
 4. **Fix**: Team member updates the deployment:
    ```
-   @k8s-sidekick please set env CRITICAL_VAR=correct-value in deployment/failing-app ns production
+   @k8s-crew please set env CRITICAL_VAR=correct-value in deployment/failing-app ns production
    ```
-5. **Verification**: Kubernetes Sidekick confirms the deployment is now healthy.
+5. **Verification**: Kubernetes Crew confirms the deployment is now healthy.
 
 ### Scenario 2: Scaling for Black Friday
 
 1. **Preparation**: Team decides to scale up for increased traffic:
    ```
-   @k8s-sidekick scale deployment ecommerce-frontend --replicas=10 -n production
+   @k8s-crew scale deployment ecommerce-frontend --replicas=10 -n production
    ```
-2. **Monitoring**: Kubernetes Sidekick provides real-time updates on cluster resource usage.
-3. **Auto-scaling**: Kubernetes Sidekick suggests and applies HPA settings for dynamic scaling.
-4. **Performance**: Team monitors application performance through Kubernetes Sidekick's integration with monitoring tools.
+2. **Monitoring**: Kubernetes Crew provides real-time updates on cluster resource usage.
+3. **Auto-scaling**: Kubernetes Crew suggests and applies HPA settings for dynamic scaling.
+4. **Performance**: Team monitors application performance through Kubernetes Crew's integration with monitoring tools.
 
 ---
 
-With **Kubernetes Sidekick**, managing Kubernetes clusters is now easier than ever. Delegate tasks, stay informed, and manage your clusters like a pro! 🎉🚀
+With **Kubernetes Crew**, managing Kubernetes clusters is now easier than ever. Delegate tasks, stay informed, and manage your clusters like a pro! 🎉🚀

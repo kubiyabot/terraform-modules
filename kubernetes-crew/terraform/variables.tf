@@ -324,3 +324,113 @@ variable "deployment_monitor_prompt" {
   type        = string
   default     = ""
 }
+
+variable "health_check_start_time" {
+  description = "Start date and time for the health check task. Format: YYYY-MM-DDTHH:MM:SS"
+  type        = string
+}
+
+variable "health_check_repeat" {
+  description = "Frequency of the health check task. Allowed values: hourly, daily, weekly, monthly."
+  type        = string
+  default     = "daily"
+}
+
+variable "resource_check_start_time" {
+  description = "Start date and time for the resource optimization task."
+  type        = string
+}
+
+variable "resource_check_repeat" {
+  description = "Frequency of the resource optimization task."
+  type        = string
+  default     = "daily"
+}
+
+variable "cleanup_start_time" {
+  description = "Start date and time for the cleanup task."
+  type        = string
+}
+
+variable "cleanup_repeat" {
+  description = "Frequency of the cleanup task."
+  type        = string
+  default     = "weekly"
+}
+
+variable "network_check_start_time" {
+  description = "Start date and time for the network check task."
+  type        = string
+}
+
+variable "network_check_repeat" {
+  description = "Frequency of the network check task."
+  type        = string
+  default     = "daily"
+}
+
+variable "security_check_start_time" {
+  description = "Start date and time for the security check task."
+  type        = string
+}
+
+variable "security_check_repeat" {
+  description = "Frequency of the security check task."
+  type        = string
+  default     = "weekly"
+}
+
+variable "backup_check_start_time" {
+  description = "Start date and time for the backup verification task. Format: YYYY-MM-DDTHH:MM:SS"
+  type        = string
+}
+
+variable "backup_check_repeat" {
+  description = "Frequency of the backup verification task. Allowed values: hourly, daily, weekly, monthly."
+  type        = string
+  default     = "daily"
+}
+
+variable "cost_analysis_start_time" {
+  description = "Start date and time for the cost analysis task."
+  type        = string
+}
+
+variable "cost_analysis_repeat" {
+  description = "Frequency of the cost analysis task."
+  type        = string
+  default     = "weekly"
+}
+
+variable "compliance_check_start_time" {
+  description = "Start date and time for the compliance check task."
+  type        = string
+}
+
+variable "compliance_check_repeat" {
+  description = "Frequency of the compliance check task."
+  type        = string
+  default     = "monthly"
+}
+
+variable "update_check_start_time" {
+  description = "Start date and time for the update check task."
+  type        = string
+}
+
+variable "update_check_repeat" {
+  description = "Frequency of the update check task."
+  type        = string
+  default     = "weekly"
+}
+
+variable "capacity_check_start_time" {
+  description = "Start date and time for the capacity planning task."
+  type        = string
+}
+
+variable "capacity_check_repeat" {
+  description = "Frequency of the capacity planning task."
+  type        = string
+  default     = "monthly"
+}

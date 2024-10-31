@@ -52,80 +52,73 @@ locals {
   compliance_check_prompt = file("${path.module}/prompts/compliance_check.md")
   update_check_prompt     = file("${path.module}/prompts/update_check.md")
   capacity_check_prompt   = file("${path.module}/prompts/capacity_check.md")
-
-  # Mapping of schedule names to cron expressions
-  schedule_cron = {
-    "hourly"  = "0 * * * *"
-    "daily"   = "0 0 * * *"
-    "weekly"  = "0 0 * * 0"
-    "monthly" = "0 0 1 * *"
-  }
 }
 
 # Core Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
   count          = var.enable_health_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.health_check_schedule, "0 * * * *")
+  scheduled_time = var.health_check_start_time
+  repeat         = var.health_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Cluster Health Check"
-  task_content   = var.health_check_prompt != "" ? var.health_check_prompt : local.health_check_prompt
+  description    = var.health_check_prompt != "" ? var.health_check_prompt : local.health_check_prompt
 }
 
 # Resource Optimization Task
 resource "kubiya_scheduled_task" "resource_check" {
   count          = var.enable_resource_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.resource_check_schedule, "0 0 * * *")
+  scheduled_time = var.resource_check_start_time
+  repeat         = var.resource_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Resource Optimization Check"
-  prompt   = var.resource_check_prompt != "" ? var.resource_check_prompt : local.resource_check_prompt
+  description    = var.resource_check_prompt != "" ? var.resource_check_prompt : local.resource_check_prompt
 }
 
 # Cleanup Task
 resource "kubiya_scheduled_task" "cleanup" {
   count          = var.enable_cleanup_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.cleanup_schedule, "0 0 * * *")
+  scheduled_time = var.cleanup_start_time
+  repeat         = var.cleanup_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Cluster Cleanup"
-  task_content   = var.cleanup_prompt != "" ? var.cleanup_prompt : local.cleanup_prompt
+  description    = var.cleanup_prompt != "" ? var.cleanup_prompt : local.cleanup_prompt
 }
 
 # Network Check Task
 resource "kubiya_scheduled_task" "network_check" {
   count          = var.enable_network_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.network_check_schedule, "0 * * * *")
+  scheduled_time = var.network_check_start_time
+  repeat         = var.network_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Network Health Check"
-  task_content   = var.network_check_prompt != "" ? var.network_check_prompt : local.network_check_prompt
+  description    = var.network_check_prompt != "" ? var.network_check_prompt : local.network_check_prompt
 }
 
 # Security Check Task
 resource "kubiya_scheduled_task" "security_check" {
   count          = var.enable_security_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.security_check_schedule, "0 * * * *")
+  scheduled_time = var.security_check_start_time
+  repeat         = var.security_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Security Audit"
-  task_content   = var.security_check_prompt != "" ? var.security_check_prompt : local.security_check_prompt
+  description    = var.security_check_prompt != "" ? var.security_check_prompt : local.security_check_prompt
 }
 
 # Backup Verification Task
 resource "kubiya_scheduled_task" "backup_check" {
   count          = var.enable_backup_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.backup_check_schedule, "0 * * * *")
+  scheduled_time = var.backup_check_start_time
+  repeat         = var.backup_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = "Kubernetes Backup Verification"
-  task_content   = var.backup_check_prompt != "" ? var.backup_check_prompt : local.backup_check_prompt
+  description    = var.backup_check_prompt != "" ? var.backup_check_prompt : local.backup_check_prompt
 }
 
 # Cost Analysis Task
 resource "kubiya_scheduled_task" "cost_analysis" {
   count          = var.enable_cost_analysis_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.cost_analysis_schedule, "0 * * * *")
+  scheduled_time = var.cost_analysis_start_time
+  repeat         = var.cost_analysis_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = var.cost_analysis_prompt != "" ? var.cost_analysis_prompt : local.cost_analysis_prompt
@@ -134,16 +127,18 @@ resource "kubiya_scheduled_task" "cost_analysis" {
 # Compliance Check Task
 resource "kubiya_scheduled_task" "compliance_check" {
   count          = var.enable_compliance_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.compliance_check_schedule, "0 * * * *")
+  scheduled_time = var.compliance_check_start_time
+  repeat         = var.compliance_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = var.compliance_check_prompt != "" ? var.compliance_check_prompt : local.compliance_check_prompt
 }
-  
+
 # Update Check Task
 resource "kubiya_scheduled_task" "update_check" {
   count          = var.enable_update_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.update_check_schedule, "0 * * * *")
+  scheduled_time = var.update_check_start_time
+  repeat         = var.update_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = var.update_check_prompt != "" ? var.update_check_prompt : local.update_check_prompt
@@ -152,7 +147,8 @@ resource "kubiya_scheduled_task" "update_check" {
 # Capacity Planning Task
 resource "kubiya_scheduled_task" "capacity_check" {
   count          = var.enable_capacity_check_task ? 1 : 0
-  scheduled_time = lookup(local.schedule_cron, var.capacity_check_schedule, "0 * * * *")
+  scheduled_time = var.capacity_check_start_time
+  repeat         = var.capacity_check_repeat
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = var.capacity_check_prompt != "" ? var.capacity_check_prompt : local.capacity_check_prompt
