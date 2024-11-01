@@ -1,7 +1,7 @@
-name: "JIRA Ticket Solver"
+name: "Delegate JIRA Tickets"
 icons:
   - "https://logos-world.net/wp-content/uploads/2021/02/Jira-Emblem.png"
-  - "https://cdn.iconscout.com/icon/free/png-128/free-amazon-aws-technology-logo-social-media-logo-download-svg-png-gif-flat-icon-logos-technology-logo-vol-1-pack-amazon-aws-logo-icon-2944772.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/DevOps.png"
 # Description is fetched automatically from the README.md file
 # and will be displayed in the Kubiya Web App at https://app.kubiya.ai "tasks" section
 description: ""
