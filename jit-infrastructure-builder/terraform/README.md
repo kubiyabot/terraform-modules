@@ -2,7 +2,7 @@
 
 **Democratize infrastructure provisioning while maintaining control, cost efficiency, and best practices**
 
-![Infrastructure Builder Banner](https://github.com/user-attachments/assets/18503bac-9adf-43ea-96a1-ac0e9ca614f1)
+![image](https://github.com/user-attachments/assets/388854b7-32ba-4232-b883-a1e6a4db7cf2)
 
 > "Empower everyone to build infrastructure, while we ensure it's done right!"
 
