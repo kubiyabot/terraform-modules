@@ -1,193 +1,177 @@
 # 🚀 Kubernetes Crew
 
-Kubernetes Crew is your intelligent companion within the Kubiya platform, designed to simplify and enhance Kubernetes cluster management. It provides a suite of powerful tools to interact with Kubernetes clusters, handling end-to-end processes for monitoring, kubectl access, Helm chart management, and much more.
+*Your intelligent Kubernetes companion within the Kubiya platform that makes cluster management a breeze. Whether you're a Kubernetes expert or just getting started, **Kubernetes Crew** provides an intuitive interface to manage, monitor, and maintain your clusters effectively.*
 
-![image](https://github.com/user-attachments/assets/18503bac-9adf-43ea-96a1-ac0e9ca614f1)
+![Kubernetes Banner](https://github.com/user-attachments/assets/02d35010-a05a-4b36-b912-2417aba6575d)
 
-**🎓 Become a Kubernetes expert in no time! With Kubernetes Crew, everyone on your team can master Kubernetes effortlessly, managing clusters like a pro.**
+## 🎯 Overview
 
-## 🌟 Features
-
-- 🩺 **Cluster health monitoring**
-- 🕵️ **Intelligent event scraping**
-- 🎛️ **kubectl access**
-- ⛵ **Helm chart application (optional)**
-- 🚢 **Argo CD integration (optional)**
-- 🔐 **Custom kubeconfig support**
-- 🏠 **In-cluster context support**
-- 💬 **Slack notifications**
-
-## 🔄 User Flows
-
-### 1. 🩺 Cluster Health Monitoring
-
-Kubernetes Crew continuously monitors cluster health, scraping events, analyzing node and pod statuses, and sending alerts. This ensures timely detection of issues and automatic remediation processes.
-
-```mermaid
-graph TD
-    A[🏁 Start Monitoring] --> B{🤔 Is Cluster Healthy?}
-    B --> |Yes| C[✅ Continue Monitoring]
-    B --> |No| D[🚨 Send Alert to Slack]
-    D --> E[🔧 Initiate Remediation]
-    E --> F{🤞 Remediation Success?}
-    F --> |Yes| C
-    F --> |No| G[👨‍💼 Escalate Issue]
-    
-    style A fill:#f9d71c,stroke:#333,stroke-width:2px
-    style B fill:#f9a61c,stroke:#333,stroke-width:2px
-    style C fill:#66c256,stroke:#333,stroke-width:2px
-    style D fill:#e74c3c,stroke:#333,stroke-width:2px
-    style E fill:#3498db,stroke:#333,stroke-width:2px
-    style F fill:#f9a61c,stroke:#333,stroke-width:2px
-    style G fill:#e74c3c,stroke:#333,stroke-width:2px
-```
-
-### 2. 🎛️ kubectl Access
-
-Kubernetes Crew grants users direct access to kubectl commands without needing extensive Kubernetes knowledge. Manage deployments, services, and more right from Slack!
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Slack
-    participant KS as Kubernetes Crew
-    participant K as Kubernetes Cluster
-
-    U->>S: Request kubectl command
-    S->>KS: Forward request
-    KS->>KS: Validate user access
-    alt Has Access
-        KS->>K: Execute kubectl command
-        K->>KS: Return result
-        KS->>S: Send result
-        S->>U: Display result
-    else No Access
-        KS->>S: Request access notification
-        S->>U: Notify access needed
-        U->>S: Grant access
-        S->>KS: Access granted
-        KS->>K: Execute kubectl command
-        K->>KS: Return result
-        KS->>S: Send result
-        S->>U: Display result
-    end
-
-    style U fill:#f9d71c,stroke:#333,stroke-width:2px
-    style S fill:#e67e22,stroke:#333,stroke-width:2px
-    style KS fill:#3498db,stroke:#333,stroke-width:2px
-    style K fill:#2ecc71,stroke:#333,stroke-width:2px
-```
-
-### 3. 🚀 Deployment Workflow
-
-Here's an example of how Kubernetes Crew can streamline your deployment process:
-
-```mermaid
-graph TD
-    A[👩‍💻 Developer pushes code] --> B[🏗️ CI/CD pipeline triggered]
-    B --> C[📦 Build Docker image]
-    C --> D[🔄 Update Helm chart]
-    D --> E{🤖 Kubernetes Crew}
-    E --> F[🔍 Validate Helm chart]
-    F --> G[⛵ Deploy with Helm]
-    G --> H[🩺 Monitor deployment health]
-    H --> I{😊 Deployment successful?}
-    I -->|Yes| J[✅ Notify team in Slack]
-    I -->|No| K[🚨 Alert team and rollback]
-    
-    style A fill:#f9d71c,stroke:#333,stroke-width:2px
-    style B fill:#3498db,stroke:#333,stroke-width:2px
-    style C fill:#e67e22,stroke:#333,stroke-width:2px
-    style D fill:#9b59b6,stroke:#333,stroke-width:2px
-    style E fill:#2ecc71,stroke:#333,stroke-width:2px
-    style F fill:#f1c40f,stroke:#333,stroke-width:2px
-    style G fill:#1abc9c,stroke:#333,stroke-width:2px
-    style H fill:#34495e,stroke:#333,stroke-width:2px
-    style I fill:#e74c3c,stroke:#333,stroke-width:2px
-    style J fill:#27ae60,stroke:#333,stroke-width:2px
-    style K fill:#c0392b,stroke:#333,stroke-width:2px
-```
-
-## 🛠️ Configuration
-
-Below are the key variables used to configure the Kubernetes Crew agent:
-
-| Variable Name | Description | Type | Default |
-|---------------|-------------|------|---------|
-| `teammate_name` | Name of the Kubernetes Crew teammate | `string` | |
-| `kubiya_runner` | Runner (cluster) to use for the teammate | `string` | |
-| `teammate_name` | Description of the Kubernetes Crew teammate | `string` | |
-| `use_custom_kubeconfig` | Whether to use a custom kubeconfig | `bool` | `false` |
-| `custom_kubeconfig` | Custom kubeconfig as a string | `string` | `""` |
-| `use_in_cluster_context` | Whether to use in-cluster context | `bool` | `true` |
-| `enable_cluster_health_monitoring` | Enable cluster health monitoring | `bool` | `true` |
-| `cluster_health_check_interval` | Interval for cluster health checks | `string` | `"1h"` |
-| `enable_intelligent_event_scraping` | Enable intelligent event scraping | `bool` | `true` |
-| `enable_kubectl_access` | Enable kubectl access | `bool` | `true` |
-| `enable_helm_chart_application` | Enable applying Helm charts | `bool` | `false` |
-| `enable_argo_cd_integration` | Enable Argo CD integration | `bool` | `false` |
-| `notification_slack_channel` | Slack channel for notifications | `string` | `""` |
-| `users` | Users who can interact with the teammate | `list(string)` | |
-| `groups` | Groups who can interact with the teammate | `list(string)` | |
-| `integrations` | Integrations for the teammate | `list(string)` | |
-| `log_level` | Log level | `string` | `"INFO"` |
-| `debug` | Enable debug mode | `bool` | `false` |
-| `dry_run` | Enable dry run mode | `bool` | `false` |
+Kubernetes Crew is an AI-powered teammate that helps you manage Kubernetes clusters through natural language. What makes it unique is its ability to:
+- Learn and adapt from every interaction
+- Handle complex operations through simple conversations
+- Execute scheduled tasks automatically
+- Integrate with your existing tools and workflows
 
 ## 🚀 Getting Started
 
-1. **Installation**: Deploy Kubernetes Crew to your cluster using Helm:
-   ```bash
-   helm repo add kubiya https://charts.kubiya.ai
-   helm install k8s-crew kubiya/kubernetes-crew
-   ```
+### 1. 🎨 Kubiya Web Interface
 
-2. **Configuration**: Customize your Kubernetes Crew instance by creating a `values.yaml` file:
-   ```yaml
-   teammate_name: "k8s-crew"
-   kubiya_runner: "prod-cluster"
-   enable_cluster_health_monitoring: true
-   notification_slack_channel: "#k8s-alerts"
-   ```
+The fastest way to get started:
 
-3. **Slack Integration**: Connect Kubernetes Crew to your Slack workspace:
-   ```bash
-   kubectl create secret generic slack-token --from-literal=token=xoxb-your-slack-token
-   ```
+1. Navigate to **Teammates** → **Use Cases** in Kubiya
+2. Click **New Use Case** and select **Kubernetes Crew**
+3. Configure your deployment preferences
+4. Start interacting via Slack or scheduled tasks!
 
-4. **Start Using**: Begin interacting with Kubernetes Crew in your Slack channel:
-   ```
-   @k8s-crew get pods -n production
-   ```
+### 2. 🏗️ Terraform Deployment
 
-## 🎭 Example Scenarios
+For infrastructure-as-code deployment:
+```bash
+git clone https://github.com/kubiyabot/terraform-modules
+cd terraform-modules/kubernetes-crew
+```
 
-* You can converse with either natural language requests or parts of kubectl commands , the LLM will get it
+2. Create a minimal `terraform.tfvars`:
+```hcl
+kubiya_runner              = "my-cluster-runner"
+notification_slack_channel = "#k8s-alerts"
+```
 
-### Scenario 1: Troubleshooting a Failing Deployment
+3. Deploy:
+```bash
+terraform init
+terraform apply
+```
 
-1. **Alert**: Kubernetes Crew detects a failing deployment and sends a Slack alert.
-2. **Investigation**: Team member asks for more details:
-   ```
-   @k8s-crew describe deployment failing-app -n production
-   ```
-3. **Root Cause**: Kubernetes Crew identifies a misconfigured environment variable.
-4. **Fix**: Team member updates the deployment:
-   ```
-   @k8s-crew please set env CRITICAL_VAR=correct-value in deployment/failing-app ns production
-   ```
-5. **Verification**: Kubernetes Crew confirms the deployment is now healthy.
+## 🗣️ Interaction Methods
 
-### Scenario 2: Scaling for Black Friday
+### 1. Summoning Your Crew
 
-1. **Preparation**: Team decides to scale up for increased traffic:
-   ```
-   @k8s-crew scale deployment ecommerce-frontend --replicas=10 -n production
-   ```
-2. **Monitoring**: Kubernetes Crew provides real-time updates on cluster resource usage.
-3. **Auto-scaling**: Kubernetes Crew suggests and applies HPA settings for dynamic scaling.
-4. **Performance**: Team monitors application performance through Kubernetes Crew's integration with monitoring tools.
+There are three ways to interact with your Kubernetes Crew:
+
+#### Via Slack Channels
+1. **Add Kubiya to your channel**: Invite the Kubiya app to your desired Slack channel
+2. **Summon the crew**: Use any of these methods:
+   - Natural language: `@Kubiya check cluster health`
+   - Direct crew summon: `@Kubiya crew check cluster health`
+   - Force execution: `@Kubiya !crew list all pods in production`
+
+> 💡 Using the `!` prefix bypasses the classifier and forces the crew to handle your request
+
+#### Scheduled Tasks
+The crew can be configured to automatically run tasks on a schedule:
+```plaintext
+Every morning at 9 AM:
+> Running daily health check...
+> ✓ Cluster status: Healthy
+> ✓ Resource usage: Normal
+> ✓ Pending alerts: None
+```
+
+#### Event-Triggered Tasks
+The crew responds automatically to:
+- Webhook events
+- Monitoring alerts
+- CI/CD triggers
+- Custom events
+
+### 2. Interaction Examples
+
+```plaintext
+# Natural language
+@Kubiya how's our cluster doing?
+
+# Direct crew summon
+@Kubiya crew scale the frontend deployment
+
+# Force execution
+@Kubiya !crew get pods in kube-system namespace
+```
+
+## 🎯 Built-in Capabilities
+
+The crew comes with pre-configured knowledge and prompts for common operations:
+
+### Application Lifecycle
+```plaintext
+@Kubiya I need to deploy a new microservice
+> I'll help you set up the new application. Let me ask a few questions:
+> 1. What type of application is this?
+> 2. What resources will it need?
+> 3. Any specific security requirements?
+```
+
+### Capacity Planning
+```plaintext
+@Kubiya Analyze cluster capacity for next month
+> I'll check:
+> ✓ Current resource usage trends
+> ✓ Growth patterns
+> ✓ Optimization opportunities
+> Would you like a detailed report?
+```
+
+### Health Monitoring
+```plaintext
+@Kubiya Check production namespace health
+> Running comprehensive health check:
+> ✓ Node status
+> ✓ Pod health
+> ✓ Resource utilization
+> ✓ Network connectivity
+```
+
+## 🧠 Extensible Knowledge
+
+### Adding Custom Knowledge
+
+1. Create markdown files in the `knowledge` directory:
+```bash
+kubernetes-crew/
+└── knowledge/
+    ├── runbooks/
+    ├── procedures/
+    └── best_practices/
+```
+
+2. The crew automatically incorporates this knowledge into its responses and recommendations.
+
+### Custom Prompts
+
+Define new capabilities in the `prompts` directory:
+```bash
+kubernetes-crew/
+└── prompts/
+    ├── app_creation.md
+    ├── capacity_check.md
+    ├── deployment_monitor.md
+    └── health_check.md
+```
+
+## 🔄 Continuous Learning
+
+The crew improves through:
+- Learning from your feedback
+- Understanding your cluster's patterns
+- Adapting to your team's practices
+- Building context about your applications
+
+## 🛠️ Integration Capabilities
+
+Seamlessly works with:
+- GitOps workflows (Argo CD, Flux)
+- CI/CD pipelines
+- Monitoring tools
+- Security scanners
+- Custom webhooks
+
+## 📚 Additional Resources
+
+- [How to Use Your Teammate](https://docs.kubiya.ai/docs/get-started/use-your-teammate)
+- [Slack Integration Guide](https://docs.kubiya.ai/docs/integrations/slack)
+- [Detailed Documentation](https://docs.kubiya.ai/kubernetes-crew)
+- [Community Support](https://slack.kubiya.ai)
 
 ---
 
-With **Kubernetes Crew**, managing Kubernetes clusters is now easier than ever. Delegate tasks, stay informed, and manage your clusters like a pro! 🎉🚀
+Ready to transform your Kubernetes operations? Deploy **Kubernetes Crew** today! 🚀
