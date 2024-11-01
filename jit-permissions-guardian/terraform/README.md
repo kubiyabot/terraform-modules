@@ -2,7 +2,7 @@
 
 **Navigate the complexities of AWS IAM permissions with your dedicated crew of AI-powered security specialists**
 
-![JIT Guardian Banner](https://github.com/user-attachments/assets/18503bac-9adf-43ea-96a1-ac0e9ca614f1)
+![image](https://github.com/user-attachments/assets/e0bfb98f-bd4e-4808-a177-d845601be07f)
 
 > "Let our guardians handle the security while you focus on innovation!"
 
