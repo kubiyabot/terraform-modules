@@ -2,7 +2,7 @@
 
 **Master your GitHub Actions workflows with an AI team that never sleeps**
 
-![GitHub Crew Banner](https://github.com/user-attachments/assets/02d35010-a05a-4b36-b912-2417aba6575d)
+![image](https://github.com/user-attachments/assets/e52b89e9-cb8c-4bee-b9c5-84c8a6773b98)
 
 > "Let your AI GitHub crew handle the pipeline issues while you focus on building great software!"
 
