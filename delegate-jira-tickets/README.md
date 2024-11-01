@@ -2,7 +2,7 @@
 
 JIRA Crew is your intelligent companion within the Kubiya platform, designed to automate and enhance JIRA ticket management. It provides a comprehensive solution for automated ticket resolution, intelligent prioritization, and seamless team notifications, ensuring your JIRA boards stay organized and efficient 24/7.
 
-![JIRA Crew Banner](https://github.com/user-attachments/assets/fb26886d-1b66-4487-b89d-54ce62feaa78)
+![image](https://github.com/user-attachments/assets/0641bcb5-3186-419b-9807-e36d7f6c49dd)
 
 **🎯 Transform your JIRA operations with an AI team that resolves tickets while you sleep! Let your human team focus on complex issues while JIRA Crew handles the routine tasks.**
 
