@@ -1,5 +1,6 @@
-name: "Allow dynamic infrastructure creation from Slack requests"
-icons: 
-- "https://static-00.iconduck.com/assets.00/file-type-terraform-icon-455x512-csyun60o.png"
-- "https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/306_Slack_logo-512.png"
+name: "IaC Self-service Kiosk"
+icons:
+  - "https://static-00.iconduck.com/assets.00/file-type-terraform-icon-455x512-csyun60o.png"
+  - "https://cdn.iconscout.com/icon/free/png-128/free-amazon-aws-technology-logo-social-media-logo-download-svg-png-gif-flat-icon-logos-technology-logo-vol-1-pack-amazon-aws-logo-icon-2944772.png"
+  
 description: ""
