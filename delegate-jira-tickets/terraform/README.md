@@ -1,116 +1,153 @@
+# 🎫 JIRA Crew
 
-# JIRA Ticket Solver
+JIRA Crew is your intelligent companion within the Kubiya platform, designed to automate and enhance JIRA ticket management. It provides a comprehensive solution for automated ticket resolution, intelligent prioritization, and seamless team notifications, ensuring your JIRA boards stay organized and efficient 24/7.
 
-![image](https://github.com/user-attachments/assets/fb26886d-1b66-4487-b89d-54ce62feaa78)
+![image](https://github.com/user-attachments/assets/0641bcb5-3186-419b-9807-e36d7f6c49dd)
 
-JIRA Ticket Solver is an intelligent automation feature within the Kubiya platform designed to solve routine JIRA tickets based on predefined criteria and actions. By handling repetitive issues, it allows your team to focus on more complex tasks, streamlining the ticket resolution process.
+**🎯 Transform your JIRA operations with an AI team that resolves tickets while you sleep! Let your human team focus on complex issues while JIRA Crew handles the routine tasks.**
 
-**Take control of your JIRA workflows! With JIRA Ticket Solver, your team can handle tickets effortlessly, automatically resolving routine problems and sending updates via Slack.**
+## 🌟 Features
 
-## Features
+- 🤖 **Automated Resolution**: Instant handling of routine tickets
+- 📊 **Smart Prioritization**: Intelligent sorting of incoming issues
+- 🎯 **Custom Workflows**: Tailored actions for different ticket types
+- 📢 **Smart Notifications**: Slack alerts for human intervention
+- 📈 **Analytics & Insights**: Track resolution patterns and success rates
+- 📋 **Queue Management**: Organized handling of ticket backlogs
+- 🔄 **Continuous Learning**: Improves resolution accuracy over time
 
-- **Automatic ticket solving** based on custom criteria
-- **Configurable actions** for successful and failed ticket resolutions
-- **Integration with JIRA and Slack** for seamless notifications
-- **Customizable check intervals** to suit your team’s needs
-- **Support for custom JIRA fields** to fit your specific workflows
+## 🔄 User Flows
 
-## User Flows
-
-### 1. Automatic Ticket Solving
-
-The JIRA Ticket Solver continuously checks for tickets that meet your predefined criteria, runs the appropriate actions, and sends notifications when a ticket is resolved or an issue arises.
-
-```mermaid
-graph TD
-    A[Start Checking Tickets] --> B{Does Ticket Match Criteria?}
-    B --> |Yes| C[Solve Ticket]
-    B --> |No| D[Continue Checking]
-    C --> E[Send Slack Notification]
-    C --> F{Was Solved Successfully?}
-    F --> |Yes| G[Mark Ticket as Solved]
-    F --> |No| H[Run Failure Action]
-    H --> I[Notify Team]
-```
-
-### 2. Integration with Slack
-
-Get real-time updates when tickets are resolved or when manual intervention is required, all within your team’s Slack channel. Customize actions for solved and unresolved tickets, ensuring efficient handling of issues.
+### 1. 🎫 Automated Ticket Resolution
 
 ```mermaid
 graph TD
-    A[Monitor JIRA Tickets] --> B{Ticket Solved?}
-    B --> |Yes| C[Send Success Message to Slack]
-    B --> |No| D[Send Failure Alert to Slack]
+    A[📥 New Ticket Received] --> B{🤔 Analyze Ticket Type}
+    B --> |Routine| C[🤖 Apply Resolution Template]
+    B --> |Complex| D[👤 Route to Human Team]
+    C --> E[✍️ Update Ticket Status]
+    E --> F[📢 Notify User]
+    D --> G[🔔 Send Slack Alert]
+    
+    style A fill:#f9d71c,stroke:#333,stroke-width:2px
+    style B fill:#f9a61c,stroke:#333,stroke-width:2px
+    style C fill:#66c256,stroke:#333,stroke-width:2px
+    style D fill:#e74c3c,stroke:#333,stroke-width:2px
+    style E fill:#3498db,stroke:#333,stroke-width:2px
+    style F fill:#2ecc71,stroke:#333,stroke-width:2px
+    style G fill:#e67e22,stroke:#333,stroke-width:2px
 ```
 
-## Terraform Configuration
+### 2. 📊 Queue Management Process
 
-Below are the key variables used to configure the JIRA Ticket Solver agent:
+```mermaid
+sequenceDiagram
+    participant T as Tickets
+    participant C as JIRA Crew
+    participant S as Slack
+    participant H as Human Team
 
-| Variable Name                 | Description                                       | Type         | Default    |
-|--------------------------------|---------------------------------------------------|--------------|------------|
-| `teammate_name`                | Name of the JIRA Ticket Solver teammate           | `string`     |            |
-| `kubiya_runner`                | Runner (environment) to use for the agent         | `string`     |            |
-| `jira_integration_instance`    | JIRA integration instance for authentication      | `string`     |            |
-| `jira_project_name`            | JIRA project to check for tickets                 | `string`     |            |
-| `jira_jql`                     | JQL query to filter tickets for solving           | `string`     |            |
-| `issues_check_interval`        | Interval for checking tickets                     | `string`     | `"1h"`     |
-| `on_solve_action`              | Action to take after solving a ticket             | `string`     | `"close"`  |
-| `custom_field_name`            | Custom JIRA field to use for ticket identification| `string`     | `""`       |
-| `on_failure_action`            | Action to take after failure to solve a ticket    | `string`     | `"alert"`  |
-| `slack_notification_channel`   | Slack channel for notifications                   | `string`     | `""`       |
-| `log_level`                    | Log level for the agent                           | `string`     | `"INFO"`   |
-| `debug`                        | Enable debug mode                                | `bool`       | `false`    |
-| `dry_run`                      | Enable dry run mode (no real actions)             | `bool`       | `false`    |
+    T->>C: New tickets arrive
+    C->>C: Analyze & prioritize
+    alt Routine Ticket
+        C->>C: Apply automation
+        C->>T: Update status
+    else Needs Human
+        C->>S: Send notification
+        S->>H: Alert team
+        H->>T: Handle ticket
+    end
 
-## Terraform Code Example
-
-```terraform
-terraform {
-  required_providers {
-    kubiya = {
-      source = "kubiya-terraform/kubiya"
-    }
-  }
-}
-
-provider "kubiya" {
-  // API key is set as an environment variable KUBIYA_API_KEY
-}
-
-resource "kubiya_source" "sources" {
-  count = length(var.kubiya_sources)
-  url   = var.kubiya_sources[count.index]
-}
-
-resource "kubiya_agent" "jira_ticket_solver" {
-  name         = var.teammate_name
-  runner       = var.kubiya_runner
-  description  = var.teammate_description
-  instructions = ""
-  model        = "azure/gpt-4o"
-  integrations = [var.jira_integration_instance, "slack"]
-  sources      = kubiya_source.sources[*].name
-
-  environment_variables = {
-    JIRA_PROJECT_NAME          = var.jira_project_name
-    JIRA_INTEGRATION           = var.jira_integration_instance
-    ISSUE_DESCRIPTION          = var.issue_description
-    JIRA_JQL                   = var.jira_jql
-    ISSUES_CHECK_INTERVAL      = var.issues_check_interval
-    ON_SOLVE_ACTION            = var.on_solve_action
-    CUSTOM_FIELD_NAME          = var.custom_field_name
-    ON_FAILURE_ACTION          = var.on_failure_action
-    SLACK_NOTIFICATION_CHANNEL = var.slack_notification_channel
-  }
-}
-
-output "jira_ticket_solver" {
-  value = kubiya_agent.jira_ticket_solver
-}
+    style T fill:#f9d71c,stroke:#333,stroke-width:2px
+    style C fill:#3498db,stroke:#333,stroke-width:2px
+    style S fill:#e67e22,stroke:#333,stroke-width:2px
+    style H fill:#2ecc71,stroke:#333,stroke-width:2px
 ```
+
+## 🛠️ Configuration
+
+Below are the key variables used to configure the JIRA Crew agent:
+
+| Variable Name | Description | Type | Default |
+|---------------|-------------|------|---------|
+| `teammate_name` | Name of the JIRA Crew teammate | `string` | |
+| `kubiya_runner` | Runner to use for the teammate | `string` | |
+| `jira_project_name` | JIRA project to monitor | `string` | |
+| `issues_check_interval` | Interval for checking new issues | `string` | `"1h"` |
+| `slack_notification_channel` | Slack channel for notifications | `string` | `""` |
+| `automation_rules` | Custom automation rules | `list(object)` | `[]` |
+| `priority_matrix` | Ticket priority settings | `map` | |
+| `resolution_templates` | Pre-defined resolution templates | `map` | |
+| `users` | Authorized users | `list(string)` | |
+| `groups` | Authorized groups | `list(string)` | |
+
+## 🚀 Getting Started
+
+### Option 1: Quick Start with Kubiya Web Interface
+
+1. **Log into Kubiya Platform**:
+   ```bash
+   # Visit app.kubiya.ai and log in
+   ```
+
+2. **Deploy JIRA Crew**:
+   ```bash
+   # Navigate to Teammates > Add Teammate > JIRA Crew
+   ```
+
+3. **Configure Settings**:
+   Fill in the required fields:
+   - `teammate_name`: "jira-crew"
+   - `jira_project_name`: "SUPPORT"
+   - `slack_notification_channel`: "#support-alerts"
+
+4. **Deploy**:
+   Click on Deploy and let JIRA Crew do its magic!
+
+### Option 2: Advanced Setup with Terraform
+
+For more advanced integration, you can use Terraform natively to deploy the JIRA Crew teammate:
+
+1. Clone the [terraform module](https://github.com/kubiyabot/terraform-modules)
+2. Go to "Teammates" section in the Kubiya Web App
+3. Click on "Use Cases"
+4. Click on "Add Use Case"
+5. Select "Delegate JIRA Tickets"
+6. Fill in the required fields
+7. Click on Deploy
+
+## 🎭 Example Scenarios
+
+### Scenario 1: Password Reset Automation
+
+1. **Trigger**: New password reset ticket created
+2. **Analysis**: JIRA Crew identifies ticket type
+3. **Action**: Applies standard reset procedure
+4. **Resolution**: Updates ticket and notifies user
+5. **Learning**: Records resolution pattern
+
+### Scenario 2: Batch Processing Access Requests
+
+1. **Collection**: Multiple access request tickets received
+2. **Sorting**: Categorized by environment type
+3. **Processing**: Automatic approval for DEV/QA
+4. **Escalation**: Routes PROD requests for approval
+5. **Notification**: Updates stakeholders via Slack
+
+## 📊 Key Benefits
+
+- ⏱️ Up to 80% reduction in routine ticket handling time
+- 📈 24/7 automated ticket processing
+- 🎯 Consistent resolution procedures
+- 📊 Enhanced visibility into ticket patterns
+- 👥 Improved team focus on complex issues
 
 ---
 
-With **JIRA Ticket Solver**, automate your JIRA ticket resolution and focus on what matters most. Delegate routine tasks, stay informed, and ensure that no ticket is left unresolved!
+Ready to transform your JIRA operations? Deploy your AI crew today! 🚀
+
+**[Get Started](https://app.kubiya.ai)** | **[Documentation](https://docs.kubiya.ai)** | **[Request Demo](https://kubiya.ai)**
+
+---
+
+*Let JIRA Crew handle the routine while your team tackles the extraordinary! 🎯✨*
