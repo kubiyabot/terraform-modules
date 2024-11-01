@@ -32,106 +32,245 @@ The Kubernetes Crew transforms complex cluster management into a smooth sailing 
 - **📡 Communications**: Manage notifications and alerts
 - **🎨 UI/UX Specialists**: Provide human-friendly interfaces
 
-## 🌟 Feature Fleet
+## 🚀 Deployment Options
 
-### 1. 🤖 AI-Powered Operations
-```yaml
-Capabilities:
-  - Natural Language Processing
-  - Context-Aware Decision Making
-  - Predictive Analysis
-  - Automated Problem Resolution
+### 1. 🎨 Quick Deploy via Kubiya Web Interface
+
+1. Navigate to **Teammates** → **Use Cases** in Kubiya
+2. Click **New Use Case** and select **Kubernetes Crew**
+3. Configure:
+   - Runner name
+   - Notification channel
+   - Access permissions
+4. Deploy and start interacting!
+
+### 2. 🏗️ Infrastructure as Code (Terraform)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/kubiyabot/terraform-modules
+cd terraform-modules/kubernetes-crew
 ```
 
-### 2. 🛡️ Automated Protection
-```yaml
-Security:
-  - Dynamic RBAC Management
-  - Continuous Security Scanning
-  - Compliance Monitoring
-  - Access Control Automation
+2. Create `terraform.tfvars`:
+```hcl
+kubiya_runner              = "my-cluster-runner"
+notification_slack_channel = "#k8s-alerts"
+users                     = ["user@example.com"]
+groups                    = ["platform-team"]
+
+scheduled_tasks = {
+  health_check = {
+    enabled    = true
+    start_time = "2024-01-01T09:00:00Z"
+    repeat     = "daily"
+  }
+  capacity_check = {
+    enabled    = true
+    start_time = "2024-01-01T10:00:00Z"
+    repeat     = "weekly"
+  }
+}
 ```
 
-### 3. ⚡ Performance Optimization
-```yaml
-Optimization:
-  - Resource Usage Analysis
-  - Automatic Scaling
-  - Cost Optimization
-  - Performance Recommendations
+3. Deploy:
+```bash
+terraform init
+terraform apply
 ```
 
-## 💬 Example Interactions
+## 📦 Resource Structure
 
-### Scenario 1: Automated Health Reporting
-```markdown
-# In Slack
-You: @k8s-crew How's our cluster doing?
+### 1. 📚 Knowledge Base
+The crew comes with built-in knowledge about Kubernetes operations:
 
-Crew: 📊 Cluster Health Report (Last 24h):
-- Nodes: 8/8 Healthy
-- Pod Success Rate: 99.8%
-- Resource Utilization: 72%
-- Recent Events: 2 automatic scaling events
-- Alert: High memory usage in namespace: analytics
-
-Would you like details about any specific component?
-
-You: Tell me more about the analytics namespace
-
-Crew: 🔍 Analytics Namespace Analysis:
-- Memory Usage: 85% (↑12% from yesterday)
-- Running Pods: 15/16 (1 pending)
-- Top Consumer: data-processor-785bf
-- Recommendation: Consider increasing memory limits or optimizing the data-processor deployment
-
-Should I prepare a scaling plan for the data-processor?
+```bash
+kubernetes-crew/
+└── knowledge/
+    └── kubernetes_ops.md    # Core Kubernetes knowledge
+        ├── Cluster Health Indicators
+        ├── Common Issues & Solutions
+        ├── Best Practices
+        └── Optimization Guidelines
 ```
 
-### Scenario 2: Self-Healing in Action
-```markdown
-# Automatic Slack Alert
-Crew: 🚨 Alert: Detected failing pods in payment-service
-- Issue: Liveness probe failing
-- Action: Initiating automatic restart
-- Status: Monitoring recovery
+### 2. 🤖 Built-in Prompts
+Pre-configured prompts that power the crew's automated tasks:
 
-# 2 minutes later
-Crew: ✅ Recovery Successful:
-- All pods healthy
-- Response time normalized
-- Root cause: Memory pressure
-- Preventive Action: Adjusted resource limits
-
-Would you like me to prepare a detailed incident report?
+```bash
+kubernetes-crew/
+└── prompts/
+    ├── health_check.md       # Daily cluster health assessment
+    ├── capacity_check.md     # Resource usage and optimization
+    ├── deployment_monitor.md # Deployment status tracking
+    ├── app_creation.md      # New application setup assistant
+    └── gitops_pr.md         # GitOps PR automation
 ```
 
-### Scenario 3: Natural Language Operations
-```markdown
-You: @k8s-crew Can you deploy the latest version of our monitoring stack?
+### 3. ⚙️ Configuration Options
 
-Crew: I'll help you update the monitoring stack:
-1. Current version detected: v2.5.0
-2. Latest available version: v2.6.1
-3. Checking compatibility... ✅
-4. Estimated update time: 5 minutes
+#### Core Variables
+```hcl
+# Required
+kubiya_runner              = "my-cluster"        # Your runner name
+notification_slack_channel = "#k8s-alerts"       # Slack channel
 
-Should I proceed with the update using our standard deployment strategy?
+# Optional
+teammate_name = "k8s-crew"                      # Custom crew name
+users         = ["user@company.com"]            # Authorized users
+groups        = ["platform-team"]               # Authorized groups
+log_level     = "INFO"                          # Logging detail
+```
 
-You: Yes, go ahead
+#### Scheduled Tasks
+```hcl
+scheduled_tasks = {
+  # Daily Health Check
+  health_check = {
+    enabled    = true
+    start_time = "2024-01-01T09:00:00Z"
+    repeat     = "daily"
+  }
+  
+  # Weekly Capacity Analysis
+  capacity_check = {
+    enabled    = true
+    start_time = "2024-01-01T10:00:00Z"
+    repeat     = "weekly"
+  }
+  
+  # Custom Task Example
+  custom_check = {
+    enabled       = true
+    start_time    = "2024-01-01T11:00:00Z"
+    repeat        = "hourly"
+    custom_prompt = "Check the status of critical services"
+  }
+}
+```
 
-Crew: 🚀 Initiating deployment:
-- Updating Helm values
-- Rolling update in progress
-- Monitoring metrics
-- Verifying endpoints
+### 4. 🔄 Task Schedule Options
+Available scheduling intervals:
+- `hourly`: Run every hour
+- `daily`: Run once per day
+- `weekly`: Run once per week
+- `monthly`: Run once per month
 
-✅ Deployment successful! New features available:
-- Enhanced metrics collection
-- Improved dashboard templates
-- Better alert correlation
+### 5. 🎯 Default Tasks
 
-Would you like me to show you the new monitoring dashboards?
+| Task | Schedule | Purpose |
+|------|----------|---------|
+| Health Check | Daily | Comprehensive cluster health assessment |
+| Capacity Check | Weekly | Resource usage analysis and optimization |
+| Deployment Monitor | Hourly | Track deployment status and health |
+| Security Scan | Daily | Security and compliance verification |
+| Backup Verification | Daily | Validate backup status |
+| Cost Analysis | Weekly | Resource cost optimization |
+| Compliance Check | Weekly | Policy compliance verification |
+| Update Check | Weekly | Version and update management |
+
+## 🗣️ Your Crew in Action
+
+### 1. Automated Health Checks
+```plaintext
+# The crew automatically reports every morning
+Crew: 🏥 Daily Health Check Report
+> Good morning! I've completed our morning inspection:
+> 
+> ✅ Fleet Status:
+> - All 5 nodes standing strong
+> - Control plane sailing smoothly
+> - Resource seas are calm
+> 
+> ⚠️ Weather Warning:
+> - Storm brewing in 'analytics' namespace (85% memory pressure)
+> - Two pods have gone overboard in 'backend' waters
+> 
+> Shall I:
+> 1. Launch a rescue mission for the failing pods
+> 2. Navigate around the memory pressure
+> 3. Chart a detailed course of action
+```
+
+### 2. Resource Optimization
+```plaintext
+# Weekly automated check
+Crew: 📊 Weekly Resource Analysis
+> I've analyzed your cluster's resource usage:
+>
+> 💡 Optimization Opportunities:
+> 1. frontend-app is overprovisioned
+>    - Current: 2CPU/4GB
+>    - Recommended: 1CPU/2GB
+>    - Potential savings: $120/month
+>
+> 2. Found 3 idle deployments
+>    - test-env (unused for 30 days)
+>    - staging-db (no traffic)
+>    - old-cache (deprecated)
+>
+> Would you like me to:
+> 1. Prepare resource adjustment PR
+> 2. Clean up idle resources
+> 3. Show detailed analysis
+```
+
+### 3. Interactive Troubleshooting
+```plaintext
+@Kubiya investigate high latency in payment service
+> 🔍 Investigating payment service latency...
+>
+> Found several contributing factors:
+> 1. Database connection pool near limit (90%)
+> 2. High pod CPU throttling (75%)
+> 3. Network policy limiting connections
+>
+> Recommended actions:
+> 1. Increase connection pool size
+> 2. Scale up CPU limits
+> 3. Adjust network policy
+>
+> Should I help you implement these fixes?
+```
+
+### 4. Deployment Management
+```plaintext
+@Kubiya deploy new version of auth-service
+> 🚀 Planning deployment for auth-service
+>
+> Pre-deployment checks:
+> ✅ Target cluster healthy
+> ✅ Sufficient resources available
+> ✅ Backup exists
+> ⚠️ High traffic period
+>
+> Recommended strategy:
+> - Canary deployment (20% traffic)
+> - 15-minute observation window
+> - Automatic rollback on errors
+>
+> Shall we proceed with this approach?
+```
+
+### 5. Security Monitoring
+```plaintext
+# Daily automated security scan
+Crew: 🔒 Security Scan Results
+> Completed daily security assessment:
+>
+> 🛡️ Findings:
+> - 3 pods running as root
+> - Outdated base image in 'payment-processor'
+> - Missing network policies in 'data' namespace
+>
+> Critical Updates Available:
+> - ingress-nginx: 1.8.1 -> 1.9.0 (security fix)
+> - cert-manager: 1.11.0 -> 1.12.0
+>
+> Would you like me to:
+> 1. Generate security fix PRs
+> 2. Apply critical updates
+> 3. Show detailed report
 ```
 
 ## 🎨 The Power of Natural Interaction
@@ -162,25 +301,48 @@ graph TD
 | Steep learning curve | Instant team productivity |
 | Reactive management | Proactive optimization |
 
-## 🚀 Quick Start Guide
+## 📚 Extending Your Crew
 
-Note: After installing this delegation, you will benefit from scheduled tasks that are coming out of out box as part of the bundle. Those tasks will summon the teammates to check on your cluster on fixed intervals.
-
-
-### 1. Summon Your Crew
-Tag the Kubiya app on the relevant chat platform (eg. Slack), with the !kubernetes prefix. eg: `!kubernetes` which will start a conversation with the team mates
-
-### 2. Start Delegating
-```slack
-You: @k8s-crew We need more resources for the payment service
-Crew: Analyzing current usage... Scaling payment-service deployment from 3 to 5 replicas. Monitoring performance...
+### 1. Custom Knowledge
+Add your own knowledge in markdown format:
+```bash
+kubernetes-crew/
+└── knowledge/
+    ├── kubernetes_ops.md     # Core operations knowledge
+    ├── runbooks/            # Custom runbooks
+    ├── procedures/          # Standard procedures
+    └── best_practices/      # Best practices
 ```
 
-## 🌟 Ready to Set Sail?
+### 2. Custom Prompts
+Define new automated tasks through prompts:
+```bash
+kubernetes-crew/
+└── prompts/
+    ├── health_check.md      # Cluster health checks
+    ├── capacity_check.md    # Resource capacity analysis
+    ├── deployment_monitor.md # Deployment tracking
+    └── app_creation.md      # Application setup assistance
+```
 
-Transform your Kubernetes experience with a crew that never sleeps, never tires, and always keeps your clusters running at peak performance.
+## 🔧 Configuration Reference
 
-**[Get Started Now](#quick-start-guide)** | **[View Documentation](https://docs.kubiya.ai)** | **[Request Demo](https://kubiya.ai)**
+### Required Variables
+- `kubiya_runner`: Your Kubiya runner name
+- `notification_slack_channel`: Slack channel for alerts
+
+### Optional Variables
+- `teammate_name`: Custom name for your crew (default: "k8s-crew")
+- `users`: List of authorized users
+- `groups`: List of authorized groups
+- `scheduled_tasks`: Custom task schedules
+
+## 📚 Additional Resources
+
+- [How to Use Your Teammate](https://docs.kubiya.ai/docs/get-started/use-your-teammate)
+- [Slack Integration Guide](https://docs.kubiya.ai/docs/integrations/slack)
+- [Knowledge Base Guide](https://docs.kubiya.ai/docs/kubiya-resources/knowledge)
+- [Prompts Documentation](https://docs.kubiya.ai/docs/kubiya-resources/prompts)
 
 ---
 
