@@ -1,7 +1,7 @@
 name: "Delegate JIRA Tickets"
 icons:
   - "https://logos-world.net/wp-content/uploads/2021/02/Jira-Emblem.png"
-  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/DevOps.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
 # Description is fetched automatically from the README.md file
 # and will be displayed in the Kubiya Web App at https://app.kubiya.ai "tasks" section
 description: ""
