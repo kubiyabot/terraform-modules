@@ -20,7 +20,7 @@ resource "kubiya_agent" "databricks_engineer" {
   description  = "Your AI-powered Databricks operations engineer"
   instructions = "I am your Databricks operations expert, ready to help with workspace management, cluster operations, jobs, and MLflow."
   model        = "azure/gpt-4"
-  integrations = compact(["slack")
+  integrations = ["slack"]
   users        = var.users
   groups       = var.groups
   sources      = [kubiya_source.databricks_tools.name]
