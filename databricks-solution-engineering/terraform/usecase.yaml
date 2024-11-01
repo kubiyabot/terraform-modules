@@ -1,0 +1,6 @@
+name: "Databricks Solution Engineer"
+icons:
+  - "https://avatars.githubusercontent.com/u/4998052?s=280&v=4"
+# Description is fetched automatically from the repository's README.md file if it exists
+# and will be displayed in the Kubiya Web App at https://app.kubiya.ai under "teammates" -> "tasks" section
+description: ""
