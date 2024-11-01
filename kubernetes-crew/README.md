@@ -136,29 +136,29 @@ Below are the key variables used to configure the Kubernetes Crew agent:
 
 ## 🚀 Getting Started
 
-1. **Installation**: Deploy Kubernetes Crew to your cluster using Helm:
-   ```bash
-   helm repo add kubiya https://charts.kubiya.ai
-   helm install k8s-crew kubiya/kubernetes-crew
-   ```
+1. **Log into Kubiya Platform**:
+   - Visit [app.kubiya.ai](https://app.kubiya.ai)
+   - Log in with your credentials
 
-2. **Configuration**: Customize your Kubernetes Crew instance by creating a `values.yaml` file:
-   ```yaml
-   teammate_name: "k8s-crew"
-   kubiya_runner: "prod-cluster"
-   enable_cluster_health_monitoring: true
-   notification_slack_channel: "#k8s-alerts"
-   ```
+2. **Navigate to Use Cases**:
+   - Go to "Teammates" section
+   - Click on "Use Cases"
+   - Click "Add Use Case"
+   - Select "Kubernetes Crew"
 
-3. **Slack Integration**: Connect Kubernetes Crew to your Slack workspace:
-   ```bash
-   kubectl create secret generic slack-token --from-literal=token=xoxb-your-slack-token
-   ```
+3. **Configure Settings**:
+   Fill in the required fields:
+   - Teammate Name (e.g., "k8s-crew")
+   - Kubernetes context
+   - Slack Channel for notifications
+   - Health check interval
+   - Monitoring settings
+   - Access permissions
 
-4. **Start Using**: Begin interacting with Kubernetes Crew in your Slack channel:
-   ```
-   @k8s-crew get pods -n production
-   ```
+4. **Deploy**:
+   - Review your configuration
+   - Click "Deploy Use Case"
+   - Wait for confirmation
 
 ## 🎭 Example Scenarios
 
