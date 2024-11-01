@@ -2,7 +2,7 @@
 
 **Transform your Databricks operations with an AI teammate that speaks your language**
 
-![Databricks Engineer Banner](https://github.com/user-attachments/assets/02d35010-a05a-4b36-b912-2417aba6575d)
+![image](https://github.com/user-attachments/assets/8effc462-1db3-4202-ad37-dff1f26a034e)
 
 > "Let your AI engineer handle the complexity while you focus on innovation!"
 
