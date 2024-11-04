@@ -72,4 +72,4 @@ jobs:
           cd ${{ matrix.dir }}/terraform
           terraform init
           terraform validate
-          terraform plan
+          # terraform plan

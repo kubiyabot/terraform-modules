@@ -71,6 +71,6 @@ jobs:
         run: |
           cd ${{ matrix.dir }}/terraform
           terraform init
-          terraform state list
-          terraform plan -out=tfplan
+          # terraform state list
+          # terraform plan -out=tfplan
           # terraform apply -auto-approve tfplan
