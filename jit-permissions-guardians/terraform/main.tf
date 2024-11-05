@@ -19,12 +19,11 @@ resource "kubiya_source" "source2" {
   url = "https://github.com/kubiyabot/terraform-modules/tree/main/aws-jit-permissions-workflow/tools/aws/*"
 }
 resource "kubiya_agent" "agent" {
-  name         = var.agent_name
+  name         = var.teammate_name
   runner       = var.kubiya_runner
-  description  = var.agent_description
+  description  = var.teammate_description
   instructions = ""
   model        = "azure/gpt-4o"
-  //image        = "kubiya/base-agent:tools-v7"
   secrets      = var.kubiya_secrets
   integrations = var.kubiya_integrations
   users        = var.kubiya_users
