@@ -19,6 +19,7 @@ variable "teammate_description" {
 variable "users" {
   description = "List of users who can interact with the teammate"
   type        = list(string)
+  default     = []
 }
 
 variable "groups" {
@@ -31,7 +32,7 @@ variable "groups" {
 variable "notification_slack_channel" {
   description = "Slack channel for notifications"
   type        = string
-  default     = "#kubernetes-alerts"
+  default     = "#kubernetes-alerts-costa"
 }
 
 variable "log_level" {
