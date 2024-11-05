@@ -20,12 +20,12 @@ variable "notification_slack_channel" {
   default     = "#k8s-notifications"
 }
 
-variable "users" {
+variable "kubiya_users" {
   description = "👥 Users who can interact with the teammate"
   type        = list(string)
 }
 
-variable "groups" {
+variable "kubiya_groups" {
   description = "👥 Groups who can interact with the teammate"
   type        = list(string)
   default     = ["Admin"]
