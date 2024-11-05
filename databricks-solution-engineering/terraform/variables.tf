@@ -9,14 +9,13 @@ variable "notification_slack_channel" {
   default     = "#databricks-ops"
 }
 
-variable "users" {
-  description = "👥 List of specific users who can interact with your Databricks engineer (leave empty to allow all users)"
+variable "kubiya_users" {
+  description = "👥 Users who can interact with the teammate"
   type        = list(string)
-  default     = []
 }
 
-variable "groups" {
-  description = "🔑 List of groups who can interact with your Databricks engineer (defaults to Admin group)"
+variable "kubiya_groups" {
+  description = "👥 Groups who can interact with the teammate"
   type        = list(string)
   default     = ["Admin"]
 }
