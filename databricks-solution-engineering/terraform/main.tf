@@ -21,8 +21,8 @@ resource "kubiya_agent" "databricks_engineer" {
   instructions = "I am your Databricks operations expert, ready to help with workspace management, cluster operations, jobs, and MLflow."
   model        = "azure/gpt-4"
   integrations = ["slack"]
-  users        = var.users
-  groups       = var.groups
+  users        = var.kubiya_users
+  groups       = var.kubiya_groups
   sources      = [kubiya_source.databricks_tools.name]
 
   environment_variables = {
@@ -37,7 +37,7 @@ resource "kubiya_agent" "databricks_engineer" {
 # Knowledge resources
 resource "kubiya_knowledge" "cluster_management" {
   name             = "Databricks Cluster Management"
-  groups           = var.groups
+  groups           = var.kubiya_groups
   description      = "Knowledge base for Databricks cluster operations"
   labels           = ["databricks", "clusters"]
   supported_agents = [kubiya_agent.databricks_engineer.name]
@@ -46,7 +46,7 @@ resource "kubiya_knowledge" "cluster_management" {
 
 resource "kubiya_knowledge" "workspace_management" {
   name             = "Databricks Workspace Management"
-  groups           = var.groups
+  groups           = var.kubiya_groups
   description      = "Knowledge base for Databricks workspace operations"
   labels           = ["databricks", "workspace"]
   supported_agents = [kubiya_agent.databricks_engineer.name]
@@ -56,7 +56,7 @@ resource "kubiya_knowledge" "workspace_management" {
 resource "kubiya_knowledge" "unity_catalog" {
   count            = var.enable_unity_catalog ? 1 : 0
   name             = "Databricks Unity Catalog"
-  groups           = var.groups
+  groups           = var.kubiya_groups
   description      = "Knowledge base for Unity Catalog operations"
   labels           = ["databricks", "unity-catalog"]
   supported_agents = [kubiya_agent.databricks_engineer.name]
@@ -66,7 +66,7 @@ resource "kubiya_knowledge" "unity_catalog" {
 resource "kubiya_knowledge" "mlflow_operations" {
   count            = var.enable_mlflow_tracking ? 1 : 0
   name             = "Databricks MLflow Operations"
-  groups           = var.groups
+  groups           = var.kubiya_groups
   description      = "Knowledge base for MLflow operations"
   labels           = ["databricks", "mlflow"]
   supported_agents = [kubiya_agent.databricks_engineer.name]
