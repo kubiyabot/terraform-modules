@@ -32,7 +32,7 @@ variable "groups" {
 variable "notification_slack_channel" {
   description = "Slack channel for notifications"
   type        = string
-  default     = "#kubernetes-alerts-costa"
+  default     = "#kubernetes-alerts"
 }
 
 variable "log_level" {
