@@ -54,11 +54,11 @@ data "http" "capacity_check_prompt" {
 }
 
 data "http" "scaling_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/terraform/prompts/scaling_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/scaling_check.md"
 }
 
 data "http" "upgrade_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/terraform/prompts/upgrade_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/upgrade_check.md"
 }
 
 data "http" "kubernetes_ops" {
