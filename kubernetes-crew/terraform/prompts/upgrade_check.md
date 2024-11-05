@@ -23,7 +23,7 @@ Please perform a comprehensive upgrade readiness check:
 4. Pre-upgrade Tasks:
    - Backup critical components
    - Update manifests
-   - Test environment validation
+   environment validation
    - Document rollback procedure
 
 5. Upgrade Strategy:
