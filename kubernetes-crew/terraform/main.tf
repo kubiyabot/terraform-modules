@@ -21,8 +21,8 @@ resource "kubiya_agent" "kubernetes_crew" {
   instructions = ""
   model        = "azure/gpt-4"
   integrations = ["kubernetes", "slack"]
-  users        = var.users
-  groups       = var.groups
+  users        = var.kubiya_users
+  groups       = var.kubiya_groups
   sources      = [kubiya_source.source.name]
 
   environment_variables = {
@@ -33,7 +33,7 @@ resource "kubiya_agent" "kubernetes_crew" {
 
 resource "kubiya_knowledge" "kubernetes_ops" {
   name             = "Kubernetes Operations Guide"
-  groups           = var.groups
+  groups           = var.kubiya_groups
   description      = "Knowledge base for Kubernetes operations and troubleshooting"
   labels           = ["kubernetes", "operations"]
   supported_agents = [kubiya_agent.kubernetes_crew.name]
