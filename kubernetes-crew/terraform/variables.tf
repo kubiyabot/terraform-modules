@@ -35,6 +35,12 @@ variable "notification_slack_channel" {
   default     = "#kubernetes-alerts"
 }
 
+variable "scheduled_task_slack_channel" {
+  description = "Slack channel for triggering scheduled tasks"
+  type        = string
+  default     = "#kubernetes-alerts"
+}
+
 variable "log_level" {
   description = "Logging level (DEBUG, INFO, WARN, ERROR)"
   type        = string
