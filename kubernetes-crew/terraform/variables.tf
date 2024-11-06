@@ -36,7 +36,7 @@ variable "notification_slack_channel" {
 }
 
 variable "scheduled_task_slack_channel" {
-  description = "Slack channel for notifications"
+  description = "Slack channel for triggering scheduled tasks"
   type        = string
   default     = "#kubernetes-alerts"
 }
