@@ -44,7 +44,7 @@ variable "log_level" {
 variable "cronjob_start_time" {
   description = "Default start time for cron jobs"
   type        = string
-  default     = "09:00"
+  default     = "2024-11-05T08:00:00"
 }
 
 variable "cronjob_repeat_scenario_one" {
