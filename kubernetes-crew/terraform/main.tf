@@ -14,67 +14,67 @@ provider "kubiya" {
 }
 
 data "http" "health_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/health_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/health_check.md"
 }
 
 data "http" "resource_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/resource_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/resource_check.md"
 }
 
 data "http" "cleanup_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/cleanup.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/cleanup.md"
 }
 
 data "http" "network_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/network_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/network_check.md"
 }
 
 data "http" "security_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/security_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/security_check.md"
 }
 
 data "http" "backup_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/backup_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/backup_check.md"
 }
 
 data "http" "cost_analysis_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/cost_analysis.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/cost_analysis.md"
 }
 
 data "http" "compliance_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/compliance_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/compliance_check.md"
 }
 
 data "http" "update_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/update_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/update_check.md"
 }
 
 data "http" "capacity_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/capacity_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/capacity_check.md"
 }
 
 data "http" "scaling_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/scaling_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/scaling_check.md"
 }
 
 data "http" "upgrade_check_prompt" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/prompts/upgrade_check.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/prompts/upgrade_check.md"
 }
 
 data "http" "kubernetes_ops" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/knowledge/kubernetes_ops.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/knowledge/kubernetes_ops.md"
 }
 
 data "http" "kubernetes_security" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/knowledge/kubernetes_security.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/knowledge/kubernetes_security.md"
 }
 
 data "http" "kubernetes_troubleshooting" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform/knowledge/kubernetes_troubleshooting.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform/knowledge/kubernetes_troubleshooting.md"
 }
 
 resource "kubiya_source" "source" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/kubernetes-crew-fix/kubernetes-crew/terraform"
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
