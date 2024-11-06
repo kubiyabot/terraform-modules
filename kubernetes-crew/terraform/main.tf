@@ -129,7 +129,8 @@ resource "kubiya_scheduled_task" "health_check" {
   repeat         = try(var.cronjob_repeat_scenario_one, "daily")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.health_check_prompt.response_body
+  # description    = data.http.health_check_prompt.response_body
+  description    = try(data.http.health_check_prompt.response_body, var.scheduled_task_health_check_description)
 }
 
 # Resource Optimization Task
