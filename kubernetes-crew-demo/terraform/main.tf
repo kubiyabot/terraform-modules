@@ -77,6 +77,10 @@ resource "kubiya_source" "source" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
 }
 
+resource "kubiya_source" "source2" {
+  url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
+}
+
 resource "kubiya_agent" "kubernetes_crew" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
@@ -86,7 +90,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   integrations = ["kubernetes", "slack"]
   users        = var.kubiya_users
   groups       = var.kubiya_groups
-  sources      = [kubiya_source.source.name]
+  sources      = [kubiya_source.source.name, kubiya_source.source2.name]
 
   environment_variables = {
     LOG_LEVEL            = var.log_level
