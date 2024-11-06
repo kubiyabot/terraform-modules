@@ -129,7 +129,7 @@ resource "kubiya_scheduled_task" "health_check" {
   repeat         = try(var.cronjob_repeat_scenario_one, "daily")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = try(data.http.health_check_prompt.response_body, var.scheduled_task_description_health_check)
+  description    = data.http.health_check_prompt.response_body
 }
 
 # Resource Optimization Task
@@ -139,7 +139,7 @@ resource "kubiya_scheduled_task" "resource_check" {
   repeat         = try(var.cronjob_repeat_scenario_one, "daily")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.resource_check_prompt.response_body, var.scheduled_task_description_resource_check)
+  description = data.http.resource_check_prompt.response_body
 
 }
 
@@ -150,7 +150,7 @@ resource "kubiya_scheduled_task" "cleanup" {
   repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.cleanup_prompt.response_body, var.scheduled_task_description_cleanup)
+  description = data.http.cleanup_prompt.response_body
 }
 
 # Network Check Task
@@ -160,7 +160,7 @@ resource "kubiya_scheduled_task" "network_check" {
   repeat         = try(var.cronjob_repeat_scenario_one, "daily")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.network_check_prompt.response_body, var.scheduled_task_description_network_check)
+  description = data.http.network_check_prompt.response_body
 }
 
 # Security Check Task
@@ -170,7 +170,7 @@ resource "kubiya_scheduled_task" "security_check" {
   repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.security_check_prompt.response_body, var.scheduled_task_description_security_check)
+  description = data.http.security_check_prompt.response_body
 }
 
 # Backup Verification Task
@@ -180,7 +180,7 @@ resource "kubiya_scheduled_task" "backup_check" {
   repeat         = try(var.cronjob_repeat_scenario_one, "daily")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.backup_check_prompt.response_body, var.scheduled_task_description_backup_check)
+  description = data.http.backup_check_prompt.response_body
 }
 
 # Cost Analysis Task
@@ -190,7 +190,7 @@ resource "kubiya_scheduled_task" "cost_analysis" {
   repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.cost_analysis_prompt.response_body, var.scheduled_task_description_cost_analysis)
+  description = data.http.cost_analysis_prompt.response_body
 }
 
 # Compliance Check Task
@@ -200,7 +200,7 @@ resource "kubiya_scheduled_task" "compliance_check" {
   repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.compliance_check_prompt.response_body, var.scheduled_task_description_compliance_check)
+  description = data.http.compliance_check_prompt.response_body
 }
 
 # Update Check Task
@@ -210,7 +210,7 @@ resource "kubiya_scheduled_task" "update_check" {
   repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.update_check_prompt.response_body, var.scheduled_task_description_update_check)
+  description = data.http.update_check_prompt.response_body
 }
 
 # Capacity Planning Task
@@ -220,7 +220,7 @@ resource "kubiya_scheduled_task" "capacity_check" {
   repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.capacity_check_prompt.response_body, var.scheduled_task_description_capacity_check)
+  description = data.http.capacity_check_prompt.response_body
 }
 
 # Upgrade Assessment Task
@@ -230,7 +230,7 @@ resource "kubiya_scheduled_task" "upgrade_check" {
   repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.upgrade_check_prompt.response_body, var.scheduled_task_description_upgrade_check)
+  description = data.http.upgrade_check_prompt.response_body
 }
 
 # Scaling Check Task
@@ -240,7 +240,7 @@ resource "kubiya_scheduled_task" "scaling_check" {
   repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
   channel_id     = var.notification_slack_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description = try(data.http.scaling_check_prompt.response_body, var.scheduled_task_description_scaling_check)
+  description = data.http.scaling_check_prompt.response_body
 }
 
 output "kubernetes_crew" {
