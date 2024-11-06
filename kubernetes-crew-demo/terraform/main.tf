@@ -17,14 +17,65 @@ data "http" "health_check_prompt" {
   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/health_check.md"
 }
 
+data "http" "resource_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/resource_check.md"
+}
+
+data "http" "cleanup_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/cleanup.md"
+}
+
+data "http" "network_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/network_check.md"
+}
+
+data "http" "security_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/security_check.md"
+}
+
+data "http" "backup_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/backup_check.md"
+}
+
+data "http" "cost_analysis_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/cost_analysis.md"
+}
+
+data "http" "compliance_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/compliance_check.md"
+}
+
+data "http" "update_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/update_check.md"
+}
+
+data "http" "capacity_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/capacity_check.md"
+}
+
+data "http" "scaling_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/scaling_check.md"
+}
+
+data "http" "upgrade_check_prompt" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/prompts/upgrade_check.md"
+}
+
+data "http" "kubernetes_ops" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/knowledge/kubernetes_ops.md"
+}
+
+data "http" "kubernetes_security" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/knowledge/kubernetes_security.md"
+}
+
+data "http" "kubernetes_troubleshooting" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew-demo/terraform/knowledge/kubernetes_troubleshooting.md"
+}
+
 resource "kubiya_source" "source" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
 }
-
-resource "kubiya_source" "source2" {
-  url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
-}
-
 
 resource "kubiya_agent" "kubernetes_crew" {
   name         = var.teammate_name
@@ -35,7 +86,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   integrations = ["kubernetes", "slack"]
   users        = var.kubiya_users
   groups       = var.kubiya_groups
-  sources      = [kubiya_source.source.name, kubiya_source.source2.name]
+  sources      = [kubiya_source.source.name]
 
   environment_variables = {
     LOG_LEVEL            = var.log_level
