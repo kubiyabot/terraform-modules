@@ -16,13 +16,13 @@ variable "teammate_description" {
 }
 
 # Access Control
-variable "users" {
+variable "kubiya_users" {
   description = "List of users who can interact with the teammate"
   type        = list(string)
   default     = []
 }
 
-variable "groups" {
+variable "kubiya_groups" {
   description = "List of groups who can interact with the teammate"
   type        = list(string)
   default     = ["Admin"]
@@ -64,56 +64,69 @@ variable "cronjob_repeat_scenario_three" {
   default     = "monthly"
 }
 
-# Add this to the existing variables.tf
-variable "cluster_type" {
-  description = "Type of Kubernetes cluster (EKS, GKE, AKS, or custom)"
-  type        = string
-  default     = ""
-  validation {
-    condition     = contains(["EKS", "GKE", "AKS", "custom"], var.cluster_type)
-    error_message = "Cluster type must be one of: EKS, GKE, AKS, or custom"
-  }
+variable "enable_resource_check_task" {
+  description = "📊 Enable scheduled resource optimization task"
+  type        = bool
+  default     = true
 }
 
-################DEFAULT DESCRIPTIONS######################
+// Scheduled Tasks Configuration
+variable "enable_health_check_task" {
+  description = "🏥 Enable scheduled health check task"
+  type        = bool
+  default     = true
+}
 
+variable "enable_cleanup_task" {
+  description = "🧹 Enable scheduled cleanup task"
+  type        = bool
+  default     = true
+}
 
-variable "scheduled_task_health_check_description" {
-  description = "Description for the health check task"
-  type        = string
-  default     = <<-EOT
-  # Kubernetes Cluster Health Check
+variable "enable_network_check_task" {
+  description = "🌐 Enable scheduled network check task"
+  type        = bool
+  default     = true
+}
 
-Please perform a comprehensive health check of the Kubernetes cluster:
+variable "enable_security_check_task" {
+  description = "🔒 Enable scheduled security check task"
+  type        = bool
+  default     = true
+}
 
-1. Node Health Assessment:
-   - Check node status and conditions
-   - Monitor node resource utilization (CPU, Memory, Disk)
-   - Verify node readiness and availability
+variable "enable_backup_check_task" {
+  description = "💾 Enable scheduled backup verification task"
+  type        = bool
+  default     = true
+}
 
-2. Pod Health Verification:
-   - Identify pods in CrashLoopBackOff or Error states
-   - Check for pods with high restart counts
-   - List pods with resource pressure
-   - Verify pod scheduling and distribution
+variable "enable_cost_analysis_task" {
+  description = "💰 Enable scheduled cost analysis task"
+  type        = bool
+  default     = true
+}
 
-3. Workload Status:
-   - Check deployment rollout status
-   - Verify replicaset health
-   - Monitor statefulset status
-   - Check daemonset status
+variable "enable_compliance_check_task" {
+  description = "✅ Enable scheduled compliance check task"
+  type        = bool
+  default     = true
+}
 
-4. Resource Utilization:
-   - Review resource requests vs limits
-   - Check for resource quota violations
-   - Monitor namespace resource usage
-   - Identify resource constraints
+variable "enable_update_check_task" {
+  description = "🔄 Enable scheduled update check task"
+  type        = bool
+  default     = true
+}
 
-5. Actions:
-   - Generate detailed health report
-   - Prioritize issues by severity
-   - Recommend immediate actions
-   - Alert on critical issues
-   - Document findings in thread 
-EOT
+variable "enable_capacity_check_task" {
+  description = "📈 Enable scheduled capacity planning task"
+  type        = bool
+  default     = true
+}
+
+variable "enable_upgrade_check_task" {
+  description = "🚀 Enable upgrade check monitoring task"
+  type        = bool
+  default     = true
 }
