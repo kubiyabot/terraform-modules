@@ -83,7 +83,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   description  = var.teammate_description
   instructions = ""
   model        = "azure/gpt-4o"
-  integrations = ["slack"]
+  integrations = ["kubernetes", "slack"]
   users        = var.kubiya_users
   groups       = var.kubiya_groups
   sources      = [kubiya_source.source.name]
