@@ -69,7 +69,7 @@ jobs:
 
       - name: Terraform Init and Plan
         run: |
-          cd ${{ matrix.dir }}/terraform
+          cd ${{ matrix.dir }}
           terraform init
           terraform validate
-          # terraform plan
+          terraform plan

@@ -69,8 +69,8 @@ jobs:
 
       - name: Terraform Init and Apply
         run: |
-          cd ${{ matrix.dir }}/terraform
+          cd ${{ matrix.dir }}
           terraform init
-          # terraform state list
-          # terraform plan -out=tfplan
-          # terraform apply -auto-approve tfplan
+          terraform state list
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
