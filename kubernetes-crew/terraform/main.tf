@@ -74,7 +74,7 @@ data "http" "kubernetes_troubleshooting" {
 }
 
 resource "kubiya_source" "source" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/refinement-costa/kubernetes-crew/terraform"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
