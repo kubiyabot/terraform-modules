@@ -140,7 +140,9 @@ resource "kubiya_scheduled_task" "health_check" {
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.health_check_prompt.response_body
+    description    = templatefile(data.http.health_check_prompt.response_body, {
+    notification_channel = var.notification_channel
+  })
 }
 
 # Security Scan Task
@@ -150,7 +152,10 @@ resource "kubiya_scheduled_task" "security_scan" {
   repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.security_check_prompt.response_body
+  description    = templatefile(data.http.security_check_prompt.response_body, {
+    security_channel = var.security_channel,
+    notification_channel = var.notification_channel
+  })
 }
 
 # Resource Check Task
