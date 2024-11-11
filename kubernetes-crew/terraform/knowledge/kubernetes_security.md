@@ -1,66 +1,29 @@
-# Kubernetes Security Knowledge Base
+# Kubernetes Security Guide
 
-## Security Architecture
-### Control Plane Security
-- API Server Authentication
-- Authorization Modes
-- Admission Controllers
-- etcd Security
+## Security Tools & Operations
 
-### Node Security
-- Node Authorization
-- Kubelet Authentication
-- Container Runtime Security
-- Host Security
+### Network Security
+- Use `network_policy_analyzer_tool` for policy analysis
+- Check exposed services and policy gaps
+- Monitor ingress configurations
 
-## Access Control
-### RBAC Management
-- Role Definitions
-- RoleBindings
-- ClusterRoles
-- ServiceAccounts
+### Resource Access
+- Use `pod_disruption_budget_checker_tool` for availability
+  ```yaml
+  Parameters:
+  - namespace: optional, filters results
+  ```
 
-### Authentication Methods
-- X.509 Certificates
-- Bearer Tokens
-- OpenID Connect
-- Webhook Authentication
+### Monitoring & Alerts
+- Use `find_suspicious_errors_tool` for security events
+  ```yaml
+  Required Parameters:
+  - namespace: specific or 'all'
+  ```
 
-## Network Security
-### Network Policies
-- Ingress Rules
-- Egress Rules
-- Namespace Isolation
-- Pod-to-Pod Communication
-
-### TLS Configuration
-- Certificate Management
-- Ingress TLS
-- API Server TLS
-- etcd TLS
-
-## Container Security
-### Image Security
-- Vulnerability Scanning
-- Image Signing
-- Registry Security
-- Base Image Management
-
-### Runtime Security
-- Pod Security Context
-- SecurityContext Configuration
-- Privileged Containers
-- Linux Capabilities
-
-## Compliance and Auditing
-### Compliance Controls
-- CIS Benchmarks
-- SOC 2 Requirements
-- PCI DSS Controls
-- HIPAA Guidelines
-
-### Audit Logging
-- Audit Policy Configuration
-- Log Collection
-- Log Analysis
-- Retention Policies 
+## Security Best Practices
+1. Enable network policies by default
+2. Monitor pod security contexts
+3. Regular security event checks
+4. Implement resource quotas
+5. Use RBAC for access control

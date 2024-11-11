@@ -1,33 +1,5 @@
-# Application Scaling Assessment
+# Scaling and Performance Analysis
 
-Please perform a comprehensive scaling analysis:
+Analyze our cluster's scaling patterns and performance. Review autoscaling configurations, resource utilization trends, and scaling bottlenecks. Create a diagram showing scaling behaviors and resource distribution.
 
-1. Current State Assessment:
-   - Pod resource utilization
-   - HPA configuration
-   - Service metrics
-   - Load patterns
-
-2. Scaling Requirements:
-   - Peak load analysis
-   - Resource headroom
-   - Performance targets
-   - Cost constraints
-
-3. Scaling Strategy:
-   - Horizontal vs Vertical
-   - Custom metrics
-   - Scaling thresholds
-   - Buffer capacity
-
-4. Implementation Plan:
-   - HPA configuration
-   - Resource adjustments
-   - Service updates
-   - Monitoring setup
-
-5. Validation:
-   - Load testing
-   - Metric verification
-   - Alert configuration
-   - Performance checks 
+Provide optimization recommendations in #devops-oncall with focus on improving application performance.

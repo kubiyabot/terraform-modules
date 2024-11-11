@@ -1,38 +1,5 @@
-# Kubernetes Backup Verification
+# Backup Verification
 
-Please perform a comprehensive backup assessment:
+Verify our cluster's backup status and persistent storage health. Check for failed backups, storage usage trends, and potential capacity issues. Create a visual backup coverage map.
 
-1. Backup Status:
-   - Backup completion status
-   - Backup integrity
-   - Storage consumption
-   - Retention compliance
-   - Schedule adherence
-
-2. Coverage Analysis:
-   - Critical workloads
-   - Persistent volumes
-   - Configuration data
-   - Custom resources
-   - Cluster state
-
-3. Recovery Testing:
-   - Restore procedures
-   - Recovery time objectives
-   - Data consistency
-   - Application integrity
-   - Service continuity
-
-4. Compliance Verification:
-   - Retention policies
-   - Security requirements
-   - Encryption status
-   - Access controls
-   - Audit trails
-
-5. Recommendations:
-   - Process improvements
-   - Coverage gaps
-   - Tool updates
-   - Policy adjustments
-  ing schedule 
+Report any backup failures immediately to #devops-oncall and provide a storage health summary.
