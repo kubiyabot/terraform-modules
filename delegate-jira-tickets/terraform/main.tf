@@ -20,12 +20,11 @@ resource "kubiya_agent" "jira_ticket_solver" {
   description  = var.teammate_description
   instructions = ""
   model        = "azure/gpt-4o"
-  integrations = [var.kubiya_intergration, "slack"]
+  integrations = ["jira", "slack"]
   sources      = kubiya_source.sources[*].name
 
   environment_variables = {
     JIRA_PROJECT_NAME        = var.jira_project_name
-    JIRA_INTEGRATION         = var.kubiya_intergration
     ISSUE_DESCRIPTION        = var.issue_description
     JIRA_JQL                 = var.jira_jql
     ISSUES_CHECK_INTERVAL    = var.issues_check_interval
