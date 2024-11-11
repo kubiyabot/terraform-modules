@@ -82,6 +82,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   runner      = var.kubiya_runner
   description = "AI-powered Kubernetes operations assistant"
   model       = "azure/gpt-4"
+  instructions = "" #file("${path.module}/prompts/instructions.md")
   
   integrations = ["kubernetes", "slack"]
   users        = var.allowed_users
@@ -100,47 +101,72 @@ resource "kubiya_agent" "kubernetes_crew" {
 
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
-  count         = var.schedule_config.health_check.enabled ? 1 : 0
-  cron          = var.schedule_config.health_check.cron
-  channel_id    = var.notification_channel
-  agent         = kubiya_agent.kubernetes_crew.name
-  description   = file("${path.module}/prompts/health_check.md")
+  count          = var.task_schedules.health_check.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.health_check.start_time
+  repeat         = var.task_schedules.health_check.repeat
+  channel_id     = var.notification_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/health_check.md")
 }
 
 # Security Scan Task
 resource "kubiya_scheduled_task" "security_scan" {
-  count         = var.schedule_config.security_scan.enabled ? 1 : 0
-  cron          = var.schedule_config.security_scan.cron
-  channel_id    = var.security_channel
-  agent         = kubiya_agent.kubernetes_crew.name
-  description   = file("${path.module}/prompts/security_check.md")
+  count          = var.task_schedules.security_scan.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.security_scan.start_time
+  repeat         = var.task_schedules.security_scan.repeat
+  channel_id     = var.security_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/security_check.md")
 }
 
 # Resource Check Task
 resource "kubiya_scheduled_task" "resource_check" {
-  count         = var.schedule_config.resource_check.enabled ? 1 : 0
-  cron          = var.schedule_config.resource_check.cron
-  channel_id    = var.notification_channel
-  agent         = kubiya_agent.kubernetes_crew.name
-  description   = file("${path.module}/prompts/resource_check.md")
+  count          = var.task_schedules.resource_check.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.resource_check.start_time
+  repeat         = var.task_schedules.resource_check.repeat
+  channel_id     = var.notification_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/resource_check.md")
 }
 
 # Backup Verification Task
 resource "kubiya_scheduled_task" "backup_verify" {
-  count         = var.schedule_config.backup_verify.enabled ? 1 : 0
-  cron          = var.schedule_config.backup_verify.cron
-  channel_id    = var.notification_channel
-  agent         = kubiya_agent.kubernetes_crew.name
-  description   = file("${path.module}/prompts/backup_check.md")
+  count          = var.task_schedules.backup_verify.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.backup_verify.start_time
+  repeat         = var.task_schedules.backup_verify.repeat
+  channel_id     = var.notification_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/backup_check.md")
 }
 
 # Compliance Audit Task
 resource "kubiya_scheduled_task" "compliance_audit" {
-  count         = var.schedule_config.compliance_audit.enabled ? 1 : 0
-  cron          = var.schedule_config.compliance_audit.cron
-  channel_id    = var.notification_channel
-  agent         = kubiya_agent.kubernetes_crew.name
-  description   = file("${path.module}/prompts/compliance_check.md")
+  count          = var.task_schedules.compliance_audit.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.compliance_audit.start_time
+  repeat         = var.task_schedules.compliance_audit.repeat
+  channel_id     = var.compliance_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/compliance_check.md")
+}
+
+# Network Check Task
+resource "kubiya_scheduled_task" "network_check" {
+  count          = var.task_schedules.network_check.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.network_check.start_time
+  repeat         = var.task_schedules.network_check.repeat
+  channel_id     = var.notification_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/network_check.md")
+}
+
+# Scaling Analysis Task
+resource "kubiya_scheduled_task" "scaling_analysis" {
+  count          = var.task_schedules.scaling_analysis.enabled ? 1 : 0
+  scheduled_time = var.task_schedules.scaling_analysis.start_time
+  repeat         = var.task_schedules.scaling_analysis.repeat
+  channel_id     = var.notification_channel
+  agent          = kubiya_agent.kubernetes_crew.name
+  description    = file("${path.module}/prompts/scaling_check.md")
 }
 
 # Output the teammate details

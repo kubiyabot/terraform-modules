@@ -42,67 +42,81 @@ variable "allowed_groups" {
   default     = ["Admin", "DevOps"]
 }
 
-# Task Schedule Configuration
-variable "schedule_config" {
-  description = "Schedule configuration for automated tasks"
+# Schedule Configuration
+variable "task_schedules" {
+  description = "Schedule configuration for tasks"
   type = object({
     health_check = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     security_scan = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     resource_check = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     backup_verify = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     compliance_audit = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     network_check = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
     scaling_analysis = object({
       enabled = bool
-      cron    = string
+      start_time = string
+      repeat = string
     })
   })
   default = {
     health_check = {
       enabled = true
-      cron    = "0 */4 * * *"    # Every 4 hours
+      start_time = "2024-01-01T08:00:00"
+      repeat = "daily"
     }
     security_scan = {
       enabled = true
-      cron    = "0 9 * * 1"      # Weekly on Monday at 9 AM
+      start_time = "2024-01-01T09:00:00"
+      repeat = "weekly"
     }
     resource_check = {
       enabled = true
-      cron    = "0 */6 * * *"    # Every 6 hours
+      start_time = "2024-01-01T10:00:00"
+      repeat = "daily"
     }
     backup_verify = {
       enabled = true
-      cron    = "0 0 * * *"      # Daily at midnight
+      start_time = "2024-01-01T00:00:00"
+      repeat = "daily"
     }
     compliance_audit = {
       enabled = true
-      cron    = "0 10 1 * *"     # Monthly on 1st at 10 AM
+      start_time = "2024-01-01T10:00:00"
+      repeat = "monthly"
     }
     network_check = {
       enabled = true
-      cron    = "0 */8 * * *"    # Every 8 hours
+      start_time = "2024-01-01T12:00:00"
+      repeat = "daily"
     }
     scaling_analysis = {
       enabled = true
-      cron    = "0 6 * * *"      # Daily at 6 AM
+      start_time = "2024-01-01T06:00:00"
+      repeat = "daily"
     }
   }
 }
