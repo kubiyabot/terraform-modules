@@ -79,14 +79,16 @@ resource "kubiya_source" "k8s_capabilities" {
 resource "kubiya_source" "diagramming_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
 }
-
+resource "kubiya_source" "slack_capabilities" {
+  url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
+}
 resource "kubiya_agent" "kubernetes_crew" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered Kubernetes operations assistant"
   model        = "azure/gpt-4"
   instructions = ""
-  sources      = [kubiya_source.k8s_capabilities.name, kubiya_source.diagramming_capabilities.name]
+  sources      = [kubiya_source.k8s_capabilities.name, kubiya_source.diagramming_capabilities.name, kubiya_source.slack_capabilities.name]
 
 
   integrations = ["kubernetes", "slack"]
