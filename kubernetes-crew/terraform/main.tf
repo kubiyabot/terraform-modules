@@ -88,7 +88,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   instructions = "" #file("${path.module}/prompts/instructions.md")
 
   integrations = ["kubernetes", "slack"]
-  users        = var.kubiya_users_allowed_users
+  users        = []
   groups       = var.kubiya_groups_allowed_groups
 
   environment_variables = {
@@ -109,7 +109,7 @@ resource "kubiya_scheduled_task" "health_check" {
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.health_check_prompt.body
+  description    = data.http.health_check_prompt.response_body
 }
 
 # Security Scan Task
@@ -119,7 +119,7 @@ resource "kubiya_scheduled_task" "security_scan" {
   repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.security_check_prompt.body
+  description    = data.http.security_check_prompt.response_body
 }
 
 # Resource Check Task
@@ -129,7 +129,7 @@ resource "kubiya_scheduled_task" "resource_check" {
   repeat         = var.resource_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.resource_check_prompt.body
+  description    = data.http.resource_check_prompt.response_body
 }
 
 # Backup Verification Task
@@ -139,7 +139,7 @@ resource "kubiya_scheduled_task" "backup_verify" {
   repeat         = var.backup_verify_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.backup_check_prompt.body
+  description    = data.http.backup_check_prompt.response_body
 }
 
 # Compliance Audit Task
@@ -149,7 +149,7 @@ resource "kubiya_scheduled_task" "compliance_audit" {
   repeat         = var.compliance_audit_repeat
   channel_id     = var.compliance_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.compliance_check_prompt.body
+  description    = data.http.compliance_check_prompt.response_body
 }
 
 # Network Check Task
@@ -159,7 +159,7 @@ resource "kubiya_scheduled_task" "network_check" {
   repeat         = var.network_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.network_check_prompt.body
+  description    = data.http.network_check_prompt.response_body
 }
 
 # Scaling Analysis Task
@@ -169,7 +169,7 @@ resource "kubiya_scheduled_task" "scaling_analysis" {
   repeat         = var.scaling_analysis_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.scaling_check_prompt.body
+  description    = data.http.scaling_check_prompt.response_body
 }
 
 # Output the teammate details
