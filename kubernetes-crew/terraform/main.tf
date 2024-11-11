@@ -73,8 +73,11 @@ data "http" "kubernetes_troubleshooting" {
   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/kubernetes-crew/terraform/knowledge/kubernetes_troubleshooting.md"
 }
 
-resource "kubiya_source" "source" {
+resource "kubiya_source" "k8s_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
+}
+resource "kubiya_source" "diagramming_capabilities" {
+  url = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
@@ -90,20 +93,20 @@ resource "kubiya_agent" "kubernetes_crew" {
 
   environment_variables = {
     NOTIFICATION_CHANNEL = var.notification_channel
-    SECURITY_CHANNEL     = var.security_channel
-    ENVIRONMENT          = var.cluster_context.environment
-    CRITICAL_NAMESPACES  = var.cluster_context.critical_namespaces
-    CPU_THRESHOLD        = var.cluster_context.resource_thresholds.cpu_threshold
-    MEMORY_THRESHOLD     = var.cluster_context.resource_thresholds.memory_threshold
-    POD_THRESHOLD        = var.cluster_context.resource_thresholds.pod_threshold
+    SECURITY_CHANNEL    = var.security_channel
+    ENVIRONMENT         = var.environment
+    CRITICAL_NAMESPACES = jsonencode(var.critical_namespaces)
+    CPU_THRESHOLD       = var.cpu_threshold
+    MEMORY_THRESHOLD    = var.memory_threshold
+    POD_THRESHOLD       = var.pod_threshold
   }
 }
 
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
-  count          = var.task_schedules.health_check.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.health_check.start_time
-  repeat         = var.task_schedules.health_check.repeat
+  count          = var.health_check_enabled ? 1 : 0
+  scheduled_time = var.health_check_time
+  repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/health_check.md")
@@ -111,9 +114,9 @@ resource "kubiya_scheduled_task" "health_check" {
 
 # Security Scan Task
 resource "kubiya_scheduled_task" "security_scan" {
-  count          = var.task_schedules.security_scan.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.security_scan.start_time
-  repeat         = var.task_schedules.security_scan.repeat
+  count          = var.security_scan_enabled ? 1 : 0
+  scheduled_time = var.security_scan_time
+  repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/security_check.md")
@@ -121,9 +124,9 @@ resource "kubiya_scheduled_task" "security_scan" {
 
 # Resource Check Task
 resource "kubiya_scheduled_task" "resource_check" {
-  count          = var.task_schedules.resource_check.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.resource_check.start_time
-  repeat         = var.task_schedules.resource_check.repeat
+  count          = var.resource_check_enabled ? 1 : 0
+  scheduled_time = var.resource_check_time
+  repeat         = var.resource_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/resource_check.md")
@@ -131,9 +134,9 @@ resource "kubiya_scheduled_task" "resource_check" {
 
 # Backup Verification Task
 resource "kubiya_scheduled_task" "backup_verify" {
-  count          = var.task_schedules.backup_verify.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.backup_verify.start_time
-  repeat         = var.task_schedules.backup_verify.repeat
+  count          = var.backup_verify_enabled ? 1 : 0
+  scheduled_time = var.backup_verify_time
+  repeat         = var.backup_verify_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/backup_check.md")
@@ -141,9 +144,9 @@ resource "kubiya_scheduled_task" "backup_verify" {
 
 # Compliance Audit Task
 resource "kubiya_scheduled_task" "compliance_audit" {
-  count          = var.task_schedules.compliance_audit.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.compliance_audit.start_time
-  repeat         = var.task_schedules.compliance_audit.repeat
+  count          = var.compliance_audit_enabled ? 1 : 0
+  scheduled_time = var.compliance_audit_time
+  repeat         = var.compliance_audit_repeat
   channel_id     = var.compliance_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/compliance_check.md")
@@ -151,9 +154,9 @@ resource "kubiya_scheduled_task" "compliance_audit" {
 
 # Network Check Task
 resource "kubiya_scheduled_task" "network_check" {
-  count          = var.task_schedules.network_check.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.network_check.start_time
-  repeat         = var.task_schedules.network_check.repeat
+  count          = var.network_check_enabled ? 1 : 0
+  scheduled_time = var.network_check_time
+  repeat         = var.network_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/network_check.md")
@@ -161,9 +164,9 @@ resource "kubiya_scheduled_task" "network_check" {
 
 # Scaling Analysis Task
 resource "kubiya_scheduled_task" "scaling_analysis" {
-  count          = var.task_schedules.scaling_analysis.enabled ? 1 : 0
-  scheduled_time = var.task_schedules.scaling_analysis.start_time
-  repeat         = var.task_schedules.scaling_analysis.repeat
+  count          = var.scaling_analysis_enabled ? 1 : 0
+  scheduled_time = var.scaling_analysis_time
+  repeat         = var.scaling_analysis_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
   description    = file("${path.module}/prompts/scaling_check.md")
@@ -175,7 +178,7 @@ output "kubernetes_crew" {
     name                 = kubiya_agent.kubernetes_crew.name
     notification_channel = var.notification_channel
     security_channel     = var.security_channel
-    environment          = var.cluster_context.environment
-    critical_namespaces  = var.cluster_context.critical_namespaces
+    environment          = var.environment
+    critical_namespaces  = var.critical_namespaces
   }
 }
