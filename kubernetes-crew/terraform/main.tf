@@ -78,171 +78,78 @@ resource "kubiya_source" "source" {
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
-  name         = var.teammate_name
-  runner       = var.kubiya_runner
-  description  = var.teammate_description
-  instructions = ""
-  model        = "azure/gpt-4o"
+  name        = var.teammate_name
+  runner      = var.kubiya_runner
+  description = "AI-powered Kubernetes operations assistant"
+  model       = "azure/gpt-4"
+  
   integrations = ["kubernetes", "slack"]
-  users        = var.kubiya_users
-  groups       = var.kubiya_groups
-  sources      = [kubiya_source.source.name]
+  users        = var.allowed_users
+  groups       = var.allowed_groups
 
   environment_variables = {
-    LOG_LEVEL            = var.log_level
-    NOTIFICATION_CHANNEL = var.notification_slack_channel
+    NOTIFICATION_CHANNEL = var.notification_channel
+    SECURITY_CHANNEL    = var.security_channel
+    ENVIRONMENT        = var.cluster_context.environment
+    CRITICAL_NAMESPACES = jsonencode(var.cluster_context.critical_namespaces)
+    CPU_THRESHOLD      = var.cluster_context.resource_thresholds.cpu_threshold
+    MEMORY_THRESHOLD   = var.cluster_context.resource_thresholds.memory_threshold
+    POD_THRESHOLD      = var.cluster_context.resource_thresholds.pod_threshold
   }
 }
 
-resource "kubiya_knowledge" "kubernetes_ops" {
-  name             = "Kubernetes Operations and Housekeeping Guide"
-  groups           = var.kubiya_groups
-  description      = "Knowledge base for Kubernetes housekeeping operations"
-  labels           = ["kubernetes", "operations", "housekeeping"]
-  supported_agents = [kubiya_agent.kubernetes_crew.name]
-  content          = data.http.kubernetes_ops.response_body
-}
-
-# Additional knowledge resources
-resource "kubiya_knowledge" "kubernetes_security" {
-  name             = "Kubernetes Security Guide"
-  groups           = var.kubiya_groups
-  description      = "Security best practices and compliance guidelines"
-  labels           = ["kubernetes", "security"]
-  supported_agents = [kubiya_agent.kubernetes_crew.name]
-  content          = data.http.kubernetes_security.response_body
-}
-
-resource "kubiya_knowledge" "kubernetes_troubleshooting" {
-  name             = "Kubernetes Troubleshooting Guide"
-  groups           = var.kubiya_groups
-  description      = "Common issues and resolution procedures"
-  labels           = ["kubernetes", "troubleshooting"]
-  supported_agents = [kubiya_agent.kubernetes_crew.name]
-  content          = data.http.kubernetes_troubleshooting.response_body
-}
-
-# Core Health Check Task
+# Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
-  count          = var.enable_health_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_one, "daily")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.health_check_prompt.response_body
+  count         = var.schedule_config.health_check.enabled ? 1 : 0
+  cron          = var.schedule_config.health_check.cron
+  channel_id    = var.notification_channel
+  agent         = kubiya_agent.kubernetes_crew.name
+  description   = file("${path.module}/prompts/health_check.md")
 }
 
-# Resource Optimization Task
+# Security Scan Task
+resource "kubiya_scheduled_task" "security_scan" {
+  count         = var.schedule_config.security_scan.enabled ? 1 : 0
+  cron          = var.schedule_config.security_scan.cron
+  channel_id    = var.security_channel
+  agent         = kubiya_agent.kubernetes_crew.name
+  description   = file("${path.module}/prompts/security_check.md")
+}
+
+# Resource Check Task
 resource "kubiya_scheduled_task" "resource_check" {
-  count          = var.enable_resource_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_one, "daily")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.resource_check_prompt.response_body
-
-}
-
-# Cleanup Task
-resource "kubiya_scheduled_task" "cleanup" {
-  count          = var.enable_cleanup_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.cleanup_prompt.response_body
-}
-
-# Network Check Task
-resource "kubiya_scheduled_task" "network_check" {
-  count          = var.enable_network_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_one, "daily")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.network_check_prompt.response_body
-}
-
-# Security Check Task
-resource "kubiya_scheduled_task" "security_check" {
-  count          = var.enable_security_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.security_check_prompt.response_body
+  count         = var.schedule_config.resource_check.enabled ? 1 : 0
+  cron          = var.schedule_config.resource_check.cron
+  channel_id    = var.notification_channel
+  agent         = kubiya_agent.kubernetes_crew.name
+  description   = file("${path.module}/prompts/resource_check.md")
 }
 
 # Backup Verification Task
-resource "kubiya_scheduled_task" "backup_check" {
-  count          = var.enable_backup_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_one, "daily")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.backup_check_prompt.response_body
+resource "kubiya_scheduled_task" "backup_verify" {
+  count         = var.schedule_config.backup_verify.enabled ? 1 : 0
+  cron          = var.schedule_config.backup_verify.cron
+  channel_id    = var.notification_channel
+  agent         = kubiya_agent.kubernetes_crew.name
+  description   = file("${path.module}/prompts/backup_check.md")
 }
 
-# Cost Analysis Task
-resource "kubiya_scheduled_task" "cost_analysis" {
-  count          = var.enable_cost_analysis_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.cost_analysis_prompt.response_body
+# Compliance Audit Task
+resource "kubiya_scheduled_task" "compliance_audit" {
+  count         = var.schedule_config.compliance_audit.enabled ? 1 : 0
+  cron          = var.schedule_config.compliance_audit.cron
+  channel_id    = var.notification_channel
+  agent         = kubiya_agent.kubernetes_crew.name
+  description   = file("${path.module}/prompts/compliance_check.md")
 }
 
-# Compliance Check Task
-resource "kubiya_scheduled_task" "compliance_check" {
-  count          = var.enable_compliance_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.compliance_check_prompt.response_body
-}
-
-# Update Check Task
-resource "kubiya_scheduled_task" "update_check" {
-  count          = var.enable_update_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_two, "weekly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.update_check_prompt.response_body
-}
-
-# Capacity Planning Task
-resource "kubiya_scheduled_task" "capacity_check" {
-  count          = var.enable_capacity_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.capacity_check_prompt.response_body
-}
-
-# Upgrade Assessment Task
-resource "kubiya_scheduled_task" "upgrade_check" {
-  count          = var.enable_upgrade_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.upgrade_check_prompt.response_body
-}
-
-# Scaling Check Task
-resource "kubiya_scheduled_task" "scaling_check" {
-  count          = var.enable_network_check_task ? 1 : 0
-  scheduled_time = try(var.cronjob_start_time, "2024-11-05T08:00:00")
-  repeat         = try(var.cronjob_repeat_scenario_three, "monthly")
-  channel_id     = var.scheduled_task_slack_channel
-  agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.scaling_check_prompt.response_body
-}
-
+# Output the teammate details
 output "kubernetes_crew" {
-  value = kubiya_agent.kubernetes_crew
+  value = {
+    name = kubiya_agent.kubernetes_crew.name
+    notification_channel = var.notification_channel
+    security_channel = var.security_channel
+    environment = var.cluster_context.environment
+    critical_namespaces = var.cluster_context.critical_namespaces
+  }
 }
