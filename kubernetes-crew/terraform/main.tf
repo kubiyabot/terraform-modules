@@ -105,7 +105,7 @@ resource "kubiya_agent" "kubernetes_crew" {
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
   count          = var.health_check_enabled ? 1 : 0
-  scheduled_time = var.health_check_time
+  scheduled_time = var.health_check_start_time
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name

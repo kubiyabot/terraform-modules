@@ -92,7 +92,7 @@ variable "health_check_enabled" {
   default     = true
 }
 
-variable "health_check_time" {
+variable "health_check_start_time" {
   description = "Health check start time"
   type        = string
   default     = "2024-01-01T08:00:00"
