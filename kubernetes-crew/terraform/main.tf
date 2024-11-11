@@ -103,6 +103,7 @@ resource "kubiya_agent" "kubernetes_crew" {
     CPU_THRESHOLD       = var.cpu_threshold
     MEMORY_THRESHOLD    = var.memory_threshold
     POD_THRESHOLD       = var.pod_threshold
+    KUBIYA_TOOL_TIMEOUT = "300"
   }
 }
 
@@ -140,7 +141,15 @@ resource "kubiya_scheduled_task" "health_check" {
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.health_check_prompt.response_body
+    description = replace(
+    replace(
+      data.http.security_check_prompt.response_body,
+      "$${security_channel}",
+      var.security_channel
+    ),
+    "$${notification_channel}",
+    var.notification_channel
+  )
 }
 
 # Security Scan Task
@@ -150,7 +159,15 @@ resource "kubiya_scheduled_task" "security_scan" {
   repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = data.http.security_check_prompt.response_body
+  description = replace(
+    replace(
+      data.http.security_check_prompt.response_body,
+      "$${security_channel}",
+      var.security_channel
+    ),
+    "$${notification_channel}",
+    var.notification_channel
+  )
 }
 
 # Resource Check Task
