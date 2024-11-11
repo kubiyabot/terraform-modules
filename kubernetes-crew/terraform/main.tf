@@ -105,71 +105,71 @@ resource "kubiya_agent" "kubernetes_crew" {
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
   count          = var.health_check_enabled ? 1 : 0
-  scheduled_time = var.health_check_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/health_check.md")
+  description    = data.http.health_check_prompt.body
 }
 
 # Security Scan Task
 resource "kubiya_scheduled_task" "security_scan" {
   count          = var.security_scan_enabled ? 1 : 0
-  scheduled_time = var.security_scan_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
   repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/security_check.md")
+  description    = data.http.security_check_prompt.body
 }
 
 # Resource Check Task
 resource "kubiya_scheduled_task" "resource_check" {
   count          = var.resource_check_enabled ? 1 : 0
-  scheduled_time = var.resource_check_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
   repeat         = var.resource_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/resource_check.md")
+  description    = data.http.resource_check_prompt.body
 }
 
 # Backup Verification Task
 resource "kubiya_scheduled_task" "backup_verify" {
   count          = var.backup_verify_enabled ? 1 : 0
-  scheduled_time = var.backup_verify_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
   repeat         = var.backup_verify_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/backup_check.md")
+  description    = data.http.backup_check_prompt.body
 }
 
 # Compliance Audit Task
 resource "kubiya_scheduled_task" "compliance_audit" {
   count          = var.compliance_audit_enabled ? 1 : 0
-  scheduled_time = var.compliance_audit_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
   repeat         = var.compliance_audit_repeat
   channel_id     = var.compliance_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/compliance_check.md")
+  description    = data.http.compliance_check_prompt.body
 }
 
 # Network Check Task
 resource "kubiya_scheduled_task" "network_check" {
   count          = var.network_check_enabled ? 1 : 0
-  scheduled_time = var.network_check_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
   repeat         = var.network_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/network_check.md")
+  description    = data.http.network_check_prompt.body
 }
 
 # Scaling Analysis Task
 resource "kubiya_scheduled_task" "scaling_analysis" {
   count          = var.scaling_analysis_enabled ? 1 : 0
-  scheduled_time = var.scaling_analysis_time
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
   repeat         = var.scaling_analysis_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
-  description    = file("${path.module}/prompts/scaling_check.md")
+  description    = data.http.scaling_check_prompt.body
 }
 
 # Output the teammate details
