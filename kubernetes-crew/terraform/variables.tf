@@ -30,13 +30,13 @@ variable "compliance_channel" {
 }
 
 # Access Control
-variable "allowed_users" {
+variable "kubiya_users_allowed_users" {
   description = "Users who can interact with the teammate"
   type        = list(string)
   default     = []
 }
 
-variable "allowed_groups" {
+variable "kubiya_groups_allowed_groups" {
   description = "Groups who can interact with the teammate"
   type        = list(string)
   default     = ["Admin"]
@@ -50,9 +50,9 @@ variable "environment" {
 }
 
 variable "critical_namespaces" {
-  description = "List of critical Kubernetes namespaces"
-  type        = list(string)
-  default     = ["kube-system", "kubiya"]
+  description = "String of critical Kubernetes namespaces"
+  type        = string
+  default     = "kube-system,kubiya"
 }
 
 # Resource Thresholds

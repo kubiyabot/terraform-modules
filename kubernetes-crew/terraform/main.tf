@@ -88,14 +88,14 @@ resource "kubiya_agent" "kubernetes_crew" {
   instructions = "" #file("${path.module}/prompts/instructions.md")
 
   integrations = ["kubernetes", "slack"]
-  users        = var.allowed_users
-  groups       = var.allowed_groups
+  users        = var.kubiya_users_allowed_users
+  groups       = var.kubiya_groups_allowed_groups
 
   environment_variables = {
     NOTIFICATION_CHANNEL = var.notification_channel
     SECURITY_CHANNEL    = var.security_channel
     ENVIRONMENT         = var.environment
-    CRITICAL_NAMESPACES = jsonencode(var.critical_namespaces)
+    CRITICAL_NAMESPACES = var.critical_namespaces
     CPU_THRESHOLD       = var.cpu_threshold
     MEMORY_THRESHOLD    = var.memory_threshold
     POD_THRESHOLD       = var.pod_threshold
