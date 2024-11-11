@@ -102,6 +102,33 @@ resource "kubiya_agent" "kubernetes_crew" {
   }
 }
 
+resource "kubiya_knowledge" "kubernetes_ops" {
+  name             = "Kubernetes Operations and Housekeeping Guide"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Knowledge base for Kubernetes housekeeping operations"
+  labels           = ["kubernetes", "operations", "housekeeping"]
+  supported_agents = [kubiya_agent.kubernetes_crew.name]
+  content          = data.http.kubernetes_ops.response_body
+}
+
+resource "kubiya_knowledge" "kubernetes_security" {
+  name             = "Kubernetes Security Best Practices"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Knowledge base for Kubernetes security practices"
+  labels           = ["kubernetes", "security", "best-practices"]
+  supported_agents = [kubiya_agent.kubernetes_crew.name]
+  content          = data.http.kubernetes_security.response_body
+}
+
+resource "kubiya_knowledge" "kubernetes_troubleshooting" {
+  name             = "Kubernetes Troubleshooting Guide"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Knowledge base for Kubernetes troubleshooting techniques"
+  labels           = ["kubernetes", "troubleshooting", "debugging"]
+  supported_agents = [kubiya_agent.kubernetes_crew.name]
+  content          = data.http.kubernetes_troubleshooting.response_body
+}
+
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
   count          = var.health_check_enabled ? 1 : 0
