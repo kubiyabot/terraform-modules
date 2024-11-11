@@ -1,38 +1,5 @@
-# Kubernetes Network Health Assessment
+# Network Health Analysis
 
-Please perform a comprehensive network analysis:
+Review cluster network health and connectivity. Check all service endpoints, ingress configurations, and network policies. Create a service dependency map highlighting any connectivity issues or policy gaps.
 
-1. Connectivity Check:
-   - Pod-to-pod communication
-   - Service accessibility
-   - Ingress/egress traffic
-   - DNS resolution
-   - Load balancer health
-
-2. Network Policy Audit:
-   - Policy enforcement status
-   - Rule effectiveness
-   - Coverage gaps
-   - Default policies
-   - Isolation compliance
-
-3. Performance Analysis:
-   - Network latency
-   - Bandwidth utilization
-   - Connection timeouts
-   - Packet loss
-   - TCP retransmissions
-
-4. Security Assessment:
-   - Exposed services
-   - Network policy compliance
-   - TLS configuration
-   - Certificate validation
-   - Port security
-
-5. Recommendations:
-   - Policy updates
-   - Performance improvements
-   - Security enhancements
-   - Architecture changes
-   - Monitoring suggestions 
+Summarize findings in #devops-oncall, prioritizing any service disruptions.

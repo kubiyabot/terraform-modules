@@ -1,48 +1,58 @@
-# Kubernetes Operations Knowledge Base
+# Kubernetes Operations Guide
 
-## Cluster Health Indicators
-- Node status and resource utilization
-- Pod health and status
-- Resource quotas and limits
-- Deployment status
-- Service availability
+## Common Operations & Tool Mappings
 
-## Common Issues and Solutions
-1. CrashLoopBackOff
-   - Check container logs
-   - Verify resource limits
-   - Validate container configuration
+### Pod Management
+- Use `pod_management_tool` for basic pod operations
+  ```yaml
+  Key Parameters:
+  - action: get, delete, logs
+  - name: pod name
+  - namespace: required
+  - container: optional for logs
+  ```
 
-2. Resource Pressure
-   - Monitor node resources
-   - Review pod resource requests/limits
-   - Consider horizontal scaling
+### Deployment Operations
+- Use `deployment_management_tool` for lifecycle management
+  ```yaml
+  Key Parameters:
+  - action: create, delete, get
+  - name: deployment name
+  - namespace: required
+  - image: for create
+  - replicas: for create
+  ```
 
-3. Network Issues
-   - Verify service configurations
-   - Check network policies
-   - Validate DNS resolution
+### Scaling Operations
+- Use `change_replicas_tool` for manual scaling
+  ```yaml
+  Required Parameters:
+  - resource_type: deployment/statefulset
+  - resource_name: name
+  - replicas: target count
+  - namespace: required
+  ```
+
+### Resource Monitoring
+- Use `resource_usage_tool` for usage metrics
+  ```yaml
+  Parameters:
+  - resource_type: nodes/pods
+  - namespace: optional for pods
+  ```
+
+### Health Checks
+- Use `cluster_health_tool` for overall status
+- Use `check_pod_restarts_tool` for stability issues
+  ```yaml
+  Parameters:
+  - namespace: optional
+  - threshold: default 5
+  ```
 
 ## Best Practices
-- Regular resource optimization
-- Security compliance checks
-- Backup and disaster recovery
-- Monitoring and alerting
-- Documentation and change management
-
-## Optimization Guidelines
-1. Resource Management
-   - Right-sizing containers
-   - Implementing autoscaling
-   - Resource quota management
-
-2. Cost Optimization
-   - Identify idle resources
-   - Optimize storage usage
-   - Review namespace utilization
-
-3. Security
-   - RBAC configuration
-   - Network policy enforcement
-   - Secret management
-   - Container security 
+1. Always specify namespace for targeted operations
+2. Use resource limits and requests
+3. Implement health checks for all deployments
+4. Monitor pod restart counts
+5. Keep replica count aligned with load

@@ -1,82 +1,47 @@
 # Kubernetes Troubleshooting Guide
 
-## Diagnostic Methodology
-### Initial Assessment
-- Symptom Identification
-- Impact Evaluation
-- Resource Scope
-- Priority Classification
+## Diagnostic Tools
 
-### Data Collection
-- Cluster State
-- Component Logs
-- Resource Metrics
-- Event Timeline
+### Error Detection
+- Use `find_suspicious_errors_tool` for cluster issues
+  ```yaml
+  Parameters:
+  - namespace: required ('all' for cluster-wide)
+  ```
 
-## Common Issues
-### Pod Problems
-- CrashLoopBackOff
-  - Log Analysis
-  - Resource Constraints
-  - Configuration Issues
-  - Dependencies
-- ImagePullBackOff
-  - Registry Access
-  - Image Tags
-  - Pull Secrets
-  - Network Issues
+### Resource Investigation
+- Use `get_resource_events_tool` for detailed events
+  ```yaml
+  Required Parameters:
+  - resource_type: pod/deployment/etc
+  - resource_name: name
+  - namespace: required
+  ```
 
-### Node Issues
-- NotReady State
-  - Kubelet Status
-  - Runtime Issues
-  - Network Problems
-  - Resource Exhaustion
-- Resource Pressure
-  - CPU Throttling
-  - Memory Pressure
-  - Disk Pressure
-  - PID Limits
+### Log Analysis
+- Use `get_resource_logs_tool` for debugging
+  ```yaml
+  Key Parameters:
+  - resource_type: usually pod
+  - resource_name: name
+  - namespace: required
+  - container: optional
+  - previous: bool
+  - tail: line count
+  ```
 
-### Networking
-- Service Connectivity
-  - DNS Resolution
-  - Service Discovery
-  - Load Balancing
-  - Endpoint Health
-- Ingress Issues
-  - Configuration
-  - SSL/TLS
-  - Backend Services
-  - Path Routing
+## Common Issues & Solutions
+1. Pod Crashes
+   - Check logs with `get_resource_logs_tool`
+   - Verify resource limits
+   - Check image pull status
 
-### Storage
-- PV/PVC Issues
-  - Binding Problems
-  - Storage Class
-  - Capacity Issues
-  - Access Modes
-- Volume Mount Issues
-  - Permissions
-  - Path Problems
-  - FSGroup Settings
-  - SELinux Context
+2. Scaling Issues
+   - Use `check_replicas_tool`
+   - Verify PDB with `pod_disruption_budget_checker_tool`
+   - Check node resources
 
-## Resolution Procedures
-### Immediate Actions
-- Pod Restart Procedures
-- Node Cordon/Drain
-- Service Failover
-- Emergency Scaling
-
-### Root Cause Analysis
-- Event Correlation
-- Log Analysis
-- Metric Investigation
-- Configuration Review
-
-### Prevention Strategies
-- Monitoring Improvements
-- Alert Refinement
-- Documentation Updates
-- Process Enhancement 
+3. Network Problems
+   - Use `network_policy_analyzer_tool`
+   - Check service endpoints
+   - Verify DNS resolution

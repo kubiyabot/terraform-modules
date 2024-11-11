@@ -1,38 +1,5 @@
-# Kubernetes Security Assessment
+# Security Compliance Scan
 
-Please perform a comprehensive security audit:
+Run a comprehensive security audit of our cluster. Focus on exposed services, privileged pods, and any suspicious activities. Create a visual security map showing potential vulnerabilities and policy gaps.
 
-1. Access Control Review:
-   - RBAC configuration
-   - Service account usage
-   - Pod security policies
-   - Network policies
-   - Admission controllers
-
-2. Workload Security:
-   - Container security context
-   - Image vulnerabilities
-   - Runtime security
-   - Privileged containers
-   - Resource isolation
-
-3. Network Security:
-   - Network policy enforcement
-   - TLS configuration
-   - API server access
-   - Ingress/egress rules
-   - Service mesh security
-
-4. Data Protection:
-   - Secret management
-   - Storage encryption
-   - Backup security
-   - PV/PVC security
-   - Data access controls
-
-5. Compliance Check:
-   - CIS benchmark status
-   - Security best practices
-   - Compliance violations
-   - Audit logging
-   - Security patches 
+Alert critical security issues in #security-alerts and provide the full assessment in #devops-oncall.
