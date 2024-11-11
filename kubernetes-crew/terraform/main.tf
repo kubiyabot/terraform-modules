@@ -85,7 +85,9 @@ resource "kubiya_agent" "kubernetes_crew" {
   runner       = var.kubiya_runner
   description  = "AI-powered Kubernetes operations assistant"
   model        = "azure/gpt-4"
-  instructions = "" #file("${path.module}/prompts/instructions.md")
+  instructions = ""
+  sources      = [kubiya_source.k8s_capabilities.name, kubiya_source.diagramming_capabilities.name]
+
 
   integrations = ["kubernetes", "slack"]
   users        = []
