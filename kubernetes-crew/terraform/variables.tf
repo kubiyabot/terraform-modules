@@ -92,12 +92,6 @@ variable "health_check_enabled" {
   default     = true
 }
 
-variable "health_check_start_time" {
-  description = "Health check start time"
-  type        = string
-  default     = "2024-01-01T08:00:00"
-}
-
 variable "health_check_repeat" {
   description = "Health check repeat interval"
   type        = string
@@ -110,11 +104,6 @@ variable "security_scan_enabled" {
   default     = true
 }
 
-variable "security_scan_time" {
-  description = "Security scan start time"
-  type        = string
-  default     = "2024-01-01T09:00:00"
-}
 
 variable "security_scan_repeat" {
   description = "Security scan repeat interval"
@@ -148,12 +137,6 @@ variable "resource_check_enabled" {
   default     = true
 }
 
-variable "resource_check_time" {
-  description = "Resource check start time"
-  type        = string
-  default     = "2024-01-01T10:00:00"
-}
-
 variable "resource_check_repeat" {
   description = "Resource check repeat interval"
   type        = string
@@ -165,12 +148,6 @@ variable "backup_verify_enabled" {
   description = "Enable backup verification task"
   type        = bool
   default     = true
-}
-
-variable "backup_verify_time" {
-  description = "Backup verification start time"
-  type        = string
-  default     = "2024-01-01T11:00:00"
 }
 
 variable "backup_verify_repeat" {
@@ -186,11 +163,6 @@ variable "compliance_audit_enabled" {
   default     = true
 }
 
-variable "compliance_audit_time" {
-  description = "Compliance audit start time"
-  type        = string
-  default     = "2024-01-01T12:00:00"
-}
 
 variable "compliance_audit_repeat" {
   description = "Compliance audit repeat interval"
@@ -205,12 +177,6 @@ variable "network_check_enabled" {
   default     = true
 }
 
-variable "network_check_time" {
-  description = "Network check start time"
-  type        = string
-  default     = "2024-01-01T13:00:00"
-}
-
 variable "network_check_repeat" {
   description = "Network check repeat interval"
   type        = string
@@ -222,12 +188,6 @@ variable "scaling_analysis_enabled" {
   description = "Enable scaling analysis task"
   type        = bool
   default     = true
-}
-
-variable "scaling_analysis_time" {
-  description = "Scaling analysis start time"
-  type        = string
-  default     = "2024-01-01T14:00:00"
 }
 
 variable "scaling_analysis_repeat" {
