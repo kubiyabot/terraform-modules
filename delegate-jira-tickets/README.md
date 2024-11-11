@@ -23,19 +23,27 @@ JIRA Crew is your intelligent companion within the Kubiya platform, designed to 
 ```mermaid
 graph TD
     A[📥 New Ticket Received] --> B{🤔 Analyze Ticket Type}
-    B --> |Routine| C[🤖 Apply Resolution Template]
-    B --> |Complex| D[👤 Route to Human Team]
+    B -->|Routine| C[🤖 Apply Resolution Template]
+    B -->|Complex| D[👤 Route to Human Team]
     C --> E[✍️ Update Ticket Status]
     E --> F[📢 Notify User]
     D --> G[🔔 Send Slack Alert]
-    
-    style A fill:#f9d71c,stroke:#333,stroke-width:2px
-    style B fill:#f9a61c,stroke:#333,stroke-width:2px
-    style C fill:#66c256,stroke:#333,stroke-width:2px
-    style D fill:#e74c3c,stroke:#333,stroke-width:2px
-    style E fill:#3498db,stroke:#333,stroke-width:2px
-    style F fill:#2ecc71,stroke:#333,stroke-width:2px
-    style G fill:#e67e22,stroke:#333,stroke-width:2px
+
+    classDef yellow fill:#f9d71c
+    classDef orange fill:#f9a61c
+    classDef green fill:#66c256
+    classDef red fill:#e74c3c
+    classDef blue fill:#3498db
+    classDef lightGreen fill:#2ecc71
+    classDef darkOrange fill:#e67e22
+
+    class A yellow
+    class B orange
+    class C green
+    class D red
+    class E blue
+    class F lightGreen
+    class G darkOrange
 ```
 
 ### 2. 📊 Queue Management Process
@@ -57,11 +65,6 @@ sequenceDiagram
         S->>H: Alert team
         H->>T: Handle ticket
     end
-
-    style T fill:#f9d71c,stroke:#333,stroke-width:2px
-    style C fill:#3498db,stroke:#333,stroke-width:2px
-    style S fill:#e67e22,stroke:#333,stroke-width:2px
-    style H fill:#2ecc71,stroke:#333,stroke-width:2px
 ```
 
 ## 🛠️ Configuration
