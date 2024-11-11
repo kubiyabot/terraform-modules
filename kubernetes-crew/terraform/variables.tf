@@ -42,139 +42,39 @@ variable "allowed_groups" {
   default     = ["Admin"]
 }
 
-# Schedule Configuration
-variable "task_schedules" {
-  description = "Schedule configuration for tasks"
-  type = object({
-    health_check = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    security_scan = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    resource_check = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    backup_verify = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    compliance_audit = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    network_check = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-    scaling_analysis = object({
-      enabled    = bool
-      start_time = string
-      repeat     = string
-    })
-  })
-  default = {
-    health_check = {
-      enabled    = true
-      start_time = "2024-01-01T08:00:00"
-      repeat     = "daily"
-    }
-    security_scan = {
-      enabled    = true
-      start_time = "2024-01-01T09:00:00"
-      repeat     = "weekly"
-    }
-    resource_check = {
-      enabled    = true
-      start_time = "2024-01-01T10:00:00"
-      repeat     = "daily"
-    }
-    backup_verify = {
-      enabled    = true
-      start_time = "2024-01-01T00:00:00"
-      repeat     = "daily"
-    }
-    compliance_audit = {
-      enabled    = true
-      start_time = "2024-01-01T10:00:00"
-      repeat     = "monthly"
-    }
-    network_check = {
-      enabled    = true
-      start_time = "2024-01-01T12:00:00"
-      repeat     = "daily"
-    }
-    scaling_analysis = {
-      enabled    = true
-      start_time = "2024-01-01T06:00:00"
-      repeat     = "daily"
-    }
-  }
+# Environment Settings
+variable "environment" {
+  description = "Environment name (e.g., production, staging)"
+  type        = string
+  default     = "production"
 }
 
-# Cluster-Specific Knowledge
-variable "cluster_context" {
-  description = "Additional context about the cluster for the crew"
-  type = object({
-    environment         = string
-    critical_namespaces = string
-    resource_thresholds = object({
-      cpu_threshold     = number
-      memory_threshold  = number
-      pod_threshold     = number
-      storage_threshold = number
-    })
-    backup_config = object({
-      backup_schedule = string
-      retention_days  = number
-      critical_apps   = list(string)
-    })
-    monitoring_config = object({
-      alert_threshold_minutes = number
-      log_retention_days      = number
-    })
-    scaling_config = object({
-      min_replicas = number
-      max_replicas = number
-      cpu_target   = number
-    })
-  })
-  default = {
-    environment         = "production"
-    critical_namespaces = "kube-system,kubiya"
-    resource_thresholds = {
-      cpu_threshold     = 80
-      memory_threshold  = 85
-      pod_threshold     = 90
-      storage_threshold = 75
-    }
-    backup_config = {
-      backup_schedule = "0 1 * * *"
-      retention_days  = 30
-      critical_apps   = ["database", "api", "auth-service"]
-    }
-    monitoring_config = {
-      alert_threshold_minutes = 15
-      log_retention_days      = 14
-    }
-    scaling_config = {
-      min_replicas = 2
-      max_replicas = 10
-      cpu_target   = 70
-    }
-  }
+variable "critical_namespaces" {
+  description = "List of critical Kubernetes namespaces"
+  type        = list(string)
+  default     = ["kube-system", "kubiya"]
 }
 
-# Logging Configuration
+# Resource Thresholds
+variable "cpu_threshold" {
+  description = "CPU usage threshold percentage"
+  type        = number
+  default     = 80
+}
+
+variable "memory_threshold" {
+  description = "Memory usage threshold percentage"
+  type        = number
+  default     = 85
+}
+
+variable "pod_threshold" {
+  description = "Pod count threshold percentage"
+  type        = number
+  default     = 90
+}
+
+# Logging
 variable "log_level" {
   description = "Log level for the teammate"
   type        = string
@@ -185,17 +85,153 @@ variable "log_level" {
   }
 }
 
+# Task Schedule Settings
+variable "health_check_enabled" {
+  description = "Enable health check task"
+  type        = bool
+  default     = true
+}
+
+variable "health_check_time" {
+  description = "Health check start time"
+  type        = string
+  default     = "2024-01-01T08:00:00"
+}
+
+variable "health_check_repeat" {
+  description = "Health check repeat interval"
+  type        = string
+  default     = "daily"
+}
+
+variable "security_scan_enabled" {
+  description = "Enable security scan task"
+  type        = bool
+  default     = true
+}
+
+variable "security_scan_time" {
+  description = "Security scan start time"
+  type        = string
+  default     = "2024-01-01T09:00:00"
+}
+
+variable "security_scan_repeat" {
+  description = "Security scan repeat interval"
+  type        = string
+  default     = "weekly"
+}
+
 # Feature Flags
-variable "features" {
-  description = "Feature flags for additional functionality"
-  type = object({
-    enable_auto_remediation = bool
-    enable_cost_reporting   = bool
-    enable_drift_detection  = bool
-  })
-  default = {
-    enable_auto_remediation = false
-    enable_cost_reporting   = true
-    enable_drift_detection  = true
-  }
+variable "enable_auto_remediation" {
+  description = "Enable automatic remediation"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cost_reporting" {
+  description = "Enable cost reporting"
+  type        = bool
+  default     = true
+}
+
+variable "enable_drift_detection" {
+  description = "Enable configuration drift detection"
+  type        = bool
+  default     = true
+}
+
+# Resource Check Task Settings
+variable "resource_check_enabled" {
+  description = "Enable resource check task"
+  type        = bool
+  default     = true
+}
+
+variable "resource_check_time" {
+  description = "Resource check start time"
+  type        = string
+  default     = "2024-01-01T10:00:00"
+}
+
+variable "resource_check_repeat" {
+  description = "Resource check repeat interval"
+  type        = string
+  default     = "daily"
+}
+
+# Backup Verification Task Settings
+variable "backup_verify_enabled" {
+  description = "Enable backup verification task"
+  type        = bool
+  default     = true
+}
+
+variable "backup_verify_time" {
+  description = "Backup verification start time"
+  type        = string
+  default     = "2024-01-01T11:00:00"
+}
+
+variable "backup_verify_repeat" {
+  description = "Backup verification repeat interval"
+  type        = string
+  default     = "daily"
+}
+
+# Compliance Audit Task Settings
+variable "compliance_audit_enabled" {
+  description = "Enable compliance audit task"
+  type        = bool
+  default     = true
+}
+
+variable "compliance_audit_time" {
+  description = "Compliance audit start time"
+  type        = string
+  default     = "2024-01-01T12:00:00"
+}
+
+variable "compliance_audit_repeat" {
+  description = "Compliance audit repeat interval"
+  type        = string
+  default     = "weekly"
+}
+
+# Network Check Task Settings
+variable "network_check_enabled" {
+  description = "Enable network check task"
+  type        = bool
+  default     = true
+}
+
+variable "network_check_time" {
+  description = "Network check start time"
+  type        = string
+  default     = "2024-01-01T13:00:00"
+}
+
+variable "network_check_repeat" {
+  description = "Network check repeat interval"
+  type        = string
+  default     = "daily"
+}
+
+# Scaling Analysis Task Settings
+variable "scaling_analysis_enabled" {
+  description = "Enable scaling analysis task"
+  type        = bool
+  default     = true
+}
+
+variable "scaling_analysis_time" {
+  description = "Scaling analysis start time"
+  type        = string
+  default     = "2024-01-01T14:00:00"
+}
+
+variable "scaling_analysis_repeat" {
+  description = "Scaling analysis repeat interval"
+  type        = string
+  default     = "daily"
 }
