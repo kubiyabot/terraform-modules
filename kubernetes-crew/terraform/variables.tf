@@ -39,7 +39,7 @@ variable "allowed_users" {
 variable "allowed_groups" {
   description = "Groups who can interact with the teammate"
   type        = list(string)
-  default     = ["Admin", "DevOps"]
+  default     = ["Admin"]
 }
 
 # Schedule Configuration
@@ -47,76 +47,76 @@ variable "task_schedules" {
   description = "Schedule configuration for tasks"
   type = object({
     health_check = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     security_scan = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     resource_check = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     backup_verify = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     compliance_audit = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     network_check = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
     scaling_analysis = object({
-      enabled = bool
+      enabled    = bool
       start_time = string
-      repeat = string
+      repeat     = string
     })
   })
   default = {
     health_check = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T08:00:00"
-      repeat = "daily"
+      repeat     = "daily"
     }
     security_scan = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T09:00:00"
-      repeat = "weekly"
+      repeat     = "weekly"
     }
     resource_check = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T10:00:00"
-      repeat = "daily"
+      repeat     = "daily"
     }
     backup_verify = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T00:00:00"
-      repeat = "daily"
+      repeat     = "daily"
     }
     compliance_audit = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T10:00:00"
-      repeat = "monthly"
+      repeat     = "monthly"
     }
     network_check = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T12:00:00"
-      repeat = "daily"
+      repeat     = "daily"
     }
     scaling_analysis = {
-      enabled = true
+      enabled    = true
       start_time = "2024-01-01T06:00:00"
-      repeat = "daily"
+      repeat     = "daily"
     }
   }
 }
@@ -126,7 +126,7 @@ variable "cluster_context" {
   description = "Additional context about the cluster for the crew"
   type = object({
     environment         = string
-    critical_namespaces = list(string)
+    critical_namespaces = string
     resource_thresholds = object({
       cpu_threshold     = number
       memory_threshold  = number
@@ -140,7 +140,7 @@ variable "cluster_context" {
     })
     monitoring_config = object({
       alert_threshold_minutes = number
-      log_retention_days     = number
+      log_retention_days      = number
     })
     scaling_config = object({
       min_replicas = number
@@ -149,13 +149,8 @@ variable "cluster_context" {
     })
   })
   default = {
-    environment     = "production"
-    critical_namespaces = [
-      "kube-system",
-      "monitoring",
-      "ingress-nginx",
-      "cert-manager"
-    ]
+    environment         = "production"
+    critical_namespaces = "kube-system,kubiya"
     resource_thresholds = {
       cpu_threshold     = 80
       memory_threshold  = 85
@@ -169,7 +164,7 @@ variable "cluster_context" {
     }
     monitoring_config = {
       alert_threshold_minutes = 15
-      log_retention_days     = 14
+      log_retention_days      = 14
     }
     scaling_config = {
       min_replicas = 2
@@ -195,12 +190,12 @@ variable "features" {
   description = "Feature flags for additional functionality"
   type = object({
     enable_auto_remediation = bool
-    enable_cost_reporting  = bool
-    enable_drift_detection = bool
+    enable_cost_reporting   = bool
+    enable_drift_detection  = bool
   })
   default = {
     enable_auto_remediation = false
-    enable_cost_reporting  = true
-    enable_drift_detection = true
+    enable_cost_reporting   = true
+    enable_drift_detection  = true
   }
 }

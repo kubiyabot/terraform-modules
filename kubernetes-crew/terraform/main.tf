@@ -78,24 +78,24 @@ resource "kubiya_source" "source" {
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
-  name        = var.teammate_name
-  runner      = var.kubiya_runner
-  description = "AI-powered Kubernetes operations assistant"
-  model       = "azure/gpt-4"
+  name         = var.teammate_name
+  runner       = var.kubiya_runner
+  description  = "AI-powered Kubernetes operations assistant"
+  model        = "azure/gpt-4"
   instructions = "" #file("${path.module}/prompts/instructions.md")
-  
+
   integrations = ["kubernetes", "slack"]
   users        = var.allowed_users
   groups       = var.allowed_groups
 
   environment_variables = {
     NOTIFICATION_CHANNEL = var.notification_channel
-    SECURITY_CHANNEL    = var.security_channel
-    ENVIRONMENT        = var.cluster_context.environment
-    CRITICAL_NAMESPACES = jsonencode(var.cluster_context.critical_namespaces)
-    CPU_THRESHOLD      = var.cluster_context.resource_thresholds.cpu_threshold
-    MEMORY_THRESHOLD   = var.cluster_context.resource_thresholds.memory_threshold
-    POD_THRESHOLD      = var.cluster_context.resource_thresholds.pod_threshold
+    SECURITY_CHANNEL     = var.security_channel
+    ENVIRONMENT          = var.cluster_context.environment
+    CRITICAL_NAMESPACES  = var.cluster_context.critical_namespaces
+    CPU_THRESHOLD        = var.cluster_context.resource_thresholds.cpu_threshold
+    MEMORY_THRESHOLD     = var.cluster_context.resource_thresholds.memory_threshold
+    POD_THRESHOLD        = var.cluster_context.resource_thresholds.pod_threshold
   }
 }
 
@@ -172,10 +172,10 @@ resource "kubiya_scheduled_task" "scaling_analysis" {
 # Output the teammate details
 output "kubernetes_crew" {
   value = {
-    name = kubiya_agent.kubernetes_crew.name
+    name                 = kubiya_agent.kubernetes_crew.name
     notification_channel = var.notification_channel
-    security_channel = var.security_channel
-    environment = var.cluster_context.environment
-    critical_namespaces = var.cluster_context.critical_namespaces
+    security_channel     = var.security_channel
+    environment          = var.cluster_context.environment
+    critical_namespaces  = var.cluster_context.critical_namespaces
   }
 }
