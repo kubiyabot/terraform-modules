@@ -57,11 +57,6 @@ sequenceDiagram
         S->>H: Alert team
         H->>T: Handle ticket
     end
-
-    style T fill:#f9d71c,stroke:#333,stroke-width:2px
-    style C fill:#3498db,stroke:#333,stroke-width:2px
-    style S fill:#e67e22,stroke:#333,stroke-width:2px
-    style H fill:#2ecc71,stroke:#333,stroke-width:2px
 ```
 
 ## 🛠️ Configuration

@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "kubiya" {
-  // API key is set as an environment variable KUBIYA_API_KEY
+  //API key is set as an environment variable KUBIYA_API_KEY
 }
 
 resource "kubiya_source" "sources" {
