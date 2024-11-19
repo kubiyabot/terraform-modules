@@ -2,7 +2,7 @@
 
 > Transform your AWS access management with AI-powered, Just-In-Time permissions control
 
-[![image](https://github.com/user-attachments/assets/e0bfb98f-bd4e-4808-a177-d845601be07f)](https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png)
+![image](https://github.com/user-attachments/assets/04ce2ba1-18ec-408d-ab4a-42850830e25d)
 
 ## 🌟 Overview
 
