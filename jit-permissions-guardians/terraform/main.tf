@@ -28,8 +28,7 @@ resource "kubiya_source" "aws_policy_generator" {
 # Configure auxiliary request tools
 resource "kubiya_source" "request_tools" {
   for_each = toset(var.request_tools_sources)
-  url = each.value
-  name = basename(each.value)
+  url      = each.value
 }
 
 # Create knowledge base

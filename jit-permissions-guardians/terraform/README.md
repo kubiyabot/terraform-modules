@@ -170,11 +170,13 @@ policies:
 ### 🔧 Request Tools Configuration
 
 Request tools come in two categories:
-1. **AWS Tools** (automatically included and cannot be modified)
+1. **AWS Policy Generator** (automatically included and cannot be modified)
+   - Handles dynamic generation of policy-specific access request tools
+   - Required for processing the policies defined in `available_policies_yaml`
 2. **Auxiliary Tools** (configured through source URLs)
 
 ```hcl
-# Configure only auxiliary tools - AWS tools are automatically included
+# Configure only auxiliary tools - AWS policy generator is automatically included
 request_tools_sources = [
   "https://github.com/kubiyabot/community-tools/tree/main/jit/list_access_requests",
   "https://github.com/kubiyabot/community-tools/tree/main/jit/view_access_request",
@@ -183,7 +185,8 @@ request_tools_sources = [
 ```
 
 > ⚠️ **IMPORTANT**: 
-> - AWS tools are automatically included and cannot be modified
+> - AWS policy generator tool is automatically included and cannot be modified
+> - This tool creates virtual tools based on your policy configuration
 > - Additional tools are loaded from their source repositories
 > - Actual permissions are determined by the runner's OPA policies
 > - Access to these tools varies based on user roles and policy configurations
