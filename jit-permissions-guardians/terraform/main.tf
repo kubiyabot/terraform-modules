@@ -25,16 +25,11 @@ resource "kubiya_source" "aws_policy_generator" {
   url = "https://github.com/kubiyabot/terraform-modules/tree/main/jit-permissions-guardians/tools/aws/policy_generator"
 }
 
-# Configure auxiliary request tool sources dynamically
+# Configure auxiliary request tools
 resource "kubiya_source" "request_tools" {
   for_each = toset(var.request_tools_sources)
-  
   url = each.value
-  name = replace(
-    basename(each.value),
-    "/[^a-zA-Z0-9]/",
-    "_"
-  )
+  name = basename(each.value)
 }
 
 # Create knowledge base
@@ -55,9 +50,11 @@ resource "kubiya_agent" "jit_guardian" {
   model        = "azure/gpt-4"
   instructions = ""
   sources      = concat(
-    [kubiya_source.aws_policy_generator.name],  # AWS policy generator is always included first
-    [kubiya_source.jit_approval_workflow_tooling.name], # JIT tooling is always included as it is a trivial part of the use case
-    [for source in kubiya_source.request_tools : source.name] # Auxiliary request tools , can be modified
+    [
+      kubiya_source.aws_policy_generator.name,
+      kubiya_source.jit_approval_workflow_tooling.name
+    ],
+    [for source in kubiya_source.request_tools : source.name]
   )
 
   integrations = concat(
