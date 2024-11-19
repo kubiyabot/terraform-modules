@@ -28,10 +28,10 @@ flowchart TD
     AWS -->|7. Grant Access| User
 
     classDef user fill:#f9d71c,stroke:#333,stroke-width:2px
-    classDef slack fill:#4A154B,stroke:#333,stroke-width:2px
-    classDef guardian fill:#3498db,stroke:#333,stroke-width:2px
-    classDef policy fill:#2ecc71,stroke:#333,stroke-width:2px
-    classDef approvers fill:#e74c3c,stroke:#333,stroke-width:2px
+    classDef slack fill:#4A154B,stroke:#333,stroke-width:2px,color:white
+    classDef guardian fill:#3498db,stroke:#333,stroke-width:2px,color:white
+    classDef policy fill:#2ecc71,stroke:#333,stroke-width:2px,color:white
+    classDef approvers fill:#e74c3c,stroke:#333,stroke-width:2px,color:white
     classDef aws fill:#FF9900,stroke:#333,stroke-width:2px
 
     class User user
