@@ -140,24 +140,40 @@ flowchart TD
 * Kubiya Runner (Kubernetes Cluster)
 * AWS IAM Permissions
 * Slack Workspace
-* Okta Groups Configuration
+* Kubiya Groups Configuration
 * Approvers Channel
 
 ### ⚡ Policy Configuration (YAML)
 
-```json
-{
-  "policies": [
-    {
-      "policy_name": "ReadOnlyAccess",
-      "aws_account_id": "123456789012",
-      "request_name": "Read Only Access"
-    }
-  ]
-}
+```yaml
+policies:
+  - policy_name: "ReadOnlyAccess"
+    aws_account_id: "123456789012"
+    request_name: "Read Only Access"
+  - policy_name: "PowerUserAccess"
+    aws_account_id: "123456789012"
+    request_name: "Power User Access"
+  - policy_name: "SystemAdministrator"
+    aws_account_id: "123456789012"
+    request_name: "System Administrator Access"
 ```
 
-> ⚠️ **IMPORTANT**: The Guardian requires a valid policy configuration to function. Without properly configured available policies, the system will not process access requests.
+### 🔧 Whitelisted Tools Configuration (YAML)
+
+```yaml
+tools:
+  - name: "list_access_requests"
+    allowed: true
+    description: "List all access requests"
+  - name: "view_access_request"
+    allowed: true
+    description: "View details of a specific access request"
+  - name: "cancel_access_request"
+    allowed: true
+    description: "Cancel an existing access request"
+```
+
+> ⚠️ **IMPORTANT**: Both policy and tools configurations must be properly defined in YAML format for the Guardian to function correctly.
 
 ## 🚀 Deployment
 
@@ -171,22 +187,28 @@ The easiest way to deploy AWS JIT Permissions Guardian is through the Kubiya web
 This method automatically handles all infrastructure provisioning and configuration for you.
 
 ### Advanced Deployment (Optional)
-For teams who prefer managing their infrastructure as code directly, you can use any terraform flavor:
+For teams who prefer managing their infrastructure as code directly:
 
 #### 1. Configure Variables
 ```hcl
 teammate_name           = "jit-guardian"
 kubiya_runner          = "your-cluster"
 approvers_slack_channel = "#aws-access-approvers"
-multiline_available_policies = jsonencode({
-  policies = [
-    {
-      policy_name     = "ReadOnlyAccess"
-      aws_account_id  = "123456789012"
-      request_name    = "Read Only Access"
-    }
-  ]
-})
+kubiya_groups_allowed_groups = ["aws-users", "developers"]
+
+available_policies_yaml = <<-EOT
+policies:
+  - policy_name: "ReadOnlyAccess"
+    aws_account_id: "123456789012"
+    request_name: "Read Only Access"
+EOT
+
+whitelisted_tools_yaml = <<-EOT
+tools:
+  - name: "list_access_requests"
+    allowed: true
+    description: "List all access requests"
+EOT
 ```
 
 #### 2. Deploy Infrastructure
@@ -198,14 +220,14 @@ terraform apply
 
 ## 🔐 Access Control
 
-### Okta Groups
-* Only members of specified Okta groups can request access
-* Groups are defined in `allowed_okta_groups` variable
+### Kubiya Groups
+* Only members of specified Kubiya groups can request access
+* Groups are defined in `kubiya_groups_allowed_groups` variable
 * Access requests from users outside these groups will be automatically rejected
 
 ### Request Flow
-1. User (from allowed Okta group) requests access
-2. Guardian validates Okta group membership
+1. User (from allowed Kubiya group) requests access
+2. Guardian validates group membership
 3. Request forwarded to approvers channel
 4. Approvers review and decide
 5. Access granted/denied based on approval
