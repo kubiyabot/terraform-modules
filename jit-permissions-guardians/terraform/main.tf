@@ -56,9 +56,7 @@ resource "kubiya_agent" "jit_guardian" {
     [for source in kubiya_source.request_tools : source.name]
   )
 
-  integrations = concat(
-    var.kubiya_integrations,
-  )
+  integrations = var.kubiya_integrations
   users        = []
   groups       = var.kubiya_groups_allowed_groups
 

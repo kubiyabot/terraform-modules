@@ -56,6 +56,7 @@ variable "request_tools_sources" {
 variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable (AWS integrations must include account ID)"
   type        = list(string)
+  default     = []
   validation {
     condition = alltrue([
       for integration in var.kubiya_integrations :
