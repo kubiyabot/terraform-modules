@@ -2,63 +2,129 @@
 
 > Transform your AWS access management with AI-powered, Just-In-Time permissions control
 
-[![image](https://github.com/user-attachments/assets/e0bfb98f-bd4e-4808-a177-d845601be07f)
-](https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png)
+[![image](https://github.com/user-attachments/assets/e0bfb98f-bd4e-4808-a177-d845601be07f)](https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png)
 
 ## 🌟 Overview
 
 AWS JIT Permissions Guardian revolutionizes AWS access management by providing secure, temporary, and AI-driven access control. It ensures least-privilege access while maintaining operational efficiency through automated workflows and intelligent policy management.
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Workflow
 
 ```mermaid
-graph TD
-    U[User] -->|Request Access| S[Slack]
-    S -->|Forward Request| AI[AI Guardian]
-    AI -->|Analyze Request| P[Policy Engine]
-    P -->|Generate Policy| AP[Approval Process]
-    AP -->|Request Approval| APR[Approvers Channel]
-    APR -->|Approve/Deny| AWS[AWS IAM]
-    AWS -->|Grant Temporary Access| U
-    
-    style U fill:#f9d71c,stroke:#333,stroke-width:4px
-    style S fill:#4A154B,stroke:#333,stroke-width:4px
-    style AI fill:#3498db,stroke:#333,stroke-width:4px
-    style P fill:#2ecc71,stroke:#333,stroke-width:4px
-    style AP fill:#e74c3c,stroke:#333,stroke-width:4px
-    style APR fill:#9b59b6,stroke:#333,stroke-width:4px
-    style AWS fill:#FF9900,stroke:#333,stroke-width:4px
+flowchart TD
+    User([User])
+    Slack[Slack Interface]
+    Guardian[JIT Guardian]
+    Policy[Policy Engine]
+    Approvers[Approvers Channel]
+    AWS[AWS IAM]
+
+    User -->|1. Request Access| Slack
+    Slack -->|2. Process Request| Guardian
+    Guardian -->|3. Validate & Generate| Policy
+    Policy -->|4. Request Approval| Approvers
+    Approvers -->|5. Approve/Deny| Guardian
+    Guardian -->|6. Apply Policy| AWS
+    AWS -->|7. Grant Access| User
+
+    classDef user fill:#f9d71c,stroke:#333,stroke-width:2px
+    classDef slack fill:#4A154B,stroke:#333,stroke-width:2px
+    classDef guardian fill:#3498db,stroke:#333,stroke-width:2px
+    classDef policy fill:#2ecc71,stroke:#333,stroke-width:2px
+    classDef approvers fill:#e74c3c,stroke:#333,stroke-width:2px
+    classDef aws fill:#FF9900,stroke:#333,stroke-width:2px
+
+    class User user
+    class Slack slack
+    class Guardian guardian
+    class Policy policy
+    class Approvers approvers
+    class AWS aws
 ```
 
-## 🔑 Key Features
+## 🔑 Key Components
 
-### 1. Policy-Driven Access Control
+### Policy Management Flow
 ```mermaid
-graph LR
-    A[Available Policies] -->|Configure| B[Policy Engine]
-    B -->|Generate| C[Temporary Permissions]
-    C -->|Apply| D[AWS IAM]
-    
-    style A fill:#f9d71c,stroke:#333,stroke-width:4px
-    style B fill:#3498db,stroke:#333,stroke-width:4px
-    style C fill:#2ecc71,stroke:#333,stroke-width:4px
-    style D fill:#FF9900,stroke:#333,stroke-width:4px
+flowchart LR
+    Policies[(Available Policies)]
+    Engine[Policy Engine]
+    Temp[Temporary Access]
+    IAM[AWS IAM]
+
+    Policies -->|Load| Engine
+    Engine -->|Generate| Temp
+    Temp -->|Apply| IAM
+
+    classDef policies fill:#f9d71c,stroke:#333,stroke-width:2px
+    classDef engine fill:#3498db,stroke:#333,stroke-width:2px
+    classDef temp fill:#2ecc71,stroke:#333,stroke-width:2px
+    classDef iam fill:#FF9900,stroke:#333,stroke-width:2px
+
+    class Policies policies
+    class Engine engine
+    class Temp temp
+    class IAM iam
 ```
 
-### 2. Approval Workflow
+### Approval Process
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant G as Guardian
-    participant A as Approvers
-    participant AWS as AWS IAM
+    participant User
+    participant Guardian
+    participant Approvers
+    participant AWS
 
-    U->>G: Request Access
-    G->>A: Forward Request
-    A->>G: Approve/Deny
-    G->>AWS: Apply Policy
-    AWS->>U: Grant Access
-    Note over U,AWS: Access Auto-Expires
+    User->>Guardian: Request Access
+    Guardian->>Approvers: Forward Request
+    Note over Guardian,Approvers: Include policy details
+    Approvers->>Guardian: Review & Approve
+    Guardian->>AWS: Apply Policy
+    AWS->>User: Grant Access
+    Note over User,AWS: Auto-expires after TTL
+```
+
+## 🔄 Request Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Requested
+    Requested --> Validating
+    Validating --> PolicyGeneration
+    PolicyGeneration --> ApprovalPending
+    ApprovalPending --> AccessGranted: Approved
+    ApprovalPending --> AccessDenied: Rejected
+    AccessGranted --> AccessExpired: TTL Reached
+    AccessExpired --> [*]
+    AccessDenied --> [*]
+```
+
+## 📊 Access Analytics
+
+```mermaid
+flowchart TD
+    Requests[Access Requests]
+    Analytics[Analytics Engine]
+    Patterns[Usage Patterns]
+    Usage[Policy Usage]
+    Security[Security Events]
+
+    Requests -->|Monitor| Analytics
+    Analytics -->|Generate| Patterns
+    Analytics -->|Track| Usage
+    Analytics -->|Detect| Security
+
+    classDef requests fill:#f9d71c,stroke:#333,stroke-width:2px
+    classDef analytics fill:#3498db,stroke:#333,stroke-width:2px
+    classDef patterns fill:#2ecc71,stroke:#333,stroke-width:2px
+    classDef usage fill:#e74c3c,stroke:#333,stroke-width:2px
+    classDef security fill:#9b59b6,stroke:#333,stroke-width:2px
+
+    class Requests requests
+    class Analytics analytics
+    class Patterns patterns
+    class Usage usage
+    class Security security
 ```
 
 ## ⚙️ Technical Stack
@@ -118,50 +184,6 @@ multiline_available_policies = jsonencode({
 terraform init
 terraform plan
 terraform apply
-```
-
-## 🔄 Access Request Flow
-
-```mermaid
-stateDiagram-v2
-    [*] --> RequestAccess
-    RequestAccess --> PolicyGeneration
-    PolicyGeneration --> ApprovalPending
-    ApprovalPending --> AccessGranted: Approved
-    ApprovalPending --> AccessDenied: Rejected
-    AccessGranted --> AccessExpired: TTL Reached
-    AccessExpired --> [*]
-    AccessDenied --> [*]
-
-    state RequestAccess {
-        [*] --> ValidateUser
-        ValidateUser --> CheckPolicy
-        CheckPolicy --> GenerateRequest
-        GenerateRequest --> [*]
-    }
-
-    state PolicyGeneration {
-        [*] --> AnalyzeRequest
-        AnalyzeRequest --> GeneratePolicy
-        GeneratePolicy --> ValidatePolicy
-        ValidatePolicy --> [*]
-    }
-```
-
-## 📊 Monitoring & Analytics
-
-```mermaid
-graph TD
-    A[Access Requests] -->|Track| B[Analytics Engine]
-    B -->|Generate| C[Usage Patterns]
-    B -->|Monitor| D[Policy Usage]
-    B -->|Alert| E[Security Events]
-    
-    style A fill:#f9d71c,stroke:#333,stroke-width:4px
-    style B fill:#3498db,stroke:#333,stroke-width:4px
-    style C fill:#2ecc71,stroke:#333,stroke-width:4px
-    style D fill:#e74c3c,stroke:#333,stroke-width:4px
-    style E fill:#9b59b6,stroke:#333,stroke-width:4px
 ```
 
 ## 🛠️ Usage Examples
