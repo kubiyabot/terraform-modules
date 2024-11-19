@@ -179,13 +179,44 @@ multiline_available_policies = jsonencode({
 })
 ```
 
-### 2. Deploy Infrastructure
+## 🚀 Deployment
 
+### Quick Start (Recommended)
+The easiest way to deploy AWS JIT Permissions Guardian is through the Kubiya web interface or API:
+
+1. Visit [Kubiya Use Cases](https://docs.kubiya.ai/docs/get-started/choose-a-use-case-and-identify-prerequisites)
+2. Select "AWS JIT Permissions Guardian" use case
+3. Follow the guided setup process
+
+This method automatically handles all infrastructure provisioning and configuration for you.
+
+### Advanced Deployment (Optional)
+For teams who prefer managing their infrastructure as code directly, you can use any terraform flavor:
+
+#### 1. Configure Variables
+```hcl
+teammate_name           = "jit-guardian"
+kubiya_runner          = "your-cluster"
+approvers_slack_channel = "#aws-access-approvers"
+multiline_available_policies = jsonencode({
+  policies = [
+    {
+      policy_name     = "ReadOnlyAccess"
+      aws_account_id  = "123456789012"
+      request_name    = "Read Only Access"
+    }
+  ]
+})
+```
+
+#### 2. Deploy Infrastructure
 ```bash
 terraform init
 terraform plan
 terraform apply
 ```
+
+> 💡 **Note**: While Kubiya uses Terraform as its backend, most users don't need to interact with it directly. The web interface and API provide a streamlined deployment experience.
 
 ## 🛠️ Usage Examples
 
