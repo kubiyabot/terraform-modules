@@ -18,27 +18,6 @@ variable "approvers_slack_channel" {
   }
 }
 
-variable "available_policies_yaml" {
-  description = "YAML formatted string containing list of IAM policies for which Kubiya will generate virtual access request tools (up to 30 policies supported)"
-  type        = string
-  default     = <<-EOT
-    policies:
-      - policy_name: "AWSReadOnlyAccess"
-        aws_account_id: "123456789012"
-        request_name: "Read Only Access"
-      - policy_name: "AWSPowerUserAccess"
-        aws_account_id: "123456789012"
-        request_name: "Power User Access"
-      - policy_name: "AWSSystemAdministrator"
-        aws_account_id: "123456789012"
-        request_name: "System Administrator Access"
-  EOT
-  validation {
-    condition = length(yamldecode(var.available_policies_yaml).policies) <= 30
-    error_message = "Maximum of 30 policies supported for virtual tool generation"
-  }
-}
-
 variable "kubiya_groups_allowed_groups" {
   description = "Kubiya groups who can request access through the teammate"
   type        = list(string)

@@ -172,7 +172,6 @@ policies:
 Request tools come in two categories:
 1. **AWS Policy Generator** (automatically included and cannot be modified)
    - Handles dynamic generation of policy-specific access request tools
-   - Required for processing the policies defined in `available_policies_yaml`
 2. **Auxiliary Tools** (configured through source URLs)
 
 ```hcl
@@ -217,13 +216,6 @@ kubiya_integrations    = [
   "aws-123456789012",  # AWS integration with account ID
   "slack"              # Required for approvals
 ]
-
-available_policies_yaml = <<-EOT
-policies:
-  - policy_name: "AWSReadOnlyAccess"     # Must match IAM policy name
-    aws_account_id: "123456789012"
-    request_name: "Read Only Access"
-EOT
 
 request_tools_sources = [
   "https://github.com/kubiyabot/community-tools/tree/main/jit/list_access_requests",
