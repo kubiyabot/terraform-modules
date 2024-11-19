@@ -129,7 +129,7 @@ flowchart TD
 
 * **Infrastructure**: Terraform
 * **Runtime**: Kubiya Runner (Kubernetes)
-* **Integration**: AWS IAM, Slack
+* **Integration**: AWS IAM, Slack, Okta
 * **AI Engine**: GPT-4
 * **Storage**: SQLite (for request tracking)
 
@@ -140,9 +140,10 @@ flowchart TD
 * Kubiya Runner (Kubernetes Cluster)
 * AWS IAM Permissions
 * Slack Workspace
+* Okta Groups Configuration
 * Approvers Channel
 
-### ⚡ Policy Configuration
+### ⚡ Policy Configuration (YAML)
 
 ```json
 {
@@ -195,21 +196,19 @@ terraform plan
 terraform apply
 ```
 
-> 💡 **Note**: While Kubiya uses Terraform as its backend, most users don't need to interact with it directly. The web interface and API provide a streamlined deployment experience.
+## 🔐 Access Control
 
-## 🛠️ Usage Examples
+### Okta Groups
+* Only members of specified Okta groups can request access
+* Groups are defined in `allowed_okta_groups` variable
+* Access requests from users outside these groups will be automatically rejected
 
-### Request Access
-
-```slack
-@jit-guardian I need read-only access to S3 for debugging
-```
-
-### Approve Request
-
-```slack
-@jit-guardian approve access-request-123 for @user
-```
+### Request Flow
+1. User (from allowed Okta group) requests access
+2. Guardian validates Okta group membership
+3. Request forwarded to approvers channel
+4. Approvers review and decide
+5. Access granted/denied based on approval
 
 ## 🎯 Best Practices
 
@@ -246,6 +245,7 @@ terraform apply
 
 * [Kubiya Documentation](https://docs.kubiya.ai)
 * [AWS IAM Best Practices](https://aws.amazon.com/iam/best-practices/)
+* [Okta Integration Guide](https://docs.kubiya.ai/integrations/okta)
 * [Terraform Documentation](https://terraform.io/docs)
 
 ---

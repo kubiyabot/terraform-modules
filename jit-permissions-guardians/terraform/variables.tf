@@ -1,5 +1,5 @@
 variable "teammate_name" {
-  description = "Name of the JIT permissions teammate"
+  description = "Name of the virtual entity that binds the JIT permissions logic"
   type        = string
   default     = "jit-guardian"
 }
@@ -18,52 +18,42 @@ variable "approvers_slack_channel" {
   }
 }
 
-variable "multiline_available_policies" {
-  description = "JSON formatted string containing available policies structure"
+variable "available_policies_yaml" {
+  description = "YAML formatted string containing available policies structure"
   type        = string
-  default     = jsonencode({
-    "policies": [
-      {
-        "policy_name": "ReadOnlyAccess",
-        "aws_account_id": "123456789012",
-        "request_name": "Read Only Access"
-      },
-      {
-        "policy_name": "PowerUserAccess",
-        "aws_account_id": "123456789012",
-        "request_name": "Power User Access"
-      },
-      {
-        "policy_name": "SystemAdministrator",
-        "aws_account_id": "123456789012",
-        "request_name": "System Administrator Access"
-      }
-    ]
-  })
-  validation {
-    condition     = can(jsondecode(var.multiline_available_policies))
-    error_message = "Available policies must be a valid JSON string"
-  }
+  default     = <<-EOT
+    policies:
+      - policy_name: "ReadOnlyAccess"
+        aws_account_id: "123456789012"
+        request_name: "Read Only Access"
+      - policy_name: "PowerUserAccess"
+        aws_account_id: "123456789012"
+        request_name: "Power User Access"
+      - policy_name: "SystemAdministrator"
+        aws_account_id: "123456789012"
+        request_name: "System Administrator Access"
+  EOT
 }
 
-variable "kubiya_groups_allowed_groups" {
-  description = "Groups who can interact with the teammate"
+variable "whitelisted_tools_yaml" {
+  description = "YAML formatted string containing whitelisted tool definitions"
+  type        = string
+  default     = <<-EOT
+    tools:
+      - name: "list_access_requests"
+        allowed: true
+        description: "List all access requests"
+      - name: "view_access_request"
+        allowed: true
+        description: "View details of a specific access request"
+      - name: "cancel_access_request"
+        allowed: true
+        description: "Cancel an existing access request"
+  EOT
+}
+
+variable "allowed_groups" {
+  description = "Groups who can request access through the teammate"
   type        = list(string)
-  default     = ["Admin"]
-}
-
-variable "environment" {
-  description = "Environment name (e.g., production, staging)"
-  type        = string
-  default     = "production"
-}
-
-variable "log_level" {
-  description = "Log level for the teammate"
-  type        = string
-  default     = "INFO"
-  validation {
-    condition     = contains(["DEBUG", "INFO", "WARN", "ERROR"], var.log_level)
-    error_message = "Log level must be one of: DEBUG, INFO, WARN, ERROR"
-  }
+  default     = ["Developers", "Operations"]
 }

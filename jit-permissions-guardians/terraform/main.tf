@@ -61,6 +61,5 @@ output "jit_guardian" {
   value = {
     name                    = kubiya_agent.jit_guardian.name
     approvers_slack_channel = var.approvers_slack_channel
-    environment            = var.environment
   }
 }
