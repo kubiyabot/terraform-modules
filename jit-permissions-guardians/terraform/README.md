@@ -2,7 +2,7 @@
 
 > Transform your AWS access management with AI-powered, Just-In-Time permissions control
 
-<img src="https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png" width="400" alt="AWS JIT Permissions Guardian"/>
+[![image](https://github.com/user-attachments/assets/e0bfb98f-bd4e-4808-a177-d845601be07f)](https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png)
 
 ## 🌟 Overview
 
