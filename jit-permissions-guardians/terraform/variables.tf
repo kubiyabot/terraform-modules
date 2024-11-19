@@ -48,9 +48,7 @@ variable "kubiya_groups_allowed_groups" {
 variable "request_tools_sources" {
   description = "List of source URLs for auxiliary request-related tools (AWS policy generator tool is automatically included and cannot be modified)"
   type        = list(string)
-  default     = [
-    "https://github.com/kubiyabot/community-tools/tree/main/aws",
-  ]
+  default     = ["https://github.com/kubiyabot/community-tools/tree/main/aws"]
 }
 
 variable "kubiya_integrations" {
