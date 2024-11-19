@@ -143,37 +143,51 @@ flowchart TD
 * Kubiya Groups Configuration
 * Approvers Channel
 
-### ⚡ Policy Configuration (YAML)
+### ⚡ IAM Policy Configuration (YAML)
+
+Define IAM policies for which Kubiya will automatically generate virtual access request tools. Each policy specified will create a corresponding virtual tool in the system and attach it to the team mate
 
 ```yaml
 policies:
-  - policy_name: "ReadOnlyAccess"
-    aws_account_id: "123456789012"
-    request_name: "Read Only Access"
-  - policy_name: "PowerUserAccess"
+  - policy_name: "AWSReadOnlyAccess"  # IAM policy for virtual tool generation
+    aws_account_id: "123456789012"    # AWS account where policy exists
+    request_name: "Read Only Access"   # Human-readable name for the virtual tool
+  - policy_name: "AWSPowerUserAccess"
     aws_account_id: "123456789012"
     request_name: "Power User Access"
-  - policy_name: "SystemAdministrator"
+  - policy_name: "AWSSystemAdministrator"
     aws_account_id: "123456789012"
     request_name: "System Administrator Access"
 ```
 
-### 🔧 Whitelisted Tools Configuration (YAML)
+> ⚠️ **IMPORTANT**: 
+> - Each policy defined will generate a corresponding virtual access request tool
+> - Maximum of 30 policies supported for virtual tool generation
+> - `policy_name` must match an existing IAM policy in the specified AWS account
+> - Policy names are case-sensitive and must match exactly
+> - Virtual tools are generated automatically by Kubiya based on this configuration
 
-```yaml
-tools:
-  - name: "list_access_requests"
-    allowed: true
-    description: "List all access requests"
-  - name: "view_access_request"
-    allowed: true
-    description: "View details of a specific access request"
-  - name: "cancel_access_request"
-    allowed: true
-    description: "Cancel an existing access request"
+### 🔧 Request Tools Configuration
+
+Request tools come in two categories:
+1. **AWS Tools** (automatically included and cannot be modified)
+2. **Auxiliary Tools** (configured through source URLs)
+
+```hcl
+# Configure only auxiliary tools - AWS tools are automatically included
+request_tools_sources = [
+  "https://github.com/kubiyabot/community-tools/tree/main/jit/list_access_requests",
+  "https://github.com/kubiyabot/community-tools/tree/main/jit/view_access_request",
+  "https://github.com/kubiyabot/community-tools/tree/main/jit/cancel_access_request"
+]
 ```
 
-> ⚠️ **IMPORTANT**: Both policy and tools configurations must be properly defined in YAML format for the Guardian to function correctly.
+> ⚠️ **IMPORTANT**: 
+> - AWS tools are automatically included and cannot be modified
+> - Additional tools are loaded from their source repositories
+> - Actual permissions are determined by the runner's OPA policies
+> - Access to these tools varies based on user roles and policy configurations
+> - Refer to your OPA policy repository for specific access controls
 
 ## 🚀 Deployment
 
@@ -194,22 +208,30 @@ For teams who prefer managing their infrastructure as code directly:
 teammate_name           = "jit-guardian"
 kubiya_runner          = "your-cluster"
 approvers_slack_channel = "#aws-access-approvers"
-kubiya_groups_allowed_groups = ["aws-users", "developers"]
+kubiya_groups_allowed_groups = ["Admin"]
+
+kubiya_integrations    = [
+  "aws-123456789012",  # AWS integration with account ID
+  "slack"              # Required for approvals
+]
 
 available_policies_yaml = <<-EOT
 policies:
-  - policy_name: "ReadOnlyAccess"
+  - policy_name: "AWSReadOnlyAccess"     # Must match IAM policy name
     aws_account_id: "123456789012"
     request_name: "Read Only Access"
 EOT
 
-whitelisted_tools_yaml = <<-EOT
-tools:
-  - name: "list_access_requests"
-    allowed: true
-    description: "List all access requests"
-EOT
+request_tools_sources = [
+  "https://github.com/kubiyabot/community-tools/tree/main/jit/list_access_requests",
+  "https://github.com/kubiyabot/community-tools/tree/main/jit/view_access_request"
+]
 ```
+
+> ⚠️ **IMPORTANT**: 
+> - AWS integrations must include the account ID in the format: `aws-123456789012`
+> - Slack integration is automatically added and required for approvals
+> - Multiple AWS accounts can be specified for cross-account access
 
 #### 2. Deploy Infrastructure
 ```bash

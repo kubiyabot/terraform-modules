@@ -20,8 +20,21 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/shaked/just-in-time-tooling/just_in_time_access"
 }
 
-resource "kubiya_source" "aws_tools" {
-  url = "https://github.com/kubiyabot/terraform-modules/tree/main/jit-permissions-guardians/tools/aws/*"
+# AWS dynamic policy generation tool (automatically included)
+resource "kubiya_source" "aws_policy_generator" {
+  url = "https://github.com/kubiyabot/terraform-modules/tree/main/jit-permissions-guardians/tools/aws/policy_generator"
+}
+
+# Configure auxiliary request tool sources dynamically
+resource "kubiya_source" "request_tools" {
+  for_each = toset(var.request_tools_sources)
+  
+  url = each.value
+  name = replace(
+    basename(each.value),
+    "/[^a-zA-Z0-9]/",
+    "_"
+  )
 }
 
 # Create knowledge base
@@ -39,20 +52,24 @@ resource "kubiya_agent" "jit_guardian" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered AWS JIT permissions guardian"
-  model        = "azure/gpt-4o"
+  model        = "azure/gpt-4"
   instructions = ""
-  sources      = [kubiya_source.approval_workflow.name, kubiya_source.aws_tools.name]
+  sources      = concat(
+    [kubiya_source.aws_policy_generator.name],  # AWS policy generator is always included first
+    [kubiya_source.jit_approval_workflow_tooling.name], # JIT tooling is always included as it is a trivial part of the use case
+    [for source in kubiya_source.request_tools : source.name] # Auxiliary request tools , can be modified
+  )
 
-  integrations = ["aws", "slack"]
+  integrations = concat(
+    var.kubiya_integrations,
+  )
   users        = []
   groups       = var.kubiya_groups_allowed_groups
 
   environment_variables = {
     APPROVAL_SLACK_CHANNEL = var.approvers_slack_channel
-    AVAILABLE_POLICIES    = var.multiline_available_policies
-    ENVIRONMENT          = var.environment
-    LOG_LEVEL           = var.log_level
-    KUBIYA_TOOL_TIMEOUT = "300"
+    AVAILABLE_POLICIES    = var.available_policies_yaml
+    KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
   }
 }
 
