@@ -19,13 +19,13 @@ flowchart TD
     Approvers[Approvers Channel]
     AWS[AWS IAM]
 
-    User -->|1. Request Access| Slack
-    Slack -->|2. Process Request| Guardian
-    Guardian -->|3. Validate & Generate| Policy
-    Policy -->|4. Request Approval| Approvers
-    Approvers -->|5. Approve/Deny| Guardian
-    Guardian -->|6. Apply Policy| AWS
-    AWS -->|7. Grant Access| User
+    User --> Slack
+    Slack --> Guardian
+    Guardian --> Policy
+    Policy --> Approvers
+    Approvers --> Guardian
+    Guardian --> AWS
+    AWS --> User
 
     classDef user fill:#f9d71c,stroke:#333,stroke-width:2px
     classDef slack fill:#4A154B,stroke:#333,stroke-width:2px,color:white
