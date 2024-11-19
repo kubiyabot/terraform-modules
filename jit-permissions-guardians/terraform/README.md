@@ -2,7 +2,7 @@
 
 > Transform your AWS access management with AI-powered, Just-In-Time permissions control
 
-![image](https://github.com/user-attachments/assets/257fd034-d387-49c6-b066-07264eac4183)
+<img src="https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/Knite.png" width="400" alt="AWS JIT Permissions Guardian"/>
 
 ## 🌟 Overview
 
@@ -47,18 +47,18 @@ flowchart TD
 ### Policy Management Flow
 ```mermaid
 flowchart LR
-    Policies[(Available Policies)]
-    Engine[Policy Engine]
-    Temp[Temporary Access]
+    Policies[(Policies)]
+    Engine[Engine]
+    Temp[Temp Access]
     IAM[AWS IAM]
 
-    Policies -->|Load| Engine
-    Engine -->|Generate| Temp
-    Temp -->|Apply| IAM
+    Policies --> Engine
+    Engine --> Temp
+    Temp --> IAM
 
     classDef policies fill:#f9d71c,stroke:#333,stroke-width:2px
-    classDef engine fill:#3498db,stroke:#333,stroke-width:2px
-    classDef temp fill:#2ecc71,stroke:#333,stroke-width:2px
+    classDef engine fill:#3498db,stroke:#333,stroke-width:2px,color:white
+    classDef temp fill:#2ecc71,stroke:#333,stroke-width:2px,color:white
     classDef iam fill:#FF9900,stroke:#333,stroke-width:2px
 
     class Policies policies
@@ -70,18 +70,16 @@ flowchart LR
 ### Approval Process
 ```mermaid
 sequenceDiagram
-    participant User
+    actor User
     participant Guardian
     participant Approvers
     participant AWS
 
-    User->>Guardian: Request Access
-    Guardian->>Approvers: Forward Request
-    Note over Guardian,Approvers: Include policy details
-    Approvers->>Guardian: Review & Approve
-    Guardian->>AWS: Apply Policy
-    AWS->>User: Grant Access
-    Note over User,AWS: Auto-expires after TTL
+    User->>Guardian: Request
+    Guardian->>Approvers: Forward
+    Approvers->>Guardian: Approve
+    Guardian->>AWS: Apply
+    AWS->>User: Grant
 ```
 
 ## 🔄 Request Lifecycle
@@ -94,7 +92,7 @@ stateDiagram-v2
     PolicyGeneration --> ApprovalPending
     ApprovalPending --> AccessGranted: Approved
     ApprovalPending --> AccessDenied: Rejected
-    AccessGranted --> AccessExpired: TTL Reached
+    AccessGranted --> AccessExpired: TTL
     AccessExpired --> [*]
     AccessDenied --> [*]
 ```
@@ -103,22 +101,22 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    Requests[Access Requests]
-    Analytics[Analytics Engine]
-    Patterns[Usage Patterns]
-    Usage[Policy Usage]
-    Security[Security Events]
+    Requests[Requests]
+    Analytics[Analytics]
+    Patterns[Patterns]
+    Usage[Usage]
+    Security[Security]
 
-    Requests -->|Monitor| Analytics
-    Analytics -->|Generate| Patterns
-    Analytics -->|Track| Usage
-    Analytics -->|Detect| Security
+    Requests --> Analytics
+    Analytics --> Patterns
+    Analytics --> Usage
+    Analytics --> Security
 
     classDef requests fill:#f9d71c,stroke:#333,stroke-width:2px
-    classDef analytics fill:#3498db,stroke:#333,stroke-width:2px
-    classDef patterns fill:#2ecc71,stroke:#333,stroke-width:2px
-    classDef usage fill:#e74c3c,stroke:#333,stroke-width:2px
-    classDef security fill:#9b59b6,stroke:#333,stroke-width:2px
+    classDef analytics fill:#3498db,stroke:#333,stroke-width:2px,color:white
+    classDef patterns fill:#2ecc71,stroke:#333,stroke-width:2px,color:white
+    classDef usage fill:#e74c3c,stroke:#333,stroke-width:2px,color:white
+    classDef security fill:#9b59b6,stroke:#333,stroke-width:2px,color:white
 
     class Requests requests
     class Analytics analytics
@@ -159,25 +157,6 @@ flowchart TD
 ```
 
 > ⚠️ **IMPORTANT**: The Guardian requires a valid policy configuration to function. Without properly configured available policies, the system will not process access requests.
-
-## 🚀 Deployment
-
-### 1. Configure Variables
-
-```hcl
-teammate_name           = "jit-guardian"
-kubiya_runner          = "your-cluster"
-approvers_slack_channel = "#aws-access-approvers"
-multiline_available_policies = jsonencode({
-  policies = [
-    {
-      policy_name     = "ReadOnlyAccess"
-      aws_account_id  = "123456789012"
-      request_name    = "Read Only Access"
-    }
-  ]
-})
-```
 
 ## 🚀 Deployment
 
@@ -235,19 +214,16 @@ terraform apply
 ## 🎯 Best Practices
 
 ### Policy Configuration
-
 * Define clear policy names
 * Use descriptive request names
 * Keep policies minimal
 
 ### Approval Process
-
 * Set up dedicated approvers channel
 * Define clear approval criteria
 * Document approval decisions
 
 ### Access Management
-
 * Use time-bound access
 * Monitor access patterns
 * Regular policy reviews
@@ -257,13 +233,11 @@ terraform apply
 ### Common Issues and Solutions
 
 #### Policy Not Found
-
 * Verify policy configuration
 * Check AWS account ID
 * Validate policy name
 
 #### Approval Timeout
-
 * Check approvers channel
 * Verify approver permissions
 * Review notification settings
