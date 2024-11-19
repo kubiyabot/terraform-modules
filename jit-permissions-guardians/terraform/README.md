@@ -129,24 +129,23 @@ flowchart TD
 
 ## ⚙️ Technical Stack
 
-- **Infrastructure**: Terraform
-- **Runtime**: Kubiya Runner (Kubernetes)
-- **Integration**: AWS IAM, Slack
-- **AI Engine**: GPT-4
-- **Storage**: SQLite (for request tracking)
+* **Infrastructure**: Terraform
+* **Runtime**: Kubiya Runner (Kubernetes)
+* **Integration**: AWS IAM, Slack
+* **AI Engine**: GPT-4
+* **Storage**: SQLite (for request tracking)
 
 ## 🚨 Prerequisites
 
 ### Required Configuration
-```yaml
-Essential Components:
-  - Kubiya Runner (Kubernetes Cluster)
-  - AWS IAM Permissions
-  - Slack Workspace
-  - Approvers Channel
-```
+
+* Kubiya Runner (Kubernetes Cluster)
+* AWS IAM Permissions
+* Slack Workspace
+* Approvers Channel
 
 ### ⚡ Policy Configuration
+
 ```json
 {
   "policies": [
@@ -164,6 +163,7 @@ Essential Components:
 ## 🚀 Deployment
 
 ### 1. Configure Variables
+
 ```hcl
 teammate_name           = "jit-guardian"
 kubiya_runner          = "your-cluster"
@@ -180,6 +180,7 @@ multiline_available_policies = jsonencode({
 ```
 
 ### 2. Deploy Infrastructure
+
 ```bash
 terraform init
 terraform plan
@@ -189,50 +190,58 @@ terraform apply
 ## 🛠️ Usage Examples
 
 ### Request Access
+
 ```slack
 @jit-guardian I need read-only access to S3 for debugging
 ```
 
 ### Approve Request
+
 ```slack
 @jit-guardian approve access-request-123 for @user
 ```
 
 ## 🎯 Best Practices
 
-1. **Policy Configuration**
-   - Define clear policy names
-   - Use descriptive request names
-   - Keep policies minimal
+### Policy Configuration
 
-2. **Approval Process**
-   - Set up dedicated approvers channel
-   - Define clear approval criteria
-   - Document approval decisions
+* Define clear policy names
+* Use descriptive request names
+* Keep policies minimal
 
-3. **Access Management**
-   - Use time-bound access
-   - Monitor access patterns
-   - Regular policy reviews
+### Approval Process
+
+* Set up dedicated approvers channel
+* Define clear approval criteria
+* Document approval decisions
+
+### Access Management
+
+* Use time-bound access
+* Monitor access patterns
+* Regular policy reviews
 
 ## 🔍 Troubleshooting
 
-Common issues and solutions:
-1. **Policy Not Found**
-   - Verify policy configuration
-   - Check AWS account ID
-   - Validate policy name
+### Common Issues and Solutions
 
-2. **Approval Timeout**
-   - Check approvers channel
-   - Verify approver permissions
-   - Review notification settings
+#### Policy Not Found
+
+* Verify policy configuration
+* Check AWS account ID
+* Validate policy name
+
+#### Approval Timeout
+
+* Check approvers channel
+* Verify approver permissions
+* Review notification settings
 
 ## 📚 Additional Resources
 
-- [Kubiya Documentation](https://docs.kubiya.ai)
-- [AWS IAM Best Practices](https://aws.amazon.com/iam/best-practices/)
-- [Terraform Documentation](https://terraform.io/docs)
+* [Kubiya Documentation](https://docs.kubiya.ai)
+* [AWS IAM Best Practices](https://aws.amazon.com/iam/best-practices/)
+* [Terraform Documentation](https://terraform.io/docs)
 
 ---
 
