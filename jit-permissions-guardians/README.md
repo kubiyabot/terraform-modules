@@ -22,46 +22,56 @@ AWS JIT (Just-In-Time) Permissions Crew is your intelligent companion within the
 
 ```mermaid
 graph TD
-    A[📥 Access Request] --> B{🤔 AI Policy Analysis}
-    B --> C[📝 Generate Policy]
-    C --> D[👀 Admin Review]
-    D --> E{✅ Approval Decision}
-    E -->|Approved| F[🔗 Attach Policy]
-    E -->|Rejected| G[❌ Notify Rejection]
-    F --> H[⏰ Set Expiry Timer]
-    H --> I[🗑️ Auto-Remove Policy]
+    A[🎯 User Initiates Request] -->|Submits access details| B[🤖 AI Analysis Engine]
+    B -->|Analyzes requirements| C[📋 Policy Generation]
+    C -->|Creates draft policy| D[👥 Admin Review Queue]
+    D -->|Notifies approvers| E{⚡ Decision Point}
+    E -->|✅ Approved| F[🔑 Policy Activation]
+    E -->|❌ Rejected| G[📤 Request Denied]
+    F -->|Sets timer| H[⏳ Active Permission]
+    H -->|Time expires| I[🔄 Auto-Cleanup]
+    G -->|Notification sent| J[💡 Feedback to User]
+    I -->|Policy removed| K[📝 Access Log Updated]
     
-    style A fill:#f9d71c,stroke:#333,stroke-width:2px
-    style B fill:#f9a61c,stroke:#333,stroke-width:2px
-    style C fill:#66c256,stroke:#333,stroke-width:2px
-    style D fill:#e74c3c,stroke:#333,stroke-width:2px
-    style E fill:#3498db,stroke:#333,stroke-width:2px
-    style F fill:#2ecc71,stroke:#333,stroke-width:2px
-    style G fill:#e67e22,stroke:#333,stroke-width:2px
+    classDef primary fill:#4aa1ff,stroke:#666,stroke-width:2px,color:#fff
+    classDef success fill:#3ebd64,stroke:#666,stroke-width:2px,color:#fff
+    classDef warning fill:#ff9800,stroke:#666,stroke-width:2px,color:#fff
+    classDef danger fill:#e91e63,stroke:#666,stroke-width:2px,color:#fff
+    classDef info fill:#666666,stroke:#666,stroke-width:2px,color:#fff
+    
+    class A,B primary
+    class F,H success
+    class E,D warning
+    class G danger
+    class I,J,K info
 ```
 
 ### 2. 🔐 Policy Lifecycle Management
 
 ```mermaid
-sequenceDiagram
-    participant U as User
-    participant AI as AI Engine
-    participant A as Admin
-    participant AWS as AWS IAM
-
-    U->>AI: Request Access
-    AI->>AI: Generate Policy
-    AI->>A: Request Approval
-    A->>AWS: Approve & Attach
-    Note over AWS: Policy Active
-    AWS->>AWS: Monitor TTL
-    AWS->>AWS: Auto-Remove
-    AWS->>U: Access Expired
-
-    style U fill:#f9d71c,stroke:#333,stroke-width:2px
-    style AI fill:#3498db,stroke:#333,stroke-width:2px
-    style A fill:#e67e22,stroke:#333,stroke-width:2px
-    style AWS fill:#2ecc71,stroke:#333,stroke-width:2px
+graph TD
+    A[👤 User] -->|1. Requests access| B[🎯 Request Handler]
+    B -->|2. Processes request| C[🤖 AI Policy Engine]
+    C -->|3. Generates policy| D[📋 Policy Draft]
+    D -->|4. Routes for review| E[👥 Approval System]
+    E -->|5a. Approved| F[⚡ AWS IAM Service]
+    E -->|5b. Rejected| G[❌ Request Denied]
+    F -->|6. Attaches policy| H[🔐 Active Permission]
+    H -->|7. Monitors time| I[⏳ TTL Monitor]
+    I -->|8. Expires| J[🔄 Auto-Removal]
+    J -->|9. Cleanup complete| K[📊 Audit Log]
+    
+    classDef user fill:#4aa1ff,stroke:#666,stroke-width:2px,color:#fff
+    classDef system fill:#3ebd64,stroke:#666,stroke-width:2px,color:#fff
+    classDef process fill:#ff9800,stroke:#666,stroke-width:2px,color:#fff
+    classDef state fill:#9c27b0,stroke:#666,stroke-width:2px,color:#fff
+    classDef end fill:#666666,stroke:#666,stroke-width:2px,color:#fff
+    
+    class A user
+    class B,C,F system
+    class D,E,I process
+    class H state
+    class G,J,K end
 ```
 
 ## 🛠️ Configuration
