@@ -62,7 +62,6 @@ resource "kubiya_agent" "jit_guardian" {
 
   environment_variables = {
     APPROVAL_SLACK_CHANNEL = var.approvers_slack_channel
-    AVAILABLE_POLICIES    = var.available_policies_yaml
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
   }
 }
