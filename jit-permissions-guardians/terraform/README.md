@@ -143,23 +143,6 @@ flowchart TD
 * Kubiya Groups Configuration
 * Approvers Channel
 
-### ⚡ IAM Policy Configuration (YAML)
-
-Define IAM policies for which Kubiya will automatically generate virtual access request tools. Each policy specified will create a corresponding virtual tool in the system and attach it to the team mate
-
-```yaml
-policies:
-  - policy_name: "AWSReadOnlyAccess"  # IAM policy for virtual tool generation
-    aws_account_id: "123456789012"    # AWS account where policy exists
-    request_name: "Read Only Access"   # Human-readable name for the virtual tool
-  - policy_name: "AWSPowerUserAccess"
-    aws_account_id: "123456789012"
-    request_name: "Power User Access"
-  - policy_name: "AWSSystemAdministrator"
-    aws_account_id: "123456789012"
-    request_name: "System Administrator Access"
-```
-
 > ⚠️ **IMPORTANT**: 
 > - Each policy defined will generate a corresponding virtual access request tool
 > - Maximum of 30 policies supported for virtual tool generation
