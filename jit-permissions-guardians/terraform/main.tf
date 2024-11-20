@@ -17,12 +17,12 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "jit_approval_workflow_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/jit_access_v2/just_in_time_access"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access"
 }
 
 # AWS dynamic policy generation tool (automatically included)
 resource "kubiya_source" "aws_policy_generator" {
-  url = "https://github.com/kubiyabot/community-tools/tree/jit_access_v2/aws_jit_tools"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
 }
 
 # Configure auxiliary request tools
@@ -44,7 +44,7 @@ resource "kubiya_knowledge" "jit_access" {
 resource "kubiya_webhook" "webhook" {
   //mandatory fields
   //Please specify a unique name to identify this webhook
-  name = "jit-request-access"
+  name = "${var.teammate_name} JIT webhook"
   //Please specify the source of the webhook - e.g: 'pull request opened on repository foo'
   source = "JIT"
   //Provide AI instructions prompt for the agent to follow upon incoming webhook. use {{.event.}} syntax for dynamic parsing of the event
