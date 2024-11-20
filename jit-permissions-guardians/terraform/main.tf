@@ -82,9 +82,10 @@ resource "kubiya_agent" "jit_guardian" {
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
-    REQUEST_ACCESS_WEBHOOK_URL = kubiya_webhook.webhook.url
   }
 }
+
+
 
 # Output the teammate details
 output "jit_guardian" {
