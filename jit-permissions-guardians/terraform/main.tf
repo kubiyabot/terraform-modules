@@ -41,26 +41,6 @@ resource "kubiya_knowledge" "jit_access" {
   content          = data.http.jit_access_knowledge.response_body
 }
 
-resource "kubiya_webhook" "webhook" {
-  //mandatory fields
-  //Please specify a unique name to identify this webhook
-  name = "jit-request-access"
-  //Please specify the source of the webhook - e.g: 'pull request opened on repository foo'
-  source = "JIT"
-  //Provide AI instructions prompt for the agent to follow upon incoming webhook. use {{.event.}} syntax for dynamic parsing of the event
-  prompt = "Sum up this just in time access request. Ask if the user wants to approve or reject the request. request: {{.event}}"
-  //Select an Agent which will perform the task and receive the webhook payload
-  agent = kubiya_agent.jit_guardian.name
-  //Please provide a destination that starts with `#` or `@`
-  destination = var.approvers_slack_channel
-  //optional fields
-  //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
-  filter = ""
-  depends_on = [
-    kubiya_agent.jit_guardian
-  ]
-}
-
 # Configure the JIT Guardian agent
 resource "kubiya_agent" "jit_guardian" {
   name         = var.teammate_name
@@ -82,6 +62,7 @@ resource "kubiya_agent" "jit_guardian" {
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
+    REQUEST_ACCESS_WEBHOOK_URL =  var.kubiya_webhook_url
   }
 }
 
