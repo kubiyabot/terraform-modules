@@ -2,7 +2,8 @@
 
 AWS JIT (Just-In-Time) Permissions Crew is your intelligent companion within the Kubiya platform, designed to revolutionize AWS access management. It provides AI-driven, secure, and efficient temporary access to AWS resources, ensuring least-privilege access while maintaining operational efficiency.
 
-![image](https://github.com/user-attachments/assets/04ebdc30-9124-418a-b8a5-ab2f89b9b013)
+![Uploading image.png…]()
+
 
 **🎯 Transform your AWS access management with AI-powered, temporary permissions that expire automatically! Keep your AWS environment secure while maintaining developer productivity.**
 
@@ -21,57 +22,57 @@ AWS JIT (Just-In-Time) Permissions Crew is your intelligent companion within the
 ### 1. 🎫 Access Request & Approval Flow
 
 ```mermaid
-graph TD
-    A[🎯 User Initiates Request] -->|Submits access details| B[🤖 AI Analysis Engine]
-    B -->|Analyzes requirements| C[📋 Policy Generation]
-    C -->|Creates draft policy| D[👥 Admin Review Queue]
-    D -->|Notifies approvers| E{⚡ Decision Point}
-    E -->|✅ Approved| F[🔑 Policy Activation]
-    E -->|❌ Rejected| G[📤 Request Denied]
-    F -->|Sets timer| H[⏳ Active Permission]
-    H -->|Time expires| I[🔄 Auto-Cleanup]
-    G -->|Notification sent| J[💡 Feedback to User]
-    I -->|Policy removed| K[📝 Access Log Updated]
-    
-    classDef primary fill:#4aa1ff,stroke:#666,stroke-width:2px,color:#fff
-    classDef success fill:#3ebd64,stroke:#666,stroke-width:2px,color:#fff
-    classDef warning fill:#ff9800,stroke:#666,stroke-width:2px,color:#fff
-    classDef danger fill:#e91e63,stroke:#666,stroke-width:2px,color:#fff
-    classDef info fill:#666666,stroke:#666,stroke-width:2px,color:#fff
-    
-    class A,B primary
-    class F,H success
-    class E,D warning
-    class G danger
-    class I,J,K info
+flowchart TD
+    A["User Initiates Request"] --> B["AI Analysis Engine"]
+    B --> C["Policy Generation"]
+    C --> D["Admin Review Queue"]
+    D --> E{"Decision Point"}
+    E -->|Approved| F["Policy Activation"]
+    E -->|Rejected| G["Request Denied"]
+    F --> H["Active Permission"]
+    H --> I["Auto-Cleanup"]
+    G --> J["Feedback to User"]
+    I --> K["Access Log Updated"]
+
+    style A fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
+    style C fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    style D fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
+    style G fill:#e91e63,stroke:#333,stroke-width:2px,color:#fff
+    style H fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
+    style I fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    style J fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    style K fill:#666666,stroke:#333,stroke-width:2px,color:#fff
 ```
 
 ### 2. 🔐 Policy Lifecycle Management
 
 ```mermaid
-graph TD
-    A[👤 User] -->|1. Requests access| B[🎯 Request Handler]
-    B -->|2. Processes request| C[🤖 AI Policy Engine]
-    C -->|3. Generates policy| D[📋 Policy Draft]
-    D -->|4. Routes for review| E[👥 Approval System]
-    E -->|5a. Approved| F[⚡ AWS IAM Service]
-    E -->|5b. Rejected| G[❌ Request Denied]
-    F -->|6. Attaches policy| H[🔐 Active Permission]
-    H -->|7. Monitors time| I[⏳ TTL Monitor]
-    I -->|8. Expires| J[🔄 Auto-Removal]
-    J -->|9. Cleanup complete| K[📊 Audit Log]
-    
-    classDef user fill:#4aa1ff,stroke:#666,stroke-width:2px,color:#fff
-    classDef system fill:#3ebd64,stroke:#666,stroke-width:2px,color:#fff
-    classDef process fill:#ff9800,stroke:#666,stroke-width:2px,color:#fff
-    classDef state fill:#9c27b0,stroke:#666,stroke-width:2px,color:#fff
-    classDef end fill:#666666,stroke:#666,stroke-width:2px,color:#fff
-    
-    class A user
-    class B,C,F system
-    class D,E,I process
-    class H state
-    class G,J,K end
+flowchart TD
+    A["User"] -->|1. Requests access| B["Request Handler"]
+    B -->|2. Processes request| C["AI Policy Engine"]
+    C -->|3. Generates policy| D["Policy Draft"]
+    D -->|4. Routes for review| E["Approval System"]
+    E -->|5a. Approved| F["AWS IAM Service"]
+    E -->|5b. Rejected| G["Request Denied"]
+    F -->|6. Attaches policy| H["Active Permission"]
+    H -->|7. Monitors time| I["TTL Monitor"]
+    I -->|8. Expires| J["Auto-Removal"]
+    J -->|9. Cleanup complete| K["Audit Log"]
+
+    style A fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
+    style C fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
+    style D fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    style F fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
+    style G fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    style H fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
+    style I fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    style J fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    style K fill:#666666,stroke:#333,stroke-width:2px,color:#fff
 ```
 
 ## 🛠️ Configuration
