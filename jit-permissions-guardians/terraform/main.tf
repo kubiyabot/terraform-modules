@@ -50,12 +50,15 @@ resource "kubiya_webhook" "webhook" {
   //Provide AI instructions prompt for the agent to follow upon incoming webhook. use {{.event.}} syntax for dynamic parsing of the event
   prompt = "Sum up this just in time access request. Ask if the user wants to approve or reject the request. request: {{.event}}"
   //Select an Agent which will perform the task and receive the webhook payload
-  agent = var.teammate_name
+  agent = kubiya_agent.jit_guardian.name
   //Please provide a destination that starts with `#` or `@`
   destination = var.approvers_slack_channel
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
   filter = ""
+  depends_on = [
+    kubiya_agent.jit_guardian
+  ]
 }
 
 # Configure the JIT Guardian agent
@@ -79,12 +82,10 @@ resource "kubiya_agent" "jit_guardian" {
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
-    REQUEST_ACCESS_WEBHOOK_URL = kubiya_webhook.webhook.url
   }
-  depends_on = [
-    kubiya_webhook.webhook
-  ]
 }
+
+
 
 # Output the teammate details
 output "jit_guardian" {
