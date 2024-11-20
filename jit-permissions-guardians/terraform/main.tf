@@ -81,6 +81,9 @@ resource "kubiya_agent" "jit_guardian" {
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
     REQUEST_ACCESS_WEBHOOK_URL = kubiya_webhook.webhook.url
   }
+  depends_on = [
+    kubiya_webhook.webhook
+  ]
 }
 
 # Output the teammate details
