@@ -41,3 +41,9 @@ variable "kubiya_tool_timeout" {
   type        = number
   default     = 500
 }
+
+variable "kubiya_webhook_url"
+  description = "Kubiya webhook URL"
+  type        = string
+  default     = ""
+}
