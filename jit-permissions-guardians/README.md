@@ -105,6 +105,16 @@ Below are the key variables used to configure the AWS JIT Permissions Crew:
    - Click "Deploy Use Case"
    - Wait for confirmation
 
+5. **Set Up Webhook Environment Variable**:
+   - Go to Kubiya web UI -> Resources -> Webhooks
+   - Find the generated webhook
+   - Copy its URL by clicking on the URL button
+   - Navigate to Team mates
+   - Find your relevant team mate
+   - Click Edit
+   - Add environment variable `REQUEST_ACCESS_WEBHOOK_URL` with the copied webhook URL as its value
+   - Save changes
+
 ## 🎭 Example Scenarios
 
 ### Scenario 1: S3 Bucket Access
