@@ -20,10 +20,6 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access"
 }
 
-# AWS dynamic policy generation tool (automatically included)
-resource "kubiya_source" "aws_policy_generator" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
-}
 
 # Configure auxiliary request tools
 resource "kubiya_source" "request_tools" {
@@ -70,7 +66,6 @@ resource "kubiya_agent" "jit_guardian" {
   instructions = ""
   sources      = concat(
     [
-      kubiya_source.aws_policy_generator.name,
       kubiya_source.jit_approval_workflow_tooling.name
     ],
     [for source in kubiya_source.request_tools : source.name]
