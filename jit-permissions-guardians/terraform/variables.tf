@@ -34,13 +34,6 @@ variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable (AWS integrations must include account ID)"
   type        = list(string)
   default     = ["slack"]
-  validation {
-    condition = alltrue([
-      for integration in var.kubiya_integrations :
-      can(regex("^aws-\\d{12}$", integration)) || !startswith(integration, "aws")
-    ])
-    error_message = "AWS integrations must include a 12-digit account ID (format: aws-123456789012)"
-  }
 }
 
 variable "kubiya_tool_timeout" {
