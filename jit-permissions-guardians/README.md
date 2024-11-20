@@ -2,8 +2,7 @@
 
 AWS JIT (Just-In-Time) Permissions Crew is your intelligent companion within the Kubiya platform, designed to revolutionize AWS access management. It provides AI-driven, secure, and efficient temporary access to AWS resources, ensuring least-privilege access while maintaining operational efficiency.
 
-![Uploading image.png…]()
-
+![image](https://github.com/user-attachments/assets/3e1c54e4-81c0-4b80-b7f5-d53f46caf195)
 
 **🎯 Transform your AWS access management with AI-powered, temporary permissions that expire automatically! Keep your AWS environment secure while maintaining developer productivity.**
 
