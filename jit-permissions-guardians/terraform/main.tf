@@ -44,13 +44,9 @@ resource "null_resource" "runner_env_setup" {
   }
 
   provisioner "local-exec" {
-    environment = {
-      KUBIYA_API_KEY = var.KUBIYA_API_KEY
-    }
-    
     command = <<-EOT
       curl -X PUT \
-      -H "Authorization: UserKey ${var.KUBIYA_API_KEY}" \
+      -H "Authorization: UserKey $KUBIYA_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
         "uuid": "${kubiya_agent.jit_guardian.id}",

@@ -41,10 +41,3 @@ variable "kubiya_tool_timeout" {
   type        = number
   default     = 500
 }
-
-
-variable "KUBIYA_API_KEY" {
-  description = "Kubiya API key"
-  type        = string
-  default     = ""
-}
