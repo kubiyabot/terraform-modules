@@ -33,7 +33,7 @@ variable "request_tools_sources" {
 variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable. Supports multiple values. \n For AWS integration, the main account must be provided."
   type        = list(string)
-  default     = ["slack"]
+  default     = ["slack", "kubernetes"]
 }
 
 variable "kubiya_tool_timeout" {
