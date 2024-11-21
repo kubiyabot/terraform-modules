@@ -114,5 +114,6 @@ output "jit_guardian" {
   value = {
     name                    = kubiya_agent.jit_guardian.name
     approvers_slack_channel = var.approvers_slack_channel
+    request_access_webhook_url = kubiya_webhook.webhook.url
   }
 }
