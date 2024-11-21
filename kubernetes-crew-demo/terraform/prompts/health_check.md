@@ -1,1 +1,0 @@
-run cluster health and send a summary to slack channel
