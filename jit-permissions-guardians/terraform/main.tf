@@ -12,7 +12,7 @@ provider "kubiya" {
 
 # Load knowledge sources
 data "http" "jit_access_knowledge" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/jit-permissions-guardians/terraform/knowledge/jit_access.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/jit-tf-fixes/jit-permissions-guardians/terraform/knowledge/jit_access.md"
 }
 
 # Configure sources
@@ -37,6 +37,27 @@ resource "kubiya_knowledge" "jit_access" {
   content          = data.http.jit_access_knowledge.response_body
 }
 
+resource "null_resource" "runner_env_setup" {
+  triggers = {
+    runner = var.kubiya_runner
+    webhook_id = kubiya_webhook.webhook.id
+  }
+
+  provisioner "local-exec" {
+    environment = {
+      KUBIYA_API_KEY = var.KUBIYA_API_KEY
+    }
+    
+    command = <<-EOT
+      curl -X POST \
+      -H "Authorization: Bearer ${var.KUBIYA_API_KEY}" \
+      -H "Content-Type: application/json" \
+      -d '{"runner": "${var.kubiya_runner}", "env_vars": {"KUBIYA_TOOL_TIMEOUT": "${var.kubiya_tool_timeout}"}}' \
+      "https://api.kubiya.ai/v1/runners/env"
+    EOT
+  }
+}
+
 resource "kubiya_webhook" "webhook" {
   //mandatory fields
   //Please specify a unique name to identify this webhook
@@ -52,9 +73,7 @@ resource "kubiya_webhook" "webhook" {
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
   filter = ""
-  depends_on = [
-    kubiya_agent.jit_guardian
-  ]
+
 }
 
 # Configure the JIT Guardian agent
