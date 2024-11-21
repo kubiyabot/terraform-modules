@@ -37,6 +37,32 @@ resource "kubiya_knowledge" "jit_access" {
   content          = data.http.jit_access_knowledge.response_body
 }
 
+resource "null_resource" "runner_env_setup" {
+  triggers = {
+    runner = var.kubiya_runner
+    webhook_id = kubiya_webhook.webhook.id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      curl -X PUT \
+      -H "Authorization: UserKey $KUBIYA_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "uuid": "${kubiya_agent.jit_guardian.id}",
+        "environment_variables": {
+          "KUBIYA_TOOL_TIMEOUT": "${var.kubiya_tool_timeout}",
+          "REQUEST_ACCESS_WEBHOOK_URL": "${kubiya_webhook.webhook.url}"
+        }
+      }' \
+      "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.jit_guardian.id}"
+    EOT
+  }
+  depends_on = [
+    kubiya_webhook.webhook
+  ]
+}
+
 resource "kubiya_webhook" "webhook" {
   //mandatory fields
   //Please specify a unique name to identify this webhook
@@ -52,9 +78,7 @@ resource "kubiya_webhook" "webhook" {
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
   filter = ""
-  depends_on = [
-    kubiya_agent.jit_guardian
-  ]
+
 }
 
 # Configure the JIT Guardian agent
@@ -75,8 +99,10 @@ resource "kubiya_agent" "jit_guardian" {
   users        = []
   groups       = var.kubiya_groups_allowed_groups
 
-  environment_variables = {
-    KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
+  lifecycle {
+    ignore_changes = [
+      environment_variables
+    ]
   }
 }
 
@@ -87,5 +113,6 @@ output "jit_guardian" {
   value = {
     name                    = kubiya_agent.jit_guardian.name
     approvers_slack_channel = var.approvers_slack_channel
+    request_access_webhook_url = kubiya_webhook.webhook.url
   }
 }
