@@ -62,6 +62,9 @@ resource "null_resource" "runner_env_setup" {
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.jit_guardian.id}"
     EOT
   }
+  depends_on = [
+    kubiya_webhook.webhook
+  ]
 }
 
 resource "kubiya_webhook" "webhook" {
