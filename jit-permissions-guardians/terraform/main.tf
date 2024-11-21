@@ -49,11 +49,19 @@ resource "null_resource" "runner_env_setup" {
     }
     
     command = <<-EOT
-      curl -X POST \
-      -H "Authorization: Bearer ${var.KUBIYA_API_KEY}" \
+      curl -X PUT \
+      -H "Authorization: UserKey ${var.KUBIYA_API_KEY}" \
       -H "Content-Type: application/json" \
-      -d '{"runner": "${var.kubiya_runner}", "env_vars": {"KUBIYA_TOOL_TIMEOUT": "${var.kubiya_tool_timeout}"}}' \
-      "https://api.kubiya.ai/v1/runners/env"
+      -d '{
+        "uuid": "${kubiya_agent.jit_guardian.id}",
+        "environment_variables": {
+          "LOG_LEVEL": "INFO",
+          "KUBIYA_TOOL_TIMEOUT": "${var.kubiya_tool_timeout}",
+          "NOTIFICATION_CHANNEL": "${var.approvers_slack_channel}",
+          "REQUEST_ACCESS_WEBHOOK_URL": "${kubiya_webhook.webhook.url}"
+        }
+      }' \
+      "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.jit_guardian.id}"
     EOT
   }
 }
