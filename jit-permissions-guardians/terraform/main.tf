@@ -105,6 +105,12 @@ resource "kubiya_agent" "jit_guardian" {
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
   }
+
+  lifecycle {
+    ignore_changes = [
+      environment_variables
+    ]
+  }
 }
 
 
