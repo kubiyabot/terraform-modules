@@ -55,9 +55,7 @@ resource "null_resource" "runner_env_setup" {
       -d '{
         "uuid": "${kubiya_agent.jit_guardian.id}",
         "environment_variables": {
-          "LOG_LEVEL": "INFO",
           "KUBIYA_TOOL_TIMEOUT": "${var.kubiya_tool_timeout}",
-          "NOTIFICATION_CHANNEL": "${var.approvers_slack_channel}",
           "REQUEST_ACCESS_WEBHOOK_URL": "${kubiya_webhook.webhook.url}"
         }
       }' \
@@ -101,10 +99,6 @@ resource "kubiya_agent" "jit_guardian" {
   integrations = var.kubiya_integrations
   users        = []
   groups       = var.kubiya_groups_allowed_groups
-
-  environment_variables = {
-    KUBIYA_TOOL_TIMEOUT   = var.kubiya_tool_timeout
-  }
 
   lifecycle {
     ignore_changes = [
