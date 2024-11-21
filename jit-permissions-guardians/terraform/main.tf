@@ -12,7 +12,7 @@ provider "kubiya" {
 
 # Load knowledge sources
 data "http" "jit_access_knowledge" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/jit-tf-fixes/jit-permissions-guardians/terraform/knowledge/jit_access.md"
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/jit-permissions-guardians/terraform/knowledge/jit_access.md"
 }
 
 # Configure sources
