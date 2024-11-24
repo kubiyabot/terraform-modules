@@ -26,17 +26,17 @@ variable "repositories" {
 
 # Notification Settings
 variable "notification_channel" {
-  description = "Primary Slack channel for notifications"
+  description = "Primary Slack channel for notifications (e.g. #cicd-alerts)"
   type        = string
 }
 
 variable "pipeline_notification_channel" {
-  description = "Slack channel for pipeline alerts"
+  description = "Slack channel for pipeline alerts (e.g. #ci-cd-alerts)"
   type        = string
 }
 
 variable "security_notification_channel" {
-  description = "Slack channel for security alerts"
+  description = "Slack channel for security alerts (e.g. #security-alerts)"
   type        = string
 }
 
@@ -108,4 +108,69 @@ variable "dependency_check_repeat" {
   description = "Dependency check repeat interval"
   type        = string
   default     = "daily"
+}
+
+# Source Control Authentication
+variable "github_token" {
+  description = "GitHub Personal Access Token for webhook setup (optional)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "gitlab_token" {
+  description = "GitLab Personal Access Token for webhook setup (optional)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Add these webhook event control variables...
+
+variable "monitor_push_events" {
+  description = "Monitor repository push events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_pull_requests" {
+  description = "Monitor pull request/merge request events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_pipeline_events" {
+  description = "Monitor CI/CD pipeline events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_deployment_events" {
+  description = "Monitor deployment events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_security_events" {
+  description = "Monitor security alerts and vulnerabilities"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_issue_events" {
+  description = "Monitor issue events"
+  type        = bool
+  default     = false
+}
+
+variable "monitor_release_events" {
+  description = "Monitor release events"
+  type        = bool
+  default     = false
+}
+
+variable "webhook_content_type" {
+  description = "Content type for webhook payloads"
+  type        = string
+  default     = "json"
 } 
