@@ -324,4 +324,22 @@ resource "random_password" "webhook_secret" {
   count   = var.source_control_type == "gitlab" && var.webhook_enabled && var.gitlab_token != "" ? 1 : 0
   length  = 32
   special = false
+}
+
+# Add this data source near the other HTTP data sources at the top of the file
+data "http" "pipeline_management" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/knowledge/pipeline_management.md"
+}
+
+# Add these missing data sources as well
+data "http" "pipeline_health_check" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/pipeline_health_check.md"
+}
+
+data "http" "security_scan" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/security_scan.md"
+}
+
+data "http" "dependency_check" {
+  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/dependency_check.md"
 } 
