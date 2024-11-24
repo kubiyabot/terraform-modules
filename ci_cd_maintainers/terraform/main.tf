@@ -242,30 +242,39 @@ resource "random_password" "webhook_secret" {
   special = false
 }
 
-# Update environment variables with dynamic webhook configuration
-resource "kubiya_agent_environment" "cicd_maintainer_env" {
-  agent_id = kubiya_agent.cicd_maintainer.id
-  
-  environment_variables = merge(
-    {
-      "KUBIYA_TOOL_TIMEOUT": "300",
-      "NOTIFICATION_CHANNEL": var.notification_channel,
-      "REPOSITORIES": var.repositories,
-      "SOURCE_CONTROL_TYPE": local.source_control_type,
-      "AUTO_FIX_ENABLED": tostring(var.auto_fix_enabled),
-      "MAX_CONCURRENT_FIXES": tostring(var.max_concurrent_fixes),
-      "SCAN_INTERVAL": var.scan_interval
-    },
-    local.webhook_enabled ? {
-      "${upper(local.source_control_type)}_WEBHOOK_URL": kubiya_webhook.source_control_webhook[0].url,
-      "${upper(local.source_control_type)}_TOKEN": local.source_control_type == "github" ? var.github_token : var.gitlab_token
-    } : {},
-    local.source_control_type == "gitlab" && local.webhook_enabled ? {
-      "GITLAB_WEBHOOK_SECRET": random_password.webhook_secret[0].result
-    } : {}
-  )
+# Replace the kubiya_agent_environment resource with this null_resource
+resource "null_resource" "agent_environment_setup" {
+  triggers = {
+    runner = var.kubiya_runner
+    agent_id = kubiya_agent.cicd_maintainer.id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      curl -X PUT \
+      -H "Authorization: UserKey $KUBIYA_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "uuid": "${kubiya_agent.cicd_maintainer.id}",
+        "environment_variables": {
+          "KUBIYA_TOOL_TIMEOUT": "300",
+          "NOTIFICATION_CHANNEL": "${var.notification_channel}",
+          "REPOSITORIES": "${var.repositories}",
+          "SOURCE_CONTROL_TYPE": "${local.source_control_type}",
+          "AUTO_FIX_ENABLED": "${tostring(var.auto_fix_enabled)}",
+          "MAX_CONCURRENT_FIXES": "${tostring(var.max_concurrent_fixes)}",
+          "SCAN_INTERVAL": "${var.scan_interval}"
+          ${local.webhook_enabled ? ", \"${upper(local.source_control_type)}_WEBHOOK_URL\": \"${kubiya_webhook.source_control_webhook[0].url}\"" : ""}
+          ${local.webhook_enabled ? ", \"${upper(local.source_control_type)}_TOKEN\": \"${local.source_control_type == "github" ? var.github_token : var.gitlab_token}\"" : ""}
+          ${local.source_control_type == "gitlab" && local.webhook_enabled ? ", \"GITLAB_WEBHOOK_SECRET\": \"${random_password.webhook_secret[0].result}\"" : ""}
+        }
+      }' \
+      "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.cicd_maintainer.id}"
+    EOT
+  }
 
   depends_on = [
+    kubiya_agent.cicd_maintainer,
     kubiya_webhook.source_control_webhook,
     random_password.webhook_secret
   ]
@@ -273,6 +282,7 @@ resource "kubiya_agent_environment" "cicd_maintainer_env" {
 
 # Output the teammate details
 output "cicd_maintainer" {
+  sensitive = true
   value = {
     name                         = kubiya_agent.cicd_maintainer.name
     notification_channel         = var.notification_channel
