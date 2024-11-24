@@ -24,13 +24,6 @@ variable "github_token" {
   sensitive   = true
 }
 
-variable "gitlab_token" {
-  description = "GitLab Personal Access Token with api, read_repository, and write_repository permissions. Required for GitLab repositories. Generate at: https://gitlab.com/-/profile/personal_access_tokens"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
 # Optional Configuration
 variable "github_enable_oauth" {
   description = "Enable GitHub OAuth integration for enhanced API capabilities and direct repository access. Default: true"

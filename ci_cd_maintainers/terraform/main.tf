@@ -7,10 +7,6 @@ terraform {
       source  = "integrations/github"
       version = "~> 5.0"
     }
-    gitlab = {
-      source  = "gitlabhq/gitlab"
-      version = "~> 16.0"
-    }
     http = {
       source  = "hashicorp/http"
       version = "~> 3.0"
@@ -22,12 +18,43 @@ provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
 
-provider "github" {
-  token = var.github_token
+locals {
+  # Determine source control type based on provided token
+  source_control_type = var.github_token != "" ? "github" : null
+  
+  # Webhook configuration
+  webhook_enabled = var.webhook_enabled && local.source_control_type != null
+
+  # Channel configuration
+  effective_pipeline_channel = coalesce(var.pipeline_notification_channel, var.notification_channel)
+  effective_security_channel = coalesce(var.security_notification_channel, var.notification_channel)
+
+  # Repository list handling
+  repository_list = compact(split(",", var.repositories))
+
+  # Event configurations
+  github_events = concat(
+    var.monitor_push_events ? ["push"] : [],
+    var.monitor_pull_requests ? ["pull_request", "pull_request_review"] : [],
+    var.monitor_pipeline_events ? ["workflow_run", "workflow_job", "check_run", "check_suite"] : [],
+    var.monitor_deployment_events ? ["deployment", "deployment_status"] : [],
+    var.monitor_security_events ? ["security_advisory", "repository_vulnerability_alert"] : [],
+    var.monitor_issue_events ? ["issues", "issue_comment"] : [],
+    var.monitor_release_events ? ["release"] : []
+  )
 }
 
-provider "gitlab" {
-  token = var.gitlab_token
+# Configure providers
+provider "github" {
+  token = var.github_token != "" ? var.github_token : null
+}
+
+# Validation block
+check "token_validation" {
+  assert {
+    condition     = var.github_token != ""
+    error_message = "Must provide GitHub token"
+  }
 }
 
 # Load knowledge sources
@@ -41,13 +68,7 @@ resource "kubiya_source" "cicd_workflow_tooling" {
 }
 
 resource "kubiya_source" "github_tooling" {
-  count = local.source_control_type == "github" ? 1 : 0
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
-}
-
-resource "kubiya_source" "gitlab_tooling" {
-  count = local.source_control_type == "gitlab" ? 1 : 0
-  url   = "https://github.com/kubiyabot/community-tools/tree/main/gitlab"
 }
 
 # Create knowledge base
@@ -68,17 +89,15 @@ resource "kubiya_agent" "cicd_maintainer" {
   model        = "azure/gpt-4"
   instructions = ""
   
-  sources = concat(
-    [kubiya_source.cicd_workflow_tooling.name],
-    local.source_control_type == "github" ? [kubiya_source.github_tooling[0].name] : [],
-    local.source_control_type == "gitlab" ? [kubiya_source.gitlab_tooling[0].name] : []
-  )
+  sources = [
+    kubiya_source.cicd_workflow_tooling.name,
+    kubiya_source.github_tooling.name
+  ]
 
   # Dynamic integrations based on configuration
   integrations = concat(
     ["slack"],
-    (local.source_control_type == "github" && var.github_enable_oauth) ? ["github"] : [],
-    local.source_control_type == "gitlab" ? ["gitlab"] : []
+    var.github_enable_oauth ? ["github"] : []
   )
 
   users  = []
@@ -89,11 +108,11 @@ resource "kubiya_agent" "cicd_maintainer" {
     PIPELINE_NOTIFICATION_CHANNEL   = local.effective_pipeline_channel
     SECURITY_NOTIFICATION_CHANNEL   = local.effective_security_channel
     REPOSITORIES                    = var.repositories
-    SOURCE_CONTROL_TYPE            = local.source_control_type
-    AUTO_FIX_ENABLED               = tostring(var.auto_fix_enabled)
-    MAX_CONCURRENT_FIXES           = tostring(var.max_concurrent_fixes)
-    SCAN_INTERVAL                  = var.scan_interval
-    GITHUB_OAUTH_ENABLED           = local.source_control_type == "github" ? tostring(var.github_enable_oauth) : "false"
+    SOURCE_CONTROL_TYPE             = local.source_control_type
+    AUTO_FIX_ENABLED                = tostring(var.auto_fix_enabled)
+    MAX_CONCURRENT_FIXES            = tostring(var.max_concurrent_fixes)
+    SCAN_INTERVAL                   = var.scan_interval
+    GITHUB_OAUTH_ENABLED            = tostring(var.github_enable_oauth)
   }
 }
 
@@ -147,41 +166,14 @@ resource "kubiya_scheduled_task" "dependency_check" {
   )
 }
 
-# Add this locals block at the top with the other locals
-locals {
-  # Determine source control type based on provided token
-  source_control_type = (
-    var.github_token != "" ? "github" : 
-    var.gitlab_token != "" ? "gitlab" : 
-    null
-  )
-  
-  # Validate that exactly one token is provided
-  validate_tokens = (
-    var.github_token != "" && var.gitlab_token != "" ? file("ERROR: Cannot provide both GitHub and GitLab tokens") :
-    var.github_token == "" && var.gitlab_token == "" ? file("ERROR: Must provide either GitHub or GitLab token") :
-    null
-  )
-  
-  # Webhook configuration
-  webhook_enabled = var.webhook_enabled && local.source_control_type != null
-
-  # Channel configuration
-  effective_pipeline_channel = coalesce(var.pipeline_notification_channel, var.notification_channel)
-  effective_security_channel = coalesce(var.security_notification_channel, var.notification_channel)
-
-  # Repository list handling
-  repository_list = compact(split(",", var.repositories))
-}
-
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
   count = local.webhook_enabled ? 1 : 0
   
-  name        = "${var.teammate_name}-${local.source_control_type}-webhook"
-  source      = local.source_control_type == "github" ? "GitHub" : "GitLab"
+  name        = "${var.teammate_name}-github-webhook"
+  source      = "GitHub"
   prompt      = <<-EOT
-    Analyze this ${local.source_control_type == "github" ? "GitHub" : "GitLab"} event and determine if action is needed:
+    Analyze this GitHub event and determine if action is needed:
     Event: {{.event}}
     
     If this is a pipeline failure:
@@ -201,9 +193,9 @@ resource "kubiya_webhook" "source_control_webhook" {
   destination = local.effective_pipeline_channel
 }
 
-# Dynamic webhook setup based on source control type
+# GitHub webhook setup
 resource "github_repository_webhook" "webhook" {
-  for_each = local.source_control_type == "github" && local.webhook_enabled ? toset(local.repository_list) : []
+  for_each = local.webhook_enabled ? toset(local.repository_list) : []
 
   repository = trim(split("/", each.value)[1], " ")
   
@@ -215,31 +207,6 @@ resource "github_repository_webhook" "webhook" {
 
   active = true
   events = local.github_events
-}
-
-resource "gitlab_project_hook" "webhook" {
-  for_each = local.source_control_type == "gitlab" && local.webhook_enabled ? toset(local.repository_list) : []
-
-  project = each.value
-  url     = kubiya_webhook.source_control_webhook[0].url
-  token   = random_password.webhook_secret[0].result
-
-  push_events            = local.gitlab_event_config.push_events
-  merge_requests_events  = local.gitlab_event_config.merge_requests_events
-  pipeline_events        = local.gitlab_event_config.pipeline_events
-  deployment_events      = local.gitlab_event_config.deployment_events
-  issues_events         = local.gitlab_event_config.issues_events
-  tag_push_events       = local.gitlab_event_config.tag_push_events
-  job_events            = local.gitlab_event_config.job_events
-  releases_events       = local.gitlab_event_config.releases_events
-  enable_ssl_verification = true
-}
-
-# Generate webhook secret only for GitLab
-resource "random_password" "webhook_secret" {
-  count   = local.source_control_type == "gitlab" && local.webhook_enabled ? 1 : 0
-  length  = 32
-  special = false
 }
 
 # Replace the kubiya_agent_environment resource with this null_resource
@@ -264,9 +231,8 @@ resource "null_resource" "agent_environment_setup" {
           "AUTO_FIX_ENABLED": "${tostring(var.auto_fix_enabled)}",
           "MAX_CONCURRENT_FIXES": "${tostring(var.max_concurrent_fixes)}",
           "SCAN_INTERVAL": "${var.scan_interval}"
-          ${local.webhook_enabled ? ", \"${upper(local.source_control_type)}_WEBHOOK_URL\": \"${kubiya_webhook.source_control_webhook[0].url}\"" : ""}
-          ${local.webhook_enabled ? ", \"${upper(local.source_control_type)}_TOKEN\": \"${local.source_control_type == "github" ? var.github_token : var.gitlab_token}\"" : ""}
-          ${local.source_control_type == "gitlab" && local.webhook_enabled ? ", \"GITLAB_WEBHOOK_SECRET\": \"${random_password.webhook_secret[0].result}\"" : ""}
+          ${local.webhook_enabled ? ", \"GITHUB_WEBHOOK_URL\": \"${kubiya_webhook.source_control_webhook[0].url}\"" : ""}
+          ${local.webhook_enabled ? ", \"GITHUB_TOKEN\": \"${var.github_token}\"" : ""}
         }
       }' \
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.cicd_maintainer.id}"
@@ -275,8 +241,7 @@ resource "null_resource" "agent_environment_setup" {
 
   depends_on = [
     kubiya_agent.cicd_maintainer,
-    kubiya_webhook.source_control_webhook,
-    random_password.webhook_secret
+    kubiya_webhook.source_control_webhook
   ]
 }
 
@@ -289,7 +254,7 @@ output "cicd_maintainer" {
     pipeline_notification_channel = local.effective_pipeline_channel
     security_notification_channel = local.effective_security_channel
     repositories                 = var.repositories
-    source_control_type         = local.source_control_type
+    source_control_type          = local.source_control_type
   }
 }
 
@@ -301,31 +266,6 @@ resource "kubiya_knowledge" "pipeline_management" {
   labels           = ["cicd", "pipeline", "optimization"]
   supported_agents = [kubiya_agent.cicd_maintainer.name]
   content          = data.http.pipeline_management.response_body
-}
-
-# Add this locals block at the top of the file
-locals {
-  github_events = concat(
-    var.monitor_push_events ? ["push"] : [],
-    var.monitor_pull_requests ? ["pull_request", "pull_request_review"] : [],
-    var.monitor_pipeline_events ? ["workflow_run", "workflow_job", "check_run", "check_suite"] : [],
-    var.monitor_deployment_events ? ["deployment", "deployment_status"] : [],
-    var.monitor_security_events ? ["security_advisory", "repository_vulnerability_alert"] : [],
-    var.monitor_issue_events ? ["issues", "issue_comment"] : [],
-    var.monitor_release_events ? ["release"] : []
-  )
-
-  gitlab_event_config = {
-    push_events = var.monitor_push_events
-    merge_requests_events = var.monitor_pull_requests
-    pipeline_events = var.monitor_pipeline_events
-    deployment_events = var.monitor_deployment_events
-    security_events = var.monitor_security_events
-    issues_events = var.monitor_issue_events
-    releases_events = var.monitor_release_events
-    job_events = var.monitor_pipeline_events
-    tag_push_events = var.monitor_push_events
-  }
 }
 
 # Add this data source near the other HTTP data sources at the top of the file
