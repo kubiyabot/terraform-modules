@@ -1,4 +1,3 @@
-
 # Required Core Configuration
 variable "teammate_name" {
   description = "Name of your CI/CD maintainer teammate (e.g., 'cicd-crew' or 'pipeline-guardian'). Used to identify the teammate in logs, notifications, and webhooks."
@@ -165,4 +164,42 @@ variable "monitor_release_events" {
   description = "Monitor repository release events. Default: false"
   type        = bool
   default     = false
+}
+
+# Add these new variables
+variable "github_organization" {
+  description = "GitHub organization name (e.g., 'kubiyabot'). Will be extracted from repositories if not provided."
+  type        = string
+  default     = ""
+}
+
+variable "webhook_filter" {
+  description = "JSON filter configuration for GitHub webhook events"
+  type        = string
+  default     = <<-EOT
+    {
+      "exclude_events": ["security_advisory"],
+      "conditions": {
+        "workflow_run": {
+          "conclusion": ["failure", "cancelled", "timed_out"]
+        },
+        "check_suite": {
+          "conclusion": ["failure", "cancelled", "timed_out"]
+        },
+        "deployment_status": {
+          "state": ["failure", "error"]
+        },
+        "pull_request": {
+          "action": ["opened", "reopened", "synchronize", "closed"]
+        },
+        "push": {
+          "ref": ["refs/heads/main", "refs/heads/master"]
+        },
+        "issues": {
+          "action": ["opened", "reopened"],
+          "labels": ["bug", "security", "critical"]
+        }
+      }
+    }
+  EOT
 }

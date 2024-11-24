@@ -4,8 +4,8 @@ terraform {
       source = "kubiya-terraform/kubiya"
     }
     github = {
-      source  = "integrations/github"
-      version = "~> 5.0"
+      source = "hashicorp/github"
+      version = "6.4.0"
     }
     http = {
       source  = "hashicorp/http"
@@ -35,18 +35,23 @@ locals {
   # Event configurations
   github_events = concat(
     var.monitor_push_events ? ["push"] : [],
-    var.monitor_pull_requests ? ["pull_request", "pull_request_review"] : [],
-    var.monitor_pipeline_events ? ["workflow_run", "workflow_job", "check_run", "check_suite"] : [],
+    var.monitor_pull_requests ? ["pull_request", "pull_request_review", "pull_request_review_comment"] : [],
+    var.monitor_pipeline_events ? ["check_run", "check_suite", "workflow_job", "workflow_run"] : [],
     var.monitor_deployment_events ? ["deployment", "deployment_status"] : [],
-    var.monitor_security_events ? ["security_advisory", "repository_vulnerability_alert"] : [],
+    var.monitor_security_events ? ["repository_vulnerability_alert"] : [],
     var.monitor_issue_events ? ["issues", "issue_comment"] : [],
     var.monitor_release_events ? ["release"] : []
   )
+
+  # GitHub organization handling
+  github_organization = local.source_control_type == "github" ? trim(split("/", local.repository_list[0])[0], " ") : var.github_organization
+
 }
 
 # Configure providers
 provider "github" {
   token = var.github_token != "" ? var.github_token : null
+  owner = local.github_organization
 }
 
 # Validation block
@@ -116,59 +121,61 @@ resource "kubiya_agent" "cicd_maintainer" {
   }
 }
 
-# Pipeline Health Check Task
-resource "kubiya_scheduled_task" "pipeline_health" {
-  count          = var.pipeline_health_check_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
-  repeat         = var.pipeline_health_check_repeat
-  channel_id     = local.effective_pipeline_channel
-  agent          = kubiya_agent.cicd_maintainer.name
-  description    = replace(
-    data.http.pipeline_health_check.response_body,
-    "$${pipeline_notification_channel}",
-    local.effective_pipeline_channel
-  )
-}
+# # Pipeline Health Check Task
+# resource "kubiya_scheduled_task" "pipeline_health" {
+#   count          = var.pipeline_health_check_enabled ? 1 : 0
+#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
+#   repeat         = var.pipeline_health_check_repeat
+#   channel_id     = local.effective_pipeline_channel
+#   agent          = kubiya_agent.cicd_maintainer.name
+#   description    = replace(
+#     data.http.pipeline_health_check.response_body,
+#     "$${pipeline_notification_channel}",
+#     local.effective_pipeline_channel
+#   )
+# }
 
-# Repository Security Scan Task
-resource "kubiya_scheduled_task" "security_scan" {
-  count          = var.security_scan_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
-  repeat         = var.security_scan_repeat
-  channel_id     = local.effective_security_channel
-  agent          = kubiya_agent.cicd_maintainer.name
-  description    = replace(
-    replace(
-      data.http.security_scan.response_body,
-      "$${security_notification_channel}",
-      local.effective_security_channel
-    ),
-    "$${REPOSITORIES}",
-    var.repositories
-  )
-}
+# # Repository Security Scan Task
+# resource "kubiya_scheduled_task" "security_scan" {
+#   count          = var.security_scan_enabled ? 1 : 0
+#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
+#   repeat         = var.security_scan_repeat
+#   channel_id     = local.effective_security_channel
+#   agent          = kubiya_agent.cicd_maintainer.name
+#   description    = replace(
+#     replace(
+#       data.http.security_scan.response_body,
+#       "$${security_notification_channel}",
+#       local.effective_security_channel
+#     ),
+#     "$${REPOSITORIES}",
+#     var.repositories
+#   )
+# }
 
-# Dependency Update Check Task
-resource "kubiya_scheduled_task" "dependency_check" {
-  count          = var.dependency_check_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
-  repeat         = var.dependency_check_repeat
-  channel_id     = var.notification_channel
-  agent          = kubiya_agent.cicd_maintainer.name
-  description    = replace(
-    replace(
-      data.http.dependency_check.response_body,
-      "$${notification_channel}",
-      var.notification_channel
-    ),
-    "$${REPOSITORIES}",
-    var.repositories
-  )
-}
+# # Dependency Update Check Task
+# resource "kubiya_scheduled_task" "dependency_check" {
+#   count          = var.dependency_check_enabled ? 1 : 0
+#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
+#   repeat         = var.dependency_check_repeat
+#   channel_id     = var.notification_channel
+#   agent          = kubiya_agent.cicd_maintainer.name
+#   description    = replace(
+#     replace(
+#       data.http.dependency_check.response_body,
+#       "$${notification_channel}",
+#       var.notification_channel
+#     ),
+#     "$${REPOSITORIES}",
+#     var.repositories
+#   )
+# }
 
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
   count = local.webhook_enabled ? 1 : 0
+
+  filter = var.webhook_filter
   
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
@@ -203,6 +210,7 @@ resource "github_repository_webhook" "webhook" {
     url          = kubiya_webhook.source_control_webhook[0].url
     content_type = var.webhook_content_type
     insecure_ssl = false
+
   }
 
   active = true
