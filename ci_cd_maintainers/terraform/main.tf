@@ -62,10 +62,6 @@ check "token_validation" {
   }
 }
 
-# Load knowledge sources
-data "http" "cicd_knowledge" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/knowledge/cicd_management.md"
-}
 
 # Configure sources
 resource "kubiya_source" "cicd_workflow_tooling" {
@@ -76,15 +72,6 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
-# Create knowledge base
-resource "kubiya_knowledge" "cicd_management" {
-  name             = "CI/CD Management Guide"
-  groups           = var.kubiya_groups_allowed_groups
-  description      = "Knowledge base for CI/CD management and troubleshooting"
-  labels           = ["cicd", "pipeline", "source-control"]
-  supported_agents = [kubiya_agent.cicd_maintainer.name]
-  content          = data.http.cicd_knowledge.response_body
-}
 
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
