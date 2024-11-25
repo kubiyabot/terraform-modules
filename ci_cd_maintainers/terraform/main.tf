@@ -228,6 +228,9 @@ resource "null_resource" "agent_environment_setup" {
           "SCAN_INTERVAL": "${var.scan_interval}"
           ${local.webhook_enabled ? ", \"GITHUB_WEBHOOK_URL\": \"${kubiya_webhook.source_control_webhook[0].url}\"" : ""}
           ${local.webhook_enabled ? ", \"GITHUB_TOKEN\": \"${var.github_token}\"" : ""}
+          "PIPELINE_NOTIFICATION_CHANNEL": "${local.effective_pipeline_channel}",
+          "SECURITY_NOTIFICATION_CHANNEL": "${local.effective_security_channel}",
+          "GITHUB_OAUTH_ENABLED": "${tostring(var.github_enable_oauth)}"
         }
       }' \
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.cicd_maintainer.id}"
