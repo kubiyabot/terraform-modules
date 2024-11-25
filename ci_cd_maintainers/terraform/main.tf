@@ -182,6 +182,8 @@ resource "kubiya_webhook" "source_control_webhook" {
     3. Propose remediation steps
     
     Notify the appropriate channel based on the event type.
+    ${var.auto_fix_enabled ? "Auto-Fix Mode Enabled: If the solution is clear and safe to implement automatically, create a pull request with the proposed fixes. Include detailed explanation of changes in the PR description." : ""}
+
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = local.effective_pipeline_channel
