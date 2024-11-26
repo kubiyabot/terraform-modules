@@ -46,6 +46,27 @@ locals {
   # GitHub organization handling
   github_organization = trim(split("/", local.repository_list[0])[0], " ")
 
+  # Define JMESPath filters for different event types
+  webhook_filters = {
+    workflow_run = "event.workflow_run[?conclusion in ['failure', 'cancelled', 'timed_out']]"
+    check_suite  = "event.check_suite[?conclusion in ['failure', 'cancelled', 'timed_out']]"
+    deployment   = "event.deployment_status[?state in ['failure', 'error']]"
+    pull_request = "event.pull_request[?action in ['opened', 'reopened', 'synchronize', 'closed']]"
+    push         = "event[?ref in ['refs/heads/main', 'refs/heads/master']]"
+    security     = "event.alert[?state == 'open']"
+    issues       = "event.issue[?state == 'open' && (contains(labels[*].name, 'bug') || contains(labels[*].name, 'security') || contains(labels[*].name, 'critical'))]"
+  }
+
+  # Build dynamic filter based on enabled event types
+  dynamic_filter = join(" || ", compact([
+    var.monitor_pipeline_events ? local.webhook_filters.workflow_run : "",
+    var.monitor_pipeline_events ? local.webhook_filters.check_suite : "",
+    var.monitor_deployment_events ? local.webhook_filters.deployment : "",
+    var.monitor_pull_requests ? local.webhook_filters.pull_request : "",
+    var.monitor_push_events ? local.webhook_filters.push : "",
+    var.monitor_security_events ? local.webhook_filters.security : "",
+    var.monitor_issue_events ? local.webhook_filters.issues : ""
+  ]))
 }
 
 # Configure providers
@@ -54,24 +75,9 @@ provider "github" {
   owner = local.github_organization
 }
 
-# Validation block
-check "token_validation" {
-  assert {
-    condition     = var.github_token != ""
-    error_message = "Must provide GitHub token"
-  }
-}
-
-
-# Configure sources
-resource "kubiya_source" "cicd_workflow_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/cicd"
-}
-
 resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
-
 
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
@@ -82,7 +88,6 @@ resource "kubiya_agent" "cicd_maintainer" {
   instructions = ""
   
   sources = [
-    kubiya_source.cicd_workflow_tooling.name,
     kubiya_source.github_tooling.name
   ]
 
@@ -108,61 +113,11 @@ resource "kubiya_agent" "cicd_maintainer" {
   }
 }
 
-# # Pipeline Health Check Task
-# resource "kubiya_scheduled_task" "pipeline_health" {
-#   count          = var.pipeline_health_check_enabled ? 1 : 0
-#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
-#   repeat         = var.pipeline_health_check_repeat
-#   channel_id     = local.effective_pipeline_channel
-#   agent          = kubiya_agent.cicd_maintainer.name
-#   description    = replace(
-#     data.http.pipeline_health_check.response_body,
-#     "$${pipeline_notification_channel}",
-#     local.effective_pipeline_channel
-#   )
-# }
-
-# # Repository Security Scan Task
-# resource "kubiya_scheduled_task" "security_scan" {
-#   count          = var.security_scan_enabled ? 1 : 0
-#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
-#   repeat         = var.security_scan_repeat
-#   channel_id     = local.effective_security_channel
-#   agent          = kubiya_agent.cicd_maintainer.name
-#   description    = replace(
-#     replace(
-#       data.http.security_scan.response_body,
-#       "$${security_notification_channel}",
-#       local.effective_security_channel
-#     ),
-#     "$${REPOSITORIES}",
-#     var.repositories
-#   )
-# }
-
-# # Dependency Update Check Task
-# resource "kubiya_scheduled_task" "dependency_check" {
-#   count          = var.dependency_check_enabled ? 1 : 0
-#   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
-#   repeat         = var.dependency_check_repeat
-#   channel_id     = var.notification_channel
-#   agent          = kubiya_agent.cicd_maintainer.name
-#   description    = replace(
-#     replace(
-#       data.http.dependency_check.response_body,
-#       "$${notification_channel}",
-#       var.notification_channel
-#     ),
-#     "$${REPOSITORIES}",
-#     var.repositories
-#   )
-# }
-
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
   count = local.webhook_enabled ? 1 : 0
 
-  filter = var.webhook_filter
+  filter = local.dynamic_filter
   
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
@@ -181,9 +136,12 @@ resource "kubiya_webhook" "source_control_webhook" {
     2. Check if it affects other repositories
     3. Propose remediation steps
     
-    Notify the appropriate channel based on the event type.
+    Notify appropriate channel based on event type:
+    - Pipeline failures -> ${local.effective_pipeline_channel}
+    - Security alerts -> ${local.effective_security_channel}
+    - General notifications -> ${var.notification_channel}
+    
     ${var.auto_fix_enabled ? "Auto-Fix Mode Enabled: If the solution is clear and safe to implement automatically, create a pull request with the proposed fixes. Include detailed explanation of changes in the PR description." : ""}
-
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = local.effective_pipeline_channel
@@ -191,9 +149,13 @@ resource "kubiya_webhook" "source_control_webhook" {
 
 # GitHub webhook setup
 resource "github_repository_webhook" "webhook" {
-  for_each = local.webhook_enabled ? toset(local.repository_list) : []
+  for_each = local.webhook_enabled && length(local.repository_list) > 0 ? toset(local.repository_list) : []
 
-  repository = trim(split("/", each.value)[1], " ")
+  repository = try(
+    trim(split("/", each.value)[1], " "),
+    # Fallback if repository name can't be parsed
+    each.value
+  )
   
   configuration {
     url          = kubiya_webhook.source_control_webhook[0].url
@@ -204,45 +166,6 @@ resource "github_repository_webhook" "webhook" {
 
   active = true
   events = local.github_events
-}
-
-# Replace the kubiya_agent_environment resource with this null_resource
-resource "null_resource" "agent_environment_setup" {
-  triggers = {
-    runner = var.kubiya_runner
-    agent_id = kubiya_agent.cicd_maintainer.id
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      curl -X PUT \
-      -H "Authorization: UserKey $KUBIYA_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "uuid": "${kubiya_agent.cicd_maintainer.id}",
-        "environment_variables": {
-          "KUBIYA_TOOL_TIMEOUT": "300",
-          "NOTIFICATION_CHANNEL": "${var.notification_channel}",
-          "REPOSITORIES": "${var.repositories}",
-          "SOURCE_CONTROL_TYPE": "${local.source_control_type}",
-          "AUTO_FIX_ENABLED": "${tostring(var.auto_fix_enabled)}",
-          "MAX_CONCURRENT_FIXES": "${tostring(var.max_concurrent_fixes)}",
-          "SCAN_INTERVAL": "${var.scan_interval}"
-          ${local.webhook_enabled ? ", \"GITHUB_WEBHOOK_URL\": \"${kubiya_webhook.source_control_webhook[0].url}\"" : ""}
-          ${local.webhook_enabled ? ", \"GITHUB_TOKEN\": \"${var.github_token}\"" : ""}
-          "PIPELINE_NOTIFICATION_CHANNEL": "${local.effective_pipeline_channel}",
-          "SECURITY_NOTIFICATION_CHANNEL": "${local.effective_security_channel}",
-          "GITHUB_OAUTH_ENABLED": "${tostring(var.github_enable_oauth)}"
-        }
-      }' \
-      "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.cicd_maintainer.id}"
-    EOT
-  }
-
-  depends_on = [
-    kubiya_agent.cicd_maintainer,
-    kubiya_webhook.source_control_webhook
-  ]
 }
 
 # Output the teammate details
@@ -272,16 +195,3 @@ resource "kubiya_knowledge" "pipeline_management" {
 data "http" "pipeline_management" {
   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/knowledge/pipeline_management.md"
 }
-
-# Add these missing data sources as well
-data "http" "pipeline_health_check" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/pipeline_health_check.md"
-}
-
-data "http" "security_scan" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/security_scan.md"
-}
-
-data "http" "dependency_check" {
-  url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/prompts/dependency_check.md"
-} 

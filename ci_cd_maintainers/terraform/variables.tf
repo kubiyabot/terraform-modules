@@ -163,34 +163,3 @@ variable "monitor_release_events" {
   type        = bool
   default     = false
 }
-
-variable "webhook_filter" {
-  description = "JSON filter configuration for GitHub webhook events"
-  type        = string
-  default     = <<-EOT
-    {
-      "exclude_events": ["security_advisory"],
-      "conditions": {
-        "workflow_run": {
-          "conclusion": ["failure", "cancelled", "timed_out"]
-        },
-        "check_suite": {
-          "conclusion": ["failure", "cancelled", "timed_out"]
-        },
-        "deployment_status": {
-          "state": ["failure", "error"]
-        },
-        "pull_request": {
-          "action": ["opened", "reopened", "synchronize", "closed"]
-        },
-        "push": {
-          "ref": ["refs/heads/main", "refs/heads/master"]
-        },
-        "issues": {
-          "action": ["opened", "reopened"],
-          "labels": ["bug", "security", "critical"]
-        }
-      }
-    }
-  EOT
-}
