@@ -1,7 +1,5 @@
 # Security Scan Analysis
 
-Perform security analysis for repositories: ${REPOSITORIES}
-
 1. Vulnerability Scan:
    - Dependencies check
    - Code scanning alerts

@@ -1,7 +1,5 @@
 # Pipeline Health Check
 
-Perform a comprehensive pipeline health analysis for repositories: ${REPOSITORIES}
-
 1. Performance Metrics:
    - Build duration trends
    - Success/failure rates

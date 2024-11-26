@@ -1,7 +1,5 @@
 # Dependency Update Analysis
 
-Analyze dependencies for repositories: ${REPOSITORIES}
-
 1. Version Analysis:
    - Outdated packages
    - Breaking changes
