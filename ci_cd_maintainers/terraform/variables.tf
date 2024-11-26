@@ -221,5 +221,5 @@ variable "monitor_secret_scanning_events" {
 variable "webhook_filter" {
   description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
   type        = string
-  default     = "{\"expressions\":{\"workflow_run\":\"conclusion in ['failure', 'cancelled', 'timed_out']\",\"check_suite\":\"conclusion in ['failure', 'cancelled', 'timed_out']\",\"deployment_status\":\"state in ['failure', 'error']\",\"pull_request\":\"action in ['opened', 'reopened', 'synchronize', 'closed']\",\"push\":\"ref in ['refs/heads/main', 'refs/heads/master']\",\"issues\":\"action in ['opened', 'reopened'] && contains(labels[*].name, 'bug') || contains(labels[*].name, 'security') || contains(labels[*].name, 'critical')\"},\"default_action\":\"drop\",\"matched_action\":\"relay\"}"
+  default     = "workflow_run.conclusion in ['failure', 'cancelled', 'timed_out', 'startup_failure', 'stale', 'skipped'] && {status: workflow_run.conclusion, job_name: workflow_run.name, branch: workflow_run.head_branch, commit: workflow_run.head_commit.message, actor: workflow_run.actor.login}"
 }
