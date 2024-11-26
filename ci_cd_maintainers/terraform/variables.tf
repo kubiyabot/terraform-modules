@@ -164,13 +164,6 @@ variable "monitor_release_events" {
   default     = false
 }
 
-# Add these new variables
-variable "github_organization" {
-  description = "GitHub organization name (e.g., 'kubiyabot'). Will be extracted from repositories if not provided."
-  type        = string
-  default     = ""
-}
-
 variable "webhook_filter" {
   description = "JSON filter configuration for GitHub webhook events"
   type        = string
