@@ -20,7 +20,7 @@ provider "kubiya" {
 
 locals {
   # Determine source control type based on provided token
-  source_control_type = var.github_token != "" ? "github" : null
+  source_control_type = "github"
   
   # Webhook configuration
   webhook_enabled = var.webhook_enabled && local.source_control_type != null
@@ -50,7 +50,7 @@ locals {
 
 # Configure providers
 provider "github" {
-  token = var.github_token != "" ? var.github_token : null
+  token = var.github_token
   owner = local.github_organization
 }
 
