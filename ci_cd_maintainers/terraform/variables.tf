@@ -20,7 +20,6 @@ variable "github_token" {
   description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens"
   type        = string
   default     = ""
-  sensitive   = true
 }
 
 # Optional Configuration
