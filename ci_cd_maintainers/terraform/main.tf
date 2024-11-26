@@ -85,6 +85,11 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
+resource "kubiya_source" "slack_capabilities" {
+  url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
+}
+
+
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
@@ -94,7 +99,9 @@ resource "kubiya_agent" "cicd_maintainer" {
   instructions = ""
   
   sources = [
-    kubiya_source.github_tooling.name
+    kubiya_source.cicd_workflow_tooling.name,
+    kubiya_source.github_tooling.name,
+    kubiya_source.slack_capabilities.name
   ]
 
   # Dynamic integrations based on configuration
