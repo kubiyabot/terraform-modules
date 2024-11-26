@@ -44,7 +44,7 @@ locals {
   )
 
   # GitHub organization handling
-  github_organization = local.source_control_type == "github" ? trim(split("/", local.repository_list[0])[0], " ") : var.github_organization
+  github_organization = trim(split("/", local.repository_list[0])[0], " ")
 
 }
 
