@@ -69,17 +69,6 @@ variable "pod_threshold" {
   default     = 90
 }
 
-# Logging
-variable "log_level" {
-  description = "Log level for the teammate"
-  type        = string
-  default     = "INFO"
-  validation {
-    condition     = contains(["DEBUG", "INFO", "WARN", "ERROR"], var.log_level)
-    error_message = "Log level must be one of: DEBUG, INFO, WARN, ERROR"
-  }
-}
-
 # Task Schedule Settings
 variable "health_check_enabled" {
   description = "Enable health check task"
@@ -104,25 +93,6 @@ variable "security_scan_repeat" {
   description = "Security scan repeat interval"
   type        = string
   default     = "weekly"
-}
-
-# Feature Flags
-variable "enable_auto_remediation" {
-  description = "Enable automatic remediation"
-  type        = bool
-  default     = false
-}
-
-variable "enable_cost_reporting" {
-  description = "Enable cost reporting"
-  type        = bool
-  default     = true
-}
-
-variable "enable_drift_detection" {
-  description = "Enable configuration drift detection"
-  type        = bool
-  default     = true
 }
 
 # Resource Check Task Settings
