@@ -163,3 +163,63 @@ variable "monitor_release_events" {
   type        = bool
   default     = false
 }
+
+variable "monitor_create_events" {
+  description = "Monitor repository create events. Default: false"
+  type        = bool
+  default     = false
+}
+
+variable "monitor_delete_events" {
+  description = "Monitor repository delete events. Default: false"
+  type        = bool
+  default     = false
+}
+
+variable "monitor_branch_protection_events" {
+  description = "Monitor repository branch protection events. Default: false"
+  type        = bool
+  default     = false
+}
+
+variable "monitor_check_run_events" {
+  description = "Monitor repository check run events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_check_suite_events" {
+  description = "Monitor repository check suite events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_code_scanning_events" {
+  description = "Monitor repository code scanning events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_dependabot_events" {
+  description = "Monitor Dependabot alerts"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_deployment_status_events" {
+  description = "Monitor deployment status events"
+  type        = bool
+  default     = true
+}
+
+variable "monitor_secret_scanning_events" {
+  description = "Monitor secret scanning alerts and events"
+  type        = bool
+  default     = true
+}
+
+variable "webhook_filter" {
+  description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
+  type        = string
+  default     = "{\"expressions\":{\"workflow_run\":\"conclusion in ['failure', 'cancelled', 'timed_out']\",\"check_suite\":\"conclusion in ['failure', 'cancelled', 'timed_out']\",\"deployment_status\":\"state in ['failure', 'error']\",\"pull_request\":\"action in ['opened', 'reopened', 'synchronize', 'closed']\",\"push\":\"ref in ['refs/heads/main', 'refs/heads/master']\",\"issues\":\"action in ['opened', 'reopened'] && contains(labels[*].name, 'bug') || contains(labels[*].name, 'security') || contains(labels[*].name, 'critical')\"},\"default_action\":\"drop\",\"matched_action\":\"relay\"}"
+}

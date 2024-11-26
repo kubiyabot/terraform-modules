@@ -40,7 +40,13 @@ locals {
     var.monitor_deployment_events ? ["deployment", "deployment_status"] : [],
     var.monitor_security_events ? ["repository_vulnerability_alert"] : [],
     var.monitor_issue_events ? ["issues", "issue_comment"] : [],
-    var.monitor_release_events ? ["release"] : []
+    var.monitor_release_events ? ["release"] : [],
+    var.monitor_check_run_events ? ["check_run"] : [],
+    var.monitor_check_suite_events ? ["check_suite"] : [],
+    var.monitor_code_scanning_events ? ["code_scanning_alert"] : [],
+    var.monitor_dependabot_events ? ["dependabot_alert"] : [],
+    var.monitor_deployment_status_events ? ["deployment_status"] : [],
+    var.monitor_secret_scanning_events ? ["secret_scanning_alert", "secret_scanning_alert_location"] : []
   )
 
   # GitHub organization handling
