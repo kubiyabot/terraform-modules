@@ -144,7 +144,7 @@ resource "github_repository_webhook" "webhook" {
   )
   
   configuration {
-    url          = kubiya_webhook.source_control_webhook[0].url
+    url          = kubiya_webhook.source_control_webhook.url
     content_type = "json"
     insecure_ssl = false
 
