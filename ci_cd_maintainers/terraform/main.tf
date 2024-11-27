@@ -108,7 +108,7 @@ resource "kubiya_agent" "cicd_maintainer" {
 
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
-  filter = local.dynamic_filter
+  filter = var.webhook_filter
   
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
@@ -120,14 +120,13 @@ resource "kubiya_webhook" "source_control_webhook" {
     1. Analyze the failure cause
     2. Check for common patterns
     3. Suggest potential fixes
-    4. If auto-fix is enabled and the fix is safe, apply it
     
     If this is a security alert:
     1. Assess the severity
     2. Check if it affects other repositories
     3. Propose remediation steps
     
-    Comment on the PR with the relevant findings
+    Always comment on the PR with the relevant findings. DO NOT ASK FOR CONFIRMATION!
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
