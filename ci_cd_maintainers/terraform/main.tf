@@ -19,12 +19,6 @@ provider "kubiya" {
 }
 
 locals {
-  # Determine source control type based on provided token
-  source_control_type = "github"
-  
-  # Webhook configuration
-  webhook_enabled = var.webhook_enabled && local.source_control_type != null
-
   # Repository list handling
   repository_list = compact(split(",", var.repositories))
 
@@ -104,9 +98,9 @@ resource "kubiya_agent" "cicd_maintainer" {
 
   environment_variables = {
     REPOSITORIES = var.repositories
-    SOURCE_CONTROL_TYPE = local.source_control_type
-    MAX_CONCURRENT_FIXES = tostring(var.max_concurrent_fixes)
-    SCAN_INTERVAL = var.scan_interval
+    #SOURCE_CONTROL_TYPE = local.source_control_type
+    #MAX_CONCURRENT_FIXES = tostring(var.max_concurrent_fixes)
+    #SCAN_INTERVAL = var.scan_interval
     GITHUB_OAUTH_ENABLED = tostring(var.github_enable_oauth)
     KUBIYA_TOOL_TIMEOUT = "300"
   }
@@ -114,8 +108,6 @@ resource "kubiya_agent" "cicd_maintainer" {
 
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
-  count = local.webhook_enabled ? 1 : 0
-
   filter = local.dynamic_filter
   
   name        = "${var.teammate_name}-github-webhook"
@@ -143,7 +135,7 @@ resource "kubiya_webhook" "source_control_webhook" {
 
 # GitHub webhook setup
 resource "github_repository_webhook" "webhook" {
-  for_each = local.webhook_enabled && length(local.repository_list) > 0 ? toset(local.repository_list) : []
+  for_each = length(local.repository_list) > 0 ? toset(local.repository_list) : []
 
   repository = try(
     trim(split("/", each.value)[1], " "),
@@ -153,7 +145,7 @@ resource "github_repository_webhook" "webhook" {
   
   configuration {
     url          = kubiya_webhook.source_control_webhook[0].url
-    content_type = var.webhook_content_type
+    content_type = "json"
     insecure_ssl = false
 
   }
@@ -168,7 +160,6 @@ output "cicd_maintainer" {
   value = {
     name                         = kubiya_agent.cicd_maintainer.name
     repositories                 = var.repositories
-    source_control_type          = local.source_control_type
   }
 }
 
