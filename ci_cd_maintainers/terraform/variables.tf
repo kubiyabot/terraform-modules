@@ -129,5 +129,5 @@ variable "kubiya_runner" {
 variable "webhook_filter" {
   description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
   type        = string
-  default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success'"
+  default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success' && workflow_run.event == 'pull_request'"
 }
