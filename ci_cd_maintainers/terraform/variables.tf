@@ -155,5 +155,5 @@ variable "monitor_secret_scanning_events" {
 variable "webhook_filter" {
   description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
   type        = string
-  default     = "workflow_run.conclusion in ['failure', 'timed_out', 'startup_failure', 'stale', 'skipped'] && {status: workflow_run.conclusion, job_name: workflow_run.name, branch: workflow_run.head_branch, commit: workflow_run.head_commit.message, actor: workflow_run.actor.login}"
+  default     = "workflow_run.conclusion in ['failure', 'timed_out', 'startup_failure', 'stale', 'skipped']"
 }
