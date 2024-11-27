@@ -55,19 +55,6 @@ variable "kubiya_runner" {
   default     = "default"
 }
 
-# Task Schedule Settings
-variable "pipeline_health_check_enabled" {
-  description = "Enable regular pipeline health check task. Default: true"
-  type        = bool
-  default     = true
-}
-
-variable "pipeline_health_check_repeat" {
-  description = "How often to run pipeline health checks. Default: hourly"
-  type        = string
-  default     = "hourly"
-}
-
 # Event Monitoring Configuration
 variable "monitor_push_events" {
   description = "Monitor repository push events for direct commits and policy violations. Default: true"
@@ -168,5 +155,5 @@ variable "monitor_secret_scanning_events" {
 variable "webhook_filter" {
   description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
   type        = string
-  default     = "workflow_run.conclusion in ['failure', 'cancelled', 'timed_out', 'startup_failure', 'stale', 'skipped'] && {status: workflow_run.conclusion, job_name: workflow_run.name, branch: workflow_run.head_branch, commit: workflow_run.head_commit.message, actor: workflow_run.actor.login}"
+  default     = "workflow_run.conclusion in ['failure', 'timed_out', 'startup_failure', 'stale', 'skipped'] && {status: workflow_run.conclusion, job_name: workflow_run.name, branch: workflow_run.head_branch, commit: workflow_run.head_commit.message, actor: workflow_run.actor.login}"
 }
