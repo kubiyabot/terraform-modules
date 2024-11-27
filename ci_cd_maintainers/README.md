@@ -80,15 +80,11 @@ Below are the key variables used to configure the CI/CD Maintainers Crew:
 |---------------|-------------|------|---------|
 | `teammate_name` | Name of the CI/CD Maintainers teammate | `string` | |
 | `kubiya_runner` | Runner to use for the teammate | `string` | |
-| `source_control_type` | Source control platform (github/gitlab) | `string` | |
 | `repositories` | Comma-separated list of repositories to monitor | `string` | |
-| `notification_channel` | Slack channel for notifications | `string` | `""` |
 | `pipeline_notification_channel` | Channel for pipeline alerts | `string` | `""` |
-| `security_notification_channel` | Channel for security alerts | `string` | `""` |
-| `webhook_enabled` | Enable webhook creation for repositories | `bool` | `true` |
-| `scan_interval` | Interval between repository scans | `string` | `"1h"` |
-| `auto_fix_enabled` | Enable automatic fixing of issues | `bool` | `false` |
-| `max_concurrent_fixes` | Maximum concurrent auto-fixes | `number` | `3` |
+| `github_token` | GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens | `string` | `""` |
+| `webhook_filter` | JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax. | `string` | `workflow_run.conclusion != null && workflow_run.conclusion != 'success'` |
+| `kubiya_groups_allowed_groups` | Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps']). | `list(string)` | `['Admin'] ` |
 
 ## 🚀 Getting Started
 
@@ -105,11 +101,12 @@ Below are the key variables used to configure the CI/CD Maintainers Crew:
 3. **Configure Settings**:
    Fill in the required fields:
    - Teammate Name (e.g., "cicd-crew")
-   - Source Control Platform
+   - Kubiya Runner
    - Repository List
-   - Notification Channels
-   - Scan Intervals
-   - Auto-fix Settings
+   - Notification Channel
+   - Github Token
+   - Webhook filter
+   - Allowd groups
 
 4. **Deploy**:
    - Review your configuration

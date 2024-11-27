@@ -25,15 +25,14 @@ variable "pipeline_notification_channel" {
 
 # Access Control
 variable "kubiya_groups_allowed_groups" {
-  description = "Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps']). Default: ['Admin']"
+  description = "Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps'])."
   type        = list(string)
   default     = ["Admin"]
 }
 
 variable "kubiya_runner" {
-  description = "Runner to use for the teammate. Change only if using custom runners. Default: default"
+  description = "Runner to use for the teammate. Change only if using custom runners."
   type        = string
-  default     = "default"
 }
 
 # Event Monitoring Configuration
