@@ -10,11 +10,6 @@ variable "repositories" {
   type        = string
 }
 
-variable "notification_channel" {
-  description = "Primary Slack channel for notifications with '#' prefix (e.g., '#cicd-alerts'). Bot must be invited to this channel."
-  type        = string
-}
-
 # Authentication Tokens
 variable "github_token" {
   description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens"
@@ -40,12 +35,6 @@ variable "webhook_content_type" {
   default     = "json"
 }
 
-variable "auto_fix_enabled" {
-  description = "Enable automatic fixing of minor issues like non-breaking dependency updates and common pipeline problems. Default: false"
-  type        = bool
-  default     = false
-}
-
 variable "max_concurrent_fixes" {
   description = "Maximum number of automatic fixes that can be applied simultaneously. Default: 3"
   type        = number
@@ -61,12 +50,6 @@ variable "scan_interval" {
 # Channel Configuration
 variable "pipeline_notification_channel" {
   description = "Dedicated Slack channel for pipeline alerts. Falls back to notification_channel if not set."
-  type        = string
-  default     = ""
-}
-
-variable "security_notification_channel" {
-  description = "Dedicated Slack channel for security alerts. Falls back to notification_channel if not set."
   type        = string
   default     = ""
 }

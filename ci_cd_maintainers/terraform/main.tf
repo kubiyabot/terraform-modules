@@ -25,10 +25,6 @@ locals {
   # Webhook configuration
   webhook_enabled = var.webhook_enabled && local.source_control_type != null
 
-  # Channel configuration
-  effective_pipeline_channel = coalesce(var.pipeline_notification_channel, var.notification_channel)
-  effective_security_channel = coalesce(var.security_notification_channel, var.notification_channel)
-
   # Repository list handling
   repository_list = compact(split(",", var.repositories))
 
@@ -85,11 +81,6 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
-resource "kubiya_source" "slack_capabilities" {
-  url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
-}
-
-
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
@@ -99,9 +90,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   instructions = ""
   
   sources = [
-    kubiya_source.cicd_workflow_tooling.name,
-    kubiya_source.github_tooling.name,
-    kubiya_source.slack_capabilities.name
+    kubiya_source.github_tooling.name
   ]
 
   # Dynamic integrations based on configuration
@@ -114,15 +103,12 @@ resource "kubiya_agent" "cicd_maintainer" {
   groups = var.kubiya_groups_allowed_groups
 
   environment_variables = {
-    NOTIFICATION_CHANNEL            = var.notification_channel
-    PIPELINE_NOTIFICATION_CHANNEL   = local.effective_pipeline_channel
-    SECURITY_NOTIFICATION_CHANNEL   = local.effective_security_channel
-    REPOSITORIES                    = var.repositories
-    SOURCE_CONTROL_TYPE             = local.source_control_type
-    AUTO_FIX_ENABLED                = tostring(var.auto_fix_enabled)
-    MAX_CONCURRENT_FIXES            = tostring(var.max_concurrent_fixes)
-    SCAN_INTERVAL                   = var.scan_interval
-    GITHUB_OAUTH_ENABLED            = tostring(var.github_enable_oauth)
+    REPOSITORIES = var.repositories
+    SOURCE_CONTROL_TYPE = local.source_control_type
+    MAX_CONCURRENT_FIXES = tostring(var.max_concurrent_fixes)
+    SCAN_INTERVAL = var.scan_interval
+    GITHUB_OAUTH_ENABLED = tostring(var.github_enable_oauth)
+    KUBIYA_TOOL_TIMEOUT = "300"
   }
 }
 
@@ -149,15 +135,10 @@ resource "kubiya_webhook" "source_control_webhook" {
     2. Check if it affects other repositories
     3. Propose remediation steps
     
-    Notify appropriate channel based on event type:
-    - Pipeline failures -> ${local.effective_pipeline_channel}
-    - Security alerts -> ${local.effective_security_channel}
-    - General notifications -> ${var.notification_channel}
-    
-    ${var.auto_fix_enabled ? "Auto-Fix Mode Enabled: If the solution is clear and safe to implement automatically, create a pull request with the proposed fixes. Include detailed explanation of changes in the PR description." : ""}
+    Comment on the PR with the relevant findings
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
-  destination = local.effective_pipeline_channel
+  destination = var.pipeline_notification_channel
 }
 
 # GitHub webhook setup
@@ -186,9 +167,6 @@ output "cicd_maintainer" {
   sensitive = true
   value = {
     name                         = kubiya_agent.cicd_maintainer.name
-    notification_channel         = var.notification_channel
-    pipeline_notification_channel = local.effective_pipeline_channel
-    security_notification_channel = local.effective_security_channel
     repositories                 = var.repositories
     source_control_type          = local.source_control_type
   }
