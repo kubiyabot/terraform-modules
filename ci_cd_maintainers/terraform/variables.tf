@@ -23,33 +23,21 @@ variable "github_enable_oauth" {
   default     = true
 }
 
-variable "webhook_enabled" {
-  description = "Enable webhook creation for repositories to receive real-time events. Default: true"
-  type        = bool
-  default     = true
-}
+#variable "max_concurrent_fixes" {
+#  description = "Maximum number of automatic fixes that can be applied simultaneously. Default: 3"
+#  type        = number
+#  default     = 3
+#}
 
-variable "webhook_content_type" {
-  description = "Content type for webhook payloads (json/form). Default: json"
-  type        = string
-  default     = "json"
-}
-
-variable "max_concurrent_fixes" {
-  description = "Maximum number of automatic fixes that can be applied simultaneously. Default: 3"
-  type        = number
-  default     = 3
-}
-
-variable "scan_interval" {
-  description = "Interval between repository scans (e.g., '30m', '1h', '6h'). Default: 1h"
-  type        = string
-  default     = "1h"
-}
+#variable "scan_interval" {
+#  description = "Interval between repository scans (e.g., '30m', '1h', '6h'). Default: 1h"
+#  type        = string
+#  default     = "1h"
+#}
 
 # Channel Configuration
 variable "pipeline_notification_channel" {
-  description = "Dedicated Slack channel for pipeline alerts. Falls back to notification_channel if not set."
+  description = "Dedicated Slack channel for pipeline alerts. Falls back to notification_channel if not set (must start with #)."
   type        = string
   default     = ""
 }
@@ -65,43 +53,6 @@ variable "kubiya_runner" {
   description = "Runner to use for the teammate. Change only if using custom runners. Default: default"
   type        = string
   default     = "default"
-}
-
-# Task Schedule Settings
-variable "pipeline_health_check_enabled" {
-  description = "Enable regular pipeline health check task. Default: true"
-  type        = bool
-  default     = true
-}
-
-variable "pipeline_health_check_repeat" {
-  description = "How often to run pipeline health checks. Default: hourly"
-  type        = string
-  default     = "hourly"
-}
-
-variable "security_scan_enabled" {
-  description = "Enable regular security scanning task. Default: true"
-  type        = bool
-  default     = true
-}
-
-variable "security_scan_repeat" {
-  description = "How often to run security scans. Default: daily"
-  type        = string
-  default     = "daily"
-}
-
-variable "dependency_check_enabled" {
-  description = "Enable regular dependency checking task. Default: true"
-  type        = bool
-  default     = true
-}
-
-variable "dependency_check_repeat" {
-  description = "How often to check for dependency updates. Default: daily"
-  type        = string
-  default     = "daily"
 }
 
 # Event Monitoring Configuration
