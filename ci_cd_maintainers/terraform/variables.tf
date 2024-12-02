@@ -12,8 +12,13 @@ variable "repositories" {
 
 # Authentication Tokens
 variable "github_token" {
-  description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens"
+  description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub webhooks configuration for the provided repositories. Generate at: https://github.com/settings/tokens"
   type        = string
+}
+
+variable "kubiya_secrets" {
+  description = "Secrets for the agent to perform actions on GitHub, e.g., commenting on PRs."
+  type        = list(string)
 }
 
 # Channel Configuration
