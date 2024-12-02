@@ -135,4 +135,5 @@ variable "webhook_filter" {
 variable "kubiya_secrets" {
   description = "Secrets for the agent"
   type        = list(string)
+  default     = ["GH_TOKEN"]
 }
