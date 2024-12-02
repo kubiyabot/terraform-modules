@@ -131,3 +131,8 @@ variable "webhook_filter" {
   type        = string
   default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success' && (workflow_run.event == 'pull_request' || (workflow_run.event == 'push' && workflow_run.pull_requests[0] != null ))"
 }
+
+variable "kubiya_secrets" {
+  description = "Secrets for the agent"
+  type        = list(string)
+}

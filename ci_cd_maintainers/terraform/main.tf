@@ -60,13 +60,13 @@ resource "kubiya_agent" "cicd_maintainer" {
   description  = "AI-powered CI/CD maintenance assistant"
   model        = "azure/gpt-4o"
   instructions = ""
-  
+  secrets      = var.kubiya_secrets
   sources = [
     kubiya_source.github_tooling.name
   ]
 
   # Dynamic integrations based on configuration
-  integrations = ["github"]
+  integrations = ["slack"]
 
   users  = []
   groups = var.kubiya_groups_allowed_groups
