@@ -66,7 +66,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   ]
 
   # Dynamic integrations based on configuration
-  integrations = ["slack]
+  integrations = ["slack"]
 
   users  = []
   groups = var.kubiya_groups_allowed_groups
