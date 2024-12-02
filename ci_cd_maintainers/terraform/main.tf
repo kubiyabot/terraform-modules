@@ -83,7 +83,7 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   prompt      = <<-EOT
-    Your Goal: Analyze GitHub Actions workflow logs.
+    Your Goal: Analyze GitHub Actions workflow logs. No user approval is required, complete the flow end to end.
     Workflow ID: {{.event.workflow_run.id}}
     PR Number: {{.event.workflow_run.pull_requests[0].number}}
     Repository: {{.event.repository.full_name}}
