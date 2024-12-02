@@ -10,7 +10,7 @@ variable "repositories" {
   type        = string
 }
 
-# Authentication Tokens
+# Authentication Tokens for webhooks configuration
 variable "github_token" {
   description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub webhooks configuration for the provided repositories. Generate at: https://github.com/settings/tokens"
   type        = string
@@ -19,6 +19,7 @@ variable "github_token" {
 variable "kubiya_secrets" {
   description = "Secrets for the agent to perform actions on GitHub, e.g., commenting on PRs."
   type        = list(string)
+  default     = ["GH_TOKEN"]
 }
 
 # Channel Configuration
@@ -135,10 +136,4 @@ variable "webhook_filter" {
   description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
   type        = string
   default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success' && (workflow_run.event == 'pull_request' || (workflow_run.event == 'push' && workflow_run.pull_requests[0] != null ))"
-}
-
-variable "kubiya_secrets" {
-  description = "Secrets for the agent"
-  type        = list(string)
-  default     = ["GH_TOKEN"]
 }
