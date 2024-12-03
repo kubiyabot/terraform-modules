@@ -4,9 +4,9 @@ The **Terraform Modules Self-Service Kiosk** is your intelligent assistant withi
 
 With this kiosk, you can offload the complexity of Terraform knowledge and enable users to provision infrastructure safely and efficiently!
 
-![Terraform Kiosk Banner](https://github.com/user-attachments/assets/terraform-kiosk-banner.png)
-
 ---
+
+![Construction (1)](https://github.com/user-attachments/assets/70bec09f-bcaf-4106-86ae-2064912c0936)
 
 ## 🌟 Key Features
 
