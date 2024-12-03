@@ -41,7 +41,7 @@ variable "kubiya_secrets" {
 }
 
 # Additional Module Knowledge (Optional)
-variable "module_knowledge_yaml" {
+variable "organizational_knowledge" {
   description = "Additional organizational knowledge we should use to help the teammate understand the Terraform modules."
   type        = string
   # Example:
