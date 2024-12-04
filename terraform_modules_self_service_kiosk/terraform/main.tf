@@ -41,7 +41,7 @@ resource "kubiya_agent" "terraform_kiosk" {
 
   environment_variables = {
     # Convert the parsed YAML to JSON for the environment variable
-    TF_MODULE_CONFIG_FILE = jsonencode(var.tf_module_config_yaml)
+    # TF_MODULE_CONFIG_FILE = var.tf_module_config_yaml
   }
 
   secrets = var.kubiya_secrets
