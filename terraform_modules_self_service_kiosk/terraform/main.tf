@@ -38,11 +38,8 @@ resource "kubiya_agent" "terraform_kiosk" {
   model        = "azure/gpt-4o"
   instructions = ""
 
-  # Include knowledge sources if any
-  sources = concat(
-    [kubiya_source.terraform_module_tools.name],
-    [for k in keys(kubiya_knowledge.module_specific) : kubiya_knowledge.module_specific[k].name]
-  )
+  sources = [kubiya_source.terraform_module_tools.id]
+
 
   integrations = var.kubiya_integrations
   users        = []
