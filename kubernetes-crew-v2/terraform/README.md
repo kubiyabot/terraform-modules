@@ -18,6 +18,75 @@ The Kubernetes Crew transforms complex cluster management into a smooth sailing 
 - **🎮 Complete Control**: Maintain full oversight while delegating the complex tasks to your virtual crew
 - **🔄 Continuous Optimization**: The crew constantly analyzes and improves your cluster's performance
 
+## 🛠️ Core Capabilities
+
+### 1. 🔄 Pod Management
+```yaml
+Pod Operations:
+  Actions:
+    - Get pod information
+    - Delete pods
+    - Retrieve pod logs
+  Parameters:
+    - action: [get, delete, logs]
+    - name: pod name
+    - namespace: required
+    - container: optional for logs
+```
+
+### 2. 📊 Resource Monitoring & Health
+```yaml
+Monitoring Capabilities:
+  - Cluster health summaries
+  - Node resource usage
+  - Pod resource consumption
+  - High restart detection:
+      threshold: default 5
+      namespace: optional
+```
+
+### 3. 🚀 Deployment Operations
+```yaml
+Deployment Management:
+  Actions:
+    - Create deployments
+    - Delete deployments
+    - Scale resources
+  Parameters:
+    - action: [create, delete, get]
+    - name: deployment name
+    - namespace: required
+    - image: for create
+    - replicas: for scaling
+```
+
+### 4. 🛡️ Security & Networking
+```yaml
+Security Features:
+  - Network policy analysis
+  - Service exposure checks
+  - Ingress configuration monitoring
+  - Suspicious activity detection
+Parameters:
+  - namespace: required
+  - scope: [cluster, namespace]
+```
+
+### 5. 🔍 Diagnostic Tools
+```yaml
+Diagnostic Capabilities:
+  - Error detection
+  - Event monitoring
+  - Log analysis
+  - Resource troubleshooting
+Parameters:
+  - resource_type: [pod, deployment, service]
+  - resource_name: name
+  - namespace: required
+  - container: optional
+  - tail: log line count
+```
+
 ## 👥 Meet Your Crew
 
 ### The Bridge Team
@@ -31,6 +100,124 @@ The Kubernetes Crew transforms complex cluster management into a smooth sailing 
 - **📦 Cargo Specialists**: Handle deployments and scaling
 - **📡 Communications**: Manage notifications and alerts
 - **🎨 UI/UX Specialists**: Provide human-friendly interfaces
+
+## 🛠️ Setup & Configuration
+
+### Terraform Configuration
+
+To deploy your Kubernetes Crew, use the following Terraform configuration:
+
+```hcl
+# Core Configuration
+variable "teammate_name" {
+  description = "Name of the Kubernetes crew teammate"
+  type        = string
+  default     = "k8s-watcher"
+}
+
+variable "kubiya_runner" {
+  description = "Runner (cluster) to use for the teammate"
+  type        = string
+}
+
+variable "notification_channel" {
+  description = "Primary Slack channel for notifications"
+  type        = string
+  default     = "#devops-oncall"
+}
+
+# Access Control
+variable "kubiya_groups_allowed_groups" {
+  description = "Groups allowed to interact with the teammate"
+  type        = list(string)
+  default     = ["Admin"]
+}
+```
+
+### Example Deployment
+
+```hcl
+module "k8s_crew" {
+  source = "kubiya/kubernetes-crew/module"
+
+  teammate_name             = "k8s-watcher"
+  kubiya_runner            = "production-cluster"
+  notification_channel     = "#k8s-alerts"
+  kubiya_groups_allowed_groups = ["Admin", "DevOps", "SRE"]
+}
+```
+
+### Configuration Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `teammate_name` | Your K8s crew teammate identifier | k8s-watcher |
+| `kubiya_runner` | Target Kubernetes cluster for deployment | Required |
+| `notification_channel` | Slack channel for alerts and notifications | #devops-oncall |
+| `kubiya_groups_allowed_groups` | Authorized groups for teammate interaction | ["Admin"] |
+
+## 💬 Example Interactions
+
+### Scenario 1: Pod Troubleshooting
+```markdown
+You: @k8s-crew Check why pods in payment-service are crashing
+
+Crew: 🔍 Analyzing payment-service pods:
+1. Checking restart counts
+2. Retrieving recent logs
+3. Verifying resource consumption
+4. Analyzing events
+
+Found: Memory pressure in pod payment-service-785bf
+Action: Adjusting resource limits and restarting pods
+Would you like to see the detailed logs?
+```
+
+### Scenario 2: Resource Scaling
+```markdown
+You: @k8s-crew Scale the authentication deployment to 5 replicas
+
+Crew: Executing scaling operation:
+- Current replicas: 3
+- Target replicas: 5
+- Namespace: default
+- Deployment: authentication
+
+Scaling in progress...
+✅ Successfully scaled. Monitoring deployment rollout...
+```
+
+### Scenario 3: Cluster Health Check
+```markdown
+You: @k8s-crew How's our cluster doing?
+
+Crew: 📊 Cluster Health Report (Last 24h):
+- Nodes: 8/8 Healthy
+- Pod Success Rate: 99.8%
+- Resource Utilization: 72%
+- Recent Events: 2 automatic scaling events
+- Alert: High memory usage in namespace: analytics
+
+Would you like details about any specific component?
+```
+
+## 🏆 Best Practices
+
+1. **Namespace Management**
+   - Always specify namespaces for targeted operations
+   - Use namespace isolation for different environments
+
+2. **Resource Troubleshooting**
+   - Check logs for error messages
+   - Verify resource limits and requests
+   - Ensure proper image pull configuration
+   - Monitor pod restart counts
+
+3. **Security Guidelines**
+   - Regularly audit network policies
+   - Review service exposures
+   - Monitor for suspicious activities
+   - Maintain proper RBAC configuration
 
 ## 🌟 Feature Fleet
 
@@ -61,78 +248,27 @@ Optimization:
   - Performance Recommendations
 ```
 
-## 💬 Example Interactions
+## 🚀 Quick Start Guide
 
-### Scenario 1: Automated Health Reporting
+### 1. Summon Your Crew
+Use the `!kubernetes` prefix in your chat platform to engage with the crew.
+
+### 2. Start Delegating
 ```markdown
-# In Slack
-You: @k8s-crew How's our cluster doing?
-
-Crew: 📊 Cluster Health Report (Last 24h):
-- Nodes: 8/8 Healthy
-- Pod Success Rate: 99.8%
-- Resource Utilization: 72%
-- Recent Events: 2 automatic scaling events
-- Alert: High memory usage in namespace: analytics
-
-Would you like details about any specific component?
-
-You: Tell me more about the analytics namespace
-
-Crew: 🔍 Analytics Namespace Analysis:
-- Memory Usage: 85% (↑12% from yesterday)
-- Running Pods: 15/16 (1 pending)
-- Top Consumer: data-processor-785bf
-- Recommendation: Consider increasing memory limits or optimizing the data-processor deployment
-
-Should I prepare a scaling plan for the data-processor?
+You: !kubernetes show cluster health
+Crew: Running cluster diagnostics...
+- Nodes: 4/4 Ready
+- System pods: All healthy
+- Resource pressure: None detected
 ```
 
-### Scenario 2: Self-Healing in Action
-```markdown
-# Automatic Slack Alert
-Crew: 🚨 Alert: Detected failing pods in payment-service
-- Issue: Liveness probe failing
-- Action: Initiating automatic restart
-- Status: Monitoring recovery
+## 🔄 Automated Tasks
 
-# 2 minutes later
-Crew: ✅ Recovery Successful:
-- All pods healthy
-- Response time normalized
-- Root cause: Memory pressure
-- Preventive Action: Adjusted resource limits
-
-Would you like me to prepare a detailed incident report?
-```
-
-### Scenario 3: Natural Language Operations
-```markdown
-You: @k8s-crew Can you deploy the latest version of our monitoring stack?
-
-Crew: I'll help you update the monitoring stack:
-1. Current version detected: v2.5.0
-2. Latest available version: v2.6.1
-3. Checking compatibility... ✅
-4. Estimated update time: 5 minutes
-
-Should I proceed with the update using our standard deployment strategy?
-
-You: Yes, go ahead
-
-Crew: 🚀 Initiating deployment:
-- Updating Helm values
-- Rolling update in progress
-- Monitoring metrics
-- Verifying endpoints
-
-✅ Deployment successful! New features available:
-- Enhanced metrics collection
-- Improved dashboard templates
-- Better alert correlation
-
-Would you like me to show you the new monitoring dashboards?
-```
+The Kubernetes Crew comes with pre-configured scheduled tasks:
+- Hourly health checks
+- Daily resource optimization
+- Weekly security audits
+- Monthly performance reports
 
 ## 🎨 The Power of Natural Interaction
 
@@ -161,20 +297,6 @@ graph TD
 | Hours of monitoring | 24/7 AI-powered oversight |
 | Steep learning curve | Instant team productivity |
 | Reactive management | Proactive optimization |
-
-## 🚀 Quick Start Guide
-
-Note: After installing this delegation, you will benefit from scheduled tasks that are coming out of out box as part of the bundle. Those tasks will summon the teammates to check on your cluster on fixed intervals.
-
-
-### 1. Summon Your Crew
-Tag the Kubiya app on the relevant chat platform (eg. Slack), with the !kubernetes prefix. eg: `!kubernetes` which will start a conversation with the team mates
-
-### 2. Start Delegating
-```slack
-You: @k8s-crew We need more resources for the payment service
-Crew: Analyzing current usage... Scaling payment-service deployment from 3 to 5 replicas. Monitoring performance...
-```
 
 ## 🌟 Ready to Set Sail?
 

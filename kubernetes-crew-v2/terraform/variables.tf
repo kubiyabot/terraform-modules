@@ -2,7 +2,7 @@
 variable "teammate_name" {
   description = "Name of the Kubernetes crew teammate"
   type        = string
-  default     = "k8s-crew"
+  default     = "k8s-watcher"
 }
 
 variable "kubiya_runner" {
