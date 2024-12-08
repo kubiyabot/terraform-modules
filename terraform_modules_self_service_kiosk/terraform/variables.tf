@@ -44,3 +44,9 @@ variable "organizational_knowledge" {
   # Example:
   default     = "Try to adjust to the module names and descriptions to find the best match for user requests when it comes to infrastructure requests."
 }
+
+variable "debug_mode" {
+  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  type        = bool
+  default     = false
+}

@@ -32,6 +32,7 @@ resource "kubiya_agent" "databricks_engineer" {
     ENABLE_UNITY_CATALOG     = tostring(var.enable_unity_catalog)
     ENABLE_MLFLOW_TRACKING   = tostring(var.enable_mlflow_tracking)
   }
+   is_debug_mode = var.debug_mode
 }
 
 # Knowledge resources

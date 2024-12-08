@@ -45,6 +45,8 @@ resource "kubiya_agent" "terraform_kiosk" {
   }
 
   secrets = var.kubiya_secrets
+
+   is_debug_mode = var.debug_mode
 }
 
 # Output the teammate details

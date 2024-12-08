@@ -33,6 +33,7 @@ resource "kubiya_agent" "jira_ticket_solver" {
     ON_FAILURE_ACTION        = var.on_failure_action
     SLACK_NOTIFICATION_CHANNEL = var.slack_notification_channel
   }
+   is_debug_mode = var.debug_mode
 }
 
 output "jira_ticket_solver" {

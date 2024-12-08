@@ -69,3 +69,9 @@ variable "prompt_mlflow_operations" {
   type        = string
   default     = ""
 }
+
+variable "debug_mode" {
+  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  type        = bool
+  default     = false
+} 

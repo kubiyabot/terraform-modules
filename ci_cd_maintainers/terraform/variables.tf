@@ -137,3 +137,9 @@ variable "webhook_filter" {
   type        = string
   default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success' && (workflow_run.event == 'pull_request' || (workflow_run.event == 'push' && workflow_run.pull_requests[0] != null ))"
 }
+
+variable "debug_mode" {
+  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  type        = bool
+  default     = false
+}

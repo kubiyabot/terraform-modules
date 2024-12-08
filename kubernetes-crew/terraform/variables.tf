@@ -160,3 +160,9 @@ variable "scaling_analysis_repeat" {
   type        = string
   default     = "daily"
 }
+
+variable "debug_mode" {
+  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  type        = bool
+  default     = false
+}
