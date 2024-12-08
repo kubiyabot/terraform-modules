@@ -74,6 +74,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "300"
   }
+  is_debug_mode = var.debug_mode
 }
 
 # Unified webhook configuration

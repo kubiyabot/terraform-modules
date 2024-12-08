@@ -98,6 +98,7 @@ resource "kubiya_agent" "jit_guardian" {
   integrations = var.kubiya_integrations
   users        = []
   groups       = var.kubiya_groups_allowed_groups
+   is_debug_mode = var.debug_mode
 
   lifecycle {
     ignore_changes = [
