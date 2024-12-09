@@ -105,6 +105,8 @@ resource "kubiya_agent" "kubernetes_crew" {
     POD_THRESHOLD       = var.pod_threshold
     KUBIYA_TOOL_TIMEOUT = "300"
   }
+
+   is_debug_mode = var.debug_mode
 }
 
 resource "kubiya_knowledge" "kubernetes_ops" {
