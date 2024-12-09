@@ -28,7 +28,7 @@ data "http" "kubernetes_ops" {
 
 
 resource "kubiya_source" "k8s_capabilities" {
-  url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new/kubernetes"
+  url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new-DEV-1041/kubernetes"
 }
 resource "kubiya_source" "diagramming_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
