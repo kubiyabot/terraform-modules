@@ -69,7 +69,7 @@ resource "kubiya_webhook" "source_control_webhook" {
 }
 
 
-resource "kubiya_knowledge" "kubernetes_ops" {
+/*resource "kubiya_knowledge" "kubernetes_ops" {
   name             = "Kubernetes Operations and Housekeeping Guide"
   groups           = var.kubiya_groups_allowed_groups
   description      = "Knowledge base for Kubernetes housekeeping operations"
@@ -94,7 +94,7 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
   labels           = ["kubernetes", "troubleshooting", "debugging"]
   supported_agents = [kubiya_agent.kubernetes_crew.name]
   content          = data.http.kubernetes_troubleshooting.response_body
-}
+}*/
 
 locals {
   # Parse the YAML config
@@ -117,7 +117,7 @@ resource "kubiya_source" "k8s_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new-DEV-1041/kubernetes"
   //add config here
   dynamic_config = {
-    "config": "${local.final_config_yaml}"
+    config = local.final_config_yaml
   }
   depends_on = [
     kubiya_webhook.source_control_webhook
@@ -152,5 +152,8 @@ output "kubernetes_crew" {
   value = {
     name                 = kubiya_agent.kubernetes_crew.name
     notification_channel = var.notification_channel
+    config = "${local.final_config_yaml}"
+    source_name =  kubiya_source.k8s_capabilities.name
+    source_id =  kubiya_source.k8s_capabilities.id
   }
 }
