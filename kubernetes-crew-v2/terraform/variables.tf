@@ -1,4 +1,4 @@
-# Required Core Configuration
+# Core Configuration
 variable "teammate_name" {
   description = "Name of the Kubernetes crew teammate"
   type        = string
@@ -16,71 +16,75 @@ variable "notification_channel" {
   default     = "#devops-oncall"
 }
 
-# Access Control
 variable "kubiya_groups_allowed_groups" {
-  description = "Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps'])."
+  description = "Groups allowed to interact with the teammate"
   type        = list(string)
   default     = ["Admin"]
 }
 
-variable "config_map_yaml" {
-  description = "Configuration file for the watcher on the K8S level"
+# Watcher Configuration
+variable "watch_namespaces" {
+  description = "List of Kubernetes namespaces to monitor"
+  type        = list(string)
+  default     = ["default", "kube-system"]
+}
+
+variable "watch_pod" {
+  description = "Enable Pod monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "watch_node" {
+  description = "Enable Node monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "watch_deployment" {
+  description = "Enable Deployment monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "watch_event" {
+  description = "Enable Event monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "dedup_interval" {
+  description = "Alert deduplication interval (e.g., '10m', '1h')"
   type        = string
-  default     = <<YAML
-version: "1"
-filter:
-  watch_for:
-    - kind: Pod
-      reasons:
-        - "*BackOff*"
-        - "*Error*"
-        - "*Failed*"
-      severity: critical
-      prompt: |
-        🔥 Issue detected with Pod {{.Name}} in {{.Namespace}}
-        Status: {{.Phase}}
-        Issue: {{.WaitingReason}}
-        Details: {{.WaitingMessage}}
-        Container State: {{.ContainerState}}
-        Restart Count: {{.RestartCount}}
-        {{if .ExitCode}}Exit Code: {{.ExitCode}}{{end}}
-        {{if .LastTerminationReason}}Last Termination: {{.LastTerminationReason}}
-        Last Termination Message: {{.LastTerminationMessage}}{{end}}
-    - kind: Node
-      reasons:
-        - "*NotReady*"
-        - "*Pressure*"
-      severity: critical
-      prompt: |
-        ⚠️ Node Issue Detected
-        Node: {{.Name}}
-        Status: {{.Reason}}
-        Message: {{.Message}}
-        Time: {{.Timestamp}}
-        Count: {{.Count}}
-  namespaces:
-    - default
-    - kubiya
-    - staging
-    - kube-system
-  settings:
-    dedup_interval: 10m
-    include_labels: true
-handler:
-  webhook:
-    url: "https://webhooksource-kubiya.hooks.kubiya.ai:8443/webhook"
-    cert: ""
-    tlsSkip: true
-resource:
-  pod: true
-  node: true
-  deployment: true
-  event: true
-YAML
+  default     = "10m"
+}
+
+variable "include_labels" {
+  description = "Include Kubernetes labels in alerts"
+  type        = bool
+  default     = true
+}
+
+variable "pod_error_patterns" {
+  description = "List of Pod error patterns to watch for"
+  type        = list(string)
+  default     = ["*BackOff*", "*Error*", "*Failed*"]
+}
+
+variable "node_error_patterns" {
+  description = "List of Node error patterns to watch for"
+  type        = list(string)
+  default     = ["*NotReady*", "*Pressure*"]
 }
 
 variable "debug_mode" {
-  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  description = "Enable debug mode for detailed logging"
+  type        = bool
+  default     = false
+}
+
+variable "enable_auto_pilot" {
+  description = "Enable auto-pilot mode (BETA) - Attempts to automatically diagnose and fix issues without human intervention"
   type        = bool
   default     = false
 }
