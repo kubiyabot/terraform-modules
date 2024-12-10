@@ -118,47 +118,15 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
 
 resource "kubiya_source" "k8s_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new-DEV-1041/kubernetes"
-  
+
   dynamic_config = {
-    "watcher_config.json" = jsonencode({
-      version = "1"
-      filter = {
-        watch_for = [
-          {
-            kind     = "Pod"
-            reasons  = var.pod_error_patterns
-            severity = "critical"
-            prompt   = "🔥 Issue detected with Pod {{.Name}} in {{.Namespace}}\nStatus: {{.Phase}}\nIssue: {{.WaitingReason}}\nDetails: {{.WaitingMessage}}\nContainer State: {{.ContainerState}}\nRestart Count: {{.RestartCount}}\n{{if .ExitCode}}Exit Code: {{.ExitCode}}{{end}}\n{{if .LastTerminationReason}}Last Termination: {{.LastTerminationReason}}\nLast Termination Message: {{.LastTerminationMessage}}{{end}}"
-          },
-          {
-            kind     = "Node"
-            reasons  = var.node_error_patterns
-            severity = "critical"
-            prompt   = "⚠️ Node Issue Detected\nNode: {{.Name}}\nStatus: {{.Reason}}\nMessage: {{.Message}}\nTime: {{.Timestamp}}\nCount: {{.Count}}"
-          }
-        ]
-        namespaces = var.watch_namespaces
-        settings = {
-          dedup_interval = var.dedup_interval
-          include_labels = var.include_labels
-        }
-      }
-      handler = {
-        webhook = {
-          url     = kubiya_webhook.source_control_webhook.url
-          cert    = ""
-          tlsSkip = true
-        }
-      }
-      resource = {
-        pod        = var.watch_pod
-        node       = var.watch_node
-        deployment = var.watch_deployment
-        event      = var.watch_event
-      }
-    })
+    namespaces   = join(",", var.watch_namespaces)
+    watch_pod    = tostring(var.watch_pod)
+    watch_node   = tostring(var.watch_node)
+    watch_event  = tostring(var.watch_event)
+    webhook_url  = kubiya_webhook.source_control_webhook.url
   }
-  
+
   depends_on = [kubiya_webhook.source_control_webhook]
 }
 
