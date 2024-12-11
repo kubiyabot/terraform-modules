@@ -24,7 +24,7 @@ variable "kubiya_groups_allowed_groups" {
 
 # Watcher Configuration
 variable "watch_namespaces" {
-  description = "Comma-separated list of namespaces to monitor (e.g., 'default,kube-system')"
+  description = "Comma-separated list of namespaces to monitor (e.g., 'default,kube-system') - use '*' to monitor all namespaces"
   type        = string
   default     = "default,kube-system"
 }
