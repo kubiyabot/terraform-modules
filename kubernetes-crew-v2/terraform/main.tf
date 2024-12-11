@@ -120,6 +120,7 @@ resource "kubiya_source" "k8s_capabilities" {
     watch_pod    = tostring(var.watch_pod)
     watch_node   = tostring(var.watch_node)
     watch_event  = tostring(var.watch_event)
+    namespaces   = var.watch_namespaces
     webhook_url  = kubiya_webhook.source_control_webhook.url
   }
 
