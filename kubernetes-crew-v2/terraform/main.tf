@@ -117,10 +117,10 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
 }
 
 resource "kubiya_source" "k8s_capabilities" {
-  url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new-DEV-1041/kubernetes"
+  url = "https://github.com/kubiyabot/community-tools/tree/k8s-crew-v2-final/kubernetes"
 
   dynamic_config = {
-    namespaces   = join(",", var.watch_namespaces)
+    namespaces   = var.watch_namespaces
     watch_pod    = tostring(var.watch_pod)
     watch_node   = tostring(var.watch_node)
     watch_event  = tostring(var.watch_event)
@@ -141,10 +141,14 @@ resource "null_resource" "runner_env_setup" {
       curl -X PUT \
       -H "Authorization: UserKey $KUBIYA_API_KEY" \
       -H "Content-Type: application/json" \
-      -d '{
-        "uuid": "${kubiya_agent.kubernetes_crew.id}",
-        "sources": [${kubiya_source.diagramming_capabilities.name}, ${kubiya_source.slack_capabilities.name},${kubiya_source.k8s_capabilities.name}]
-      }' \
+      -d "{
+        \"uuid\": \"${kubiya_agent.kubernetes_crew.id}\",
+        \"sources\": [\"${kubiya_source.diagramming_capabilities.id}\", \"${kubiya_source.slack_capabilities.id}\", \"${kubiya_source.k8s_capabilities.id}\"],
+        \"env_vars\": {
+          \"NOTIFICATION_CHANNEL\": \"${var.notification_channel}\",
+          \"KUBIYA_TOOL_TIMEOUT\": \"500\"
+        }
+      }" \
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.kubernetes_crew.id}"
     EOT
   }
