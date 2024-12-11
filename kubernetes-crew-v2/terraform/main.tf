@@ -39,14 +39,10 @@ resource "kubiya_agent" "kubernetes_crew" {
   description  = "AI-powered Kubernetes operations assistant"
   model        = "azure/gpt-4o"
   instructions = ""
-  sources      = [kubiya_source.diagramming_capabilities.name, kubiya_source.slack_capabilities.name]
+  sources      = []
   integrations = ["kubernetes", "slack"]
   users        = []
   groups       = var.kubiya_groups_allowed_groups
-  environment_variables = {
-    NOTIFICATION_CHANNEL = var.notification_channel
-    KUBIYA_TOOL_TIMEOUT = "500"
-  }
    is_debug_mode = var.debug_mode
 }
 
@@ -141,14 +137,18 @@ resource "null_resource" "runner_env_setup" {
       curl -X PUT \
       -H "Authorization: UserKey $KUBIYA_API_KEY" \
       -H "Content-Type: application/json" \
-      -d "{
-        \"uuid\": \"${kubiya_agent.kubernetes_crew.id}\",
-        \"sources\": [\"${kubiya_source.diagramming_capabilities.id}\", \"${kubiya_source.slack_capabilities.id}\", \"${kubiya_source.k8s_capabilities.id}\"],
-        \"env_vars\": {
-          \"NOTIFICATION_CHANNEL\": \"${var.notification_channel}\",
-          \"KUBIYA_TOOL_TIMEOUT\": \"500\"
-        }
-      }" \
+      -d '{
+        "uuid": "${kubiya_agent.kubernetes_crew.id}",
+        "environment_variables": {
+          "NOTIFICATION_CHANNEL": "${var.notification_channel}",
+          "KUBIYA_TOOL_TIMEOUT": "500"
+        },
+        "sources": [
+          "${kubiya_source.diagramming_capabilities.id}",
+          "${kubiya_source.slack_capabilities.id}",
+          "${kubiya_source.k8s_capabilities.id}"
+        ]
+      }' \
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.kubernetes_crew.id}"
     EOT
   }
@@ -156,6 +156,7 @@ resource "null_resource" "runner_env_setup" {
     kubiya_source.k8s_capabilities
   ]
 }
+
 
 # Output the teammate details
 output "kubernetes_crew" {
