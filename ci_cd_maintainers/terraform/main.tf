@@ -94,17 +94,9 @@ resource "kubiya_webhook" "source_control_webhook" {
     1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
     2. Analyze logs to identify:
-    Build Failure Analysis:
-    Failure Point: Broken step.
-    Error Details: Key error messages/stack traces.
-    Issue History: New or recurring?
-    Root Cause Assessment:
-    Source: Code, infra, config, or environment.
-    Dependencies: Related issues.
-    Permissions: Security concerns.
-    Recommended Actions:
-    Fix, Prevention, Docs (with links).
-    Priority Level: Impact, Urgency, Notify stakeholders.
+    Build Failure Analysis: Summarize the key errors or stack traces.
+    Root Cause: Identify the likely cause in the PR.
+    Fix Suggestions: Provide clear, actionable steps to resolve the issue.
 
     3. Format insights clearly with headers/bullets.
 
