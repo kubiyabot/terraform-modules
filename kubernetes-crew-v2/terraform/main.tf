@@ -39,14 +39,10 @@ resource "kubiya_agent" "kubernetes_crew" {
   description  = "AI-powered Kubernetes operations assistant"
   model        = "azure/gpt-4o"
   instructions = ""
-  sources      = [kubiya_source.diagramming_capabilities.name, kubiya_source.slack_capabilities.name]
+  sources      = []
   integrations = ["kubernetes", "slack"]
   users        = []
   groups       = var.kubiya_groups_allowed_groups
-  environment_variables = {
-    NOTIFICATION_CHANNEL = var.notification_channel
-    KUBIYA_TOOL_TIMEOUT = "300"
-  }
    is_debug_mode = var.debug_mode
 }
 
@@ -57,10 +53,30 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-k8s-webhook"
   source      = "K8S"
   prompt      = <<-EOT
-    {{.event.summary}}. use available tools to identify and troubleshoot the issue. 
-    Aim to interpret the detected issue in a broader context to provide a more comprehensive understanding. 
-    Check previous container logs and Check Pod Events.
-  EOT
+    🚨 *Kubernetes Event Alert* 🚨
+    
+    📋 Event Details:
+    {{.event.summary}}
+
+    ${var.enable_auto_pilot ? "🤖 ***AUTO-PILOT MODE ENABLED***\n->> Automated diagnosis and resolution should be attempted without user interaction" : ""}
+    
+    Action Plan:
+    1. Root Cause Analysis
+       ->> Identify and investigate the underlying cause of this event
+    
+    2. Diagnostic Process  
+       ->> Run comprehensive system diagnostics using available tooling
+       ->> Collect relevant logs and metrics
+    
+    3. Impact Assessment
+       ->> Evaluate effects on connected systems and services
+       ->> Identify any potential cascading failures
+    
+    4. Resolution Steps
+       ->> Implement immediate mitigation measures and diagram the solution where applicable
+    
+    ${var.enable_auto_pilot ? "Auto-Pilot Actions:\n->> Executing automated investigation and remediation\n->> Documenting all findings and actions in detail" : ""}
+    EOT
   agent       = kubiya_agent.kubernetes_crew.name
   destination = var.notification_channel
   depends_on = [
@@ -96,32 +112,18 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
   content          = data.http.kubernetes_troubleshooting.response_body
 }
 
-locals {
-  # Parse the YAML config
-  config_map = yamldecode(var.config_map_yaml)
-  
-  # Create modified config with the webhook URL from the webhook resource
-  modified_config = merge(local.config_map, {
-    handler = {
-      webhook = merge(local.config_map.handler.webhook, {
-        url = kubiya_webhook.source_control_webhook.url
-      })
-    }
-  })
-  
-  # Convert back to YAML for use in kubiya_source
-  final_config_yaml = yamlencode(local.modified_config)
-}
-
 resource "kubiya_source" "k8s_capabilities" {
-  url = "https://github.com/kubiyabot/community-tools/tree/shaked/k8s-crew-v2-new-DEV-1041/kubernetes"
-  //add config here
+  url = "https://github.com/kubiyabot/community-tools/tree/k8s-crew-v2-final/kubernetes"
+
   dynamic_config = {
-    "config": "${local.final_config_yaml}"
+    namespaces   = var.watch_namespaces
+    watch_pod    = tostring(var.watch_pod)
+    watch_node   = tostring(var.watch_node)
+    watch_event  = tostring(var.watch_event)
+    webhook_url  = kubiya_webhook.source_control_webhook.url
   }
-  depends_on = [
-    kubiya_webhook.source_control_webhook
-  ]
+
+  depends_on = [kubiya_webhook.source_control_webhook]
 }
 
 resource "null_resource" "runner_env_setup" {
@@ -137,7 +139,15 @@ resource "null_resource" "runner_env_setup" {
       -H "Content-Type: application/json" \
       -d '{
         "uuid": "${kubiya_agent.kubernetes_crew.id}",
-        "sources": [${kubiya_source.diagramming_capabilities.name}, ${kubiya_source.slack_capabilities.name},${kubiya_source.k8s_capabilities.name}]
+        "environment_variables": {
+          "NOTIFICATION_CHANNEL": "${var.notification_channel}",
+          "KUBIYA_TOOL_TIMEOUT": "500"
+        },
+        "sources": [
+          "${kubiya_source.diagramming_capabilities.id}",
+          "${kubiya_source.slack_capabilities.id}",
+          "${kubiya_source.k8s_capabilities.id}"
+        ]
       }' \
       "https://api.kubiya.ai/api/v1/agents/${kubiya_agent.kubernetes_crew.id}"
     EOT
@@ -146,6 +156,7 @@ resource "null_resource" "runner_env_setup" {
     kubiya_source.k8s_capabilities
   ]
 }
+
 
 # Output the teammate details
 output "kubernetes_crew" {
