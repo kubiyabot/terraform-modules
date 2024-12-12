@@ -113,7 +113,7 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
 }
 
 resource "kubiya_source" "k8s_capabilities" {
-  url = "https://github.com/kubiyabot/community-tools/tree/k8s-crew-v2-final/kubernetes"
+  url = "https://github.com/kubiyabot/community-tools/tree/676bd96d23195c56e37e443cf0be36cdebb8aa30"
 
   dynamic_config = {
     namespaces   = var.watch_namespaces
