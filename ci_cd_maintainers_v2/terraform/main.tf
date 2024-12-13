@@ -74,8 +74,8 @@ resource "kubiya_agent" "cicd_maintainer" {
   instructions = ""
   secrets      = var.kubiya_secrets
   sources = [
-    kubiya_source.github_tooling.id,
-    kubiya_source.diagramming_tooling.id,
+    kubiya_source.github_tooling.name,
+    kubiya_source.diagramming_tooling.name,
   ]
 
   # Dynamic integrations based on configuration
@@ -107,7 +107,7 @@ resource "kubiya_webhook" "source_control_webhook" {
 
     1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-    2. Utilize all available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs.
+    2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
     ** Recommended Actions: **
     Fix: Specific changes needed with code examples where possible.
