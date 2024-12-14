@@ -12,7 +12,11 @@ provider "kubiya" {
 
 # Configure the source for the Terraform module tools
 resource "kubiya_source" "terraform_module_tools" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/terraform_module_tools/terraform_module_tools"
+  url = "https://github.com/kubiyabot/community-tools/tree/terraform_v3_working_ver/terraform_module_tools"
+  
+  dynamic_config = {
+    tf_module_urls = var.tf_modules_urls
+  }
 }
 
 # Create knowledge resources for modules with provided knowledge
@@ -20,7 +24,7 @@ resource "kubiya_knowledge" "organizational_knowledge" {
   name = "Organizational Knowledge"
   groups = var.kubiya_groups_allowed_groups
   description = "Organizational knowledge for Terraform Modules Self-Service Kiosk"
-  content = var.organizational_knowledge
+  content = var.organizational_knowledge_multiline
   labels = ["terraform", "module", "knowledge", "self-service", "kiosk"]
 }
 

@@ -23,13 +23,6 @@ variable "kubiya_groups_allowed_groups" {
   default     = ["Admin"]
 }
 
-# Terraform Module Configuration in YAML format
-variable "tf_module_config_yaml" {
-  description = "Terraform module configuration in YAML format."
-  type        = string
-  default     = "test"
-}
-
 # Secrets (Kubiya Secrets)
 variable "kubiya_secrets" {
   description = "List of secrets to pass to the teammate (e.g., AWS credentials)."
@@ -38,7 +31,7 @@ variable "kubiya_secrets" {
 }
 
 # Additional Module Knowledge (Optional)
-variable "organizational_knowledge" {
+variable "organizational_knowledge_multiline" {
   description = "Additional organizational knowledge we should use to help the teammate understand the Terraform modules."
   type        = string
   # Example:
@@ -49,4 +42,10 @@ variable "debug_mode" {
   description = "Debug mode allows you to see more detailed information and outputs during runtime"
   type        = bool
   default     = false
+}
+
+variable "tf_modules_urls" {
+  description = "Comma-separated list of terraform module URLs to sync and create tools from. Must be a valid URL containing valid Terraform code (variables.tf, main.tf, etc.)"
+  type        = string
+  default     = "https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/master"
 }
