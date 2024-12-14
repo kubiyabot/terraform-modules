@@ -1,6 +1,15 @@
-name: "CI/CD Maintainers Crew V2"
-icons:
-  - "https://cdn-icons-png.flaticon.com/512/4946/4946642.png"
-  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
-  - "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-description: "" 
+name: CI/CD Maintainer
+description: AI-powered teammate that helps diagnose and fix GitHub Actions workflow failures
+version: 2.0.0
+category: DevOps
+tags:
+  - github
+  - actions
+  - cicd
+  - pipeline
+  - automation
+provider: kubiya
+author: Kubiya
+documentation: https://docs.kubiya.ai/usecases/cicd-maintainer
+repository: https://github.com/kubiyabot/terraform-modules
+variables_schema: variables.tf 

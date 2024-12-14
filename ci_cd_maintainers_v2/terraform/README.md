@@ -18,7 +18,7 @@ CI/CD Maintainers Crew is your intelligent companion within the Kubiya platform,
 
 ## 🔄 User Flows
 
-### 1. 🎫 Pipeline Analysis & Optimization Flow
+### 1. ���� Pipeline Analysis & Optimization Flow
 
 ```mermaid
 flowchart TD
