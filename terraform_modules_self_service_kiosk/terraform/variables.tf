@@ -20,7 +20,7 @@ variable "teammate_name" {
 variable "kubiya_runner" {
   description = "🏃 Infrastructure runner that will execute the Terraform operations. Must have access to required cloud providers"
   type        = string
-  default     = "kubiya_hosted"
+  default     = "kubiya-hosted"
 }
 
 variable "kubiya_integrations" {
