@@ -1,6 +1,6 @@
 # 🔌 Module Configuration
 variable "tf_modules_urls" {
-  description = "🎯 List of Terraform module URLs to sync and create tools from (comma-separated). These modules will be available for self-service deployment! Example: https://github.com/terraform-aws-modules/terraform-aws-vpc,https://github.com/terraform-aws-modules/terraform-aws-s3-bucket"
+  description = "🎯 List of Terraform module URLs to sync from (comma-separated). These modules will be available for self-service deployment! Eg: https://github.com/terraform-aws-modules/terraform-aws-vpc"
   type        = string
   default     = "https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/master"
 
@@ -24,7 +24,7 @@ variable "kubiya_runner" {
 }
 
 variable "kubiya_integrations" {
-  description = "🔗 Where should your IaC assistant be available? (e.g., ['slack', 'teams', 'discord'])"
+  description = "🔗 Which integrations to expose to the IaC assistant? Will be used for provider configuration"
   type        = list(string)
   default     = ["slack"]
 }
