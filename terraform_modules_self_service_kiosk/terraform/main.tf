@@ -21,11 +21,11 @@ resource "kubiya_source" "terraform_module_tools" {
 
 # Create knowledge resources for modules with provided knowledge
 resource "kubiya_knowledge" "organizational_knowledge" {
-  name = "Organizational Knowledge"
-  groups = var.kubiya_groups_allowed_groups
+  name        = "Organizational Knowledge"
+  groups      = var.kubiya_groups_allowed_groups
   description = "Organizational knowledge for Terraform Modules Self-Service Kiosk"
-  content = var.organizational_knowledge_multiline
-  labels = ["terraform", "module", "knowledge", "self-service", "kiosk"]
+  content     = var.organizational_knowledge_multiline
+  labels      = ["terraform", "module", "knowledge", "self-service", "kiosk"]
 }
 
 # Configure the Terraform Kiosk teammate
@@ -33,24 +33,16 @@ resource "kubiya_agent" "terraform_kiosk" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered Terraform Modules Self-Service Kiosk"
-  model        = "azure/gpt-4o"
+  model        = "gpt-4"
   instructions = ""
 
-  sources = [kubiya_source.terraform_module_tools.name]
-
+  sources = [kubiya_source.terraform_module_tools.id]
 
   integrations = var.kubiya_integrations
-  users        = []
   groups       = var.kubiya_groups_allowed_groups
+  secrets      = var.kubiya_secrets
 
-  environment_variables = {
-    # Convert the parsed YAML to JSON for the environment variable
-    # TF_MODULE_CONFIG_FILE = var.tf_module_config_yaml
-  }
-
-  secrets = var.kubiya_secrets
-
-   is_debug_mode = var.debug_mode
+  is_debug_mode = var.debug_mode
 }
 
 # Output the teammate details
