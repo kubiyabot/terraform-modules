@@ -1,51 +1,57 @@
-# Teammate Configuration
+# 🔌 Module Configuration
+variable "tf_modules_urls" {
+  description = "🎯 List of Terraform module URLs to sync and create tools from (comma-separated). These modules will be available for self-service deployment! Example: https://github.com/terraform-aws-modules/terraform-aws-vpc,https://github.com/terraform-aws-modules/terraform-aws-s3-bucket"
+  type        = string
+  default     = "https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/master"
+
+  validation {
+    condition     = can(regex("^(https://[^,]+)(,https://[^,]+)*$", var.tf_modules_urls))
+    error_message = "🚫 Module URLs must be a comma-separated list of valid HTTPS URLs. Each URL must start with 'https://'."
+  }
+}
+
+# 🤖 Teammate Configuration
 variable "teammate_name" {
-  description = "Name of your Terraform Kiosk teammate (e.g., 'tf-kiosk'). Used to identify the teammate in logs, notifications, and webhooks."
+  description = "🏷️ Give your IaC assistant a name! This will be used in logs, notifications, and webhooks"
   type        = string
   default     = "iac-self-service-manager"
 }
 
 variable "kubiya_runner" {
-  description = "Runner to use for the teammate. Change only if using custom runners."
+  description = "🏃 Infrastructure runner that will execute the Terraform operations. Must have access to required cloud providers"
   type        = string
-  default     = "default"
+  default     = "kubiya_hosted"
 }
 
 variable "kubiya_integrations" {
-  description = "List of integrations required for the teammate (e.g., ['slack', 'github'])."
+  description = "🔗 Where should your IaC assistant be available? (e.g., ['slack', 'teams', 'discord'])"
   type        = list(string)
   default     = ["slack"]
 }
 
 variable "kubiya_groups_allowed_groups" {
-  description = "Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps'])."
+  description = "🔒 Which groups should have access to the IaC assistant? (e.g., ['DevOps', 'Platform', 'Developers'])"
   type        = list(string)
   default     = ["Admin"]
 }
 
-# Secrets (Kubiya Secrets)
+# 🔐 Secrets Configuration
 variable "kubiya_secrets" {
-  description = "List of secrets to pass to the teammate (e.g., AWS credentials)."
+  description = "🗝️ List of secrets needed for deployment (e.g., cloud credentials, API tokens)"
   type        = list(string)
   default     = []
 }
 
-# Additional Module Knowledge (Optional)
+# 🧠 Knowledge Configuration
 variable "organizational_knowledge_multiline" {
-  description = "Additional organizational knowledge we should use to help the teammate understand the Terraform modules."
+  description = "📚 Help your assistant understand your organization's specific needs and preferences for infrastructure deployment"
   type        = string
-  # Example:
   default     = "Try to adjust to the module names and descriptions to find the best match for user requests when it comes to infrastructure requests."
 }
 
+# 🛠️ Debug Configuration
 variable "debug_mode" {
-  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  description = "🐛 Enable detailed logging and outputs for troubleshooting"
   type        = bool
   default     = false
-}
-
-variable "tf_modules_urls" {
-  description = "Comma-separated list of terraform module URLs to sync and create tools from. Must be a valid URL containing valid Terraform code (variables.tf, main.tf, etc.)"
-  type        = string
-  default     = "https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/master"
 }
