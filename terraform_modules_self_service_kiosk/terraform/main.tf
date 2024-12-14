@@ -12,7 +12,7 @@ provider "kubiya" {
 
 # Configure the source for the Terraform module tools
 resource "kubiya_source" "terraform_module_tools" {
-  url = "https://github.com/kubiyabot/community-tools/tree/terraform_v3_working_ver/terraform_module_tools"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/terraform_module_tools"
   
   dynamic_config = {
     tf_module_urls = var.tf_modules_urls
