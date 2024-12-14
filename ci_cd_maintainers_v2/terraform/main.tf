@@ -1,295 +1,169 @@
-# 🚀 CI/CD Maintainers Crew
+terraform {
+  required_providers {
+    kubiya = {
+      source = "kubiya-terraform/kubiya"
+    }
+    github = {
+      source = "hashicorp/github"
+      version = "6.4.0"
+    }
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.0"
+    }
+  }
+}
 
-CI/CD Maintainers Crew is your intelligent companion within the Kubiya platform, designed to revolutionize CI/CD and source control management. It provides AI-driven monitoring, optimization, and maintenance of your CI/CD pipelines and repositories across multiple platforms.
+provider "kubiya" {
+  // API key is set as an environment variable KUBIYA_API_KEY
+}
 
-![image](https://github.com/user-attachments/assets/cicd-maintainers-banner.png)
+locals {
+  # Repository list handling
+  repository_list = compact(split(",", var.repositories))
 
-**🎯 Transform your CI/CD management with AI-powered insights and automated maintenance! Keep your pipelines efficient and repositories well-maintained.**
+  # Event configurations
+  github_events = ["check_run", "workflow_run"]
 
-## 🏗️ Architecture & Resources
-
-This module provisions and manages several key resources:
-
-### Core Resources
-
-1. `kubiya_agent` (CI/CD Maintainer)
-   - AI-powered assistant for pipeline management
-   - Configurable permissions and group access
-   - Integrated with GitHub tools and diagramming capabilities
-
-2. `kubiya_webhook` (Event Listener)
-   - Configurable filters for GitHub events
-   - Automated response to workflow failures
-   - Integration with notification channels
-
-3. `kubiya_knowledge` (Knowledge Base)
-   - Organization-specific best practices
-   - Common issues and solutions
-   - Custom pipeline management guidelines
-
-4. `github_repository_webhook`
-   - Automated setup for multiple repositories
-   - Configurable event triggers
-   - Secure webhook management
-
-### Resource Architecture
-
-```mermaid
-flowchart TB
-    %% Nodes with icons
-    TF["🔧 Terraform Module"]
-    VARS["📝 variables.tf"]
-    MAIN["⚙️ main.tf"]
-    FORM["✨ Kubiya UI Form"]
-    CONFIG["🎯 User Configuration"]
-    PLAN["👀 Review Changes"]
-    DEPLOY["🚀 Deploy Resources"]
+  # Construct webhook filter based on variables
+  webhook_filter_conditions = concat(
+    # Base condition for workflow runs
+    ["workflow_run.conclusion != null"],
     
-    %% Kubiya Resources
-    TEAMMATE["🤖 CI/CD Maintainer"]
-    WEBHOOK["📡 Event Listener"]
-    KB["📚 Knowledge Base"]
+    # Failed runs condition
+    var.monitor_failed_runs_only ? ["workflow_run.conclusion != 'success'"] : [],
     
-    %% Tool Sources
-    TOOLS["⚡ Tool Sources"]
-    GH_TOOLS["🛠️ GitHub Tools"]
-    DIAG_TOOLS["📊 Diagram Tools"]
-    SECRETS["🔐 Secrets Store"]
-    
-    %% GitHub Resources
-    GHWH["🔗 GitHub Webhooks"]
-    PR["❌ Failed Workflow"]
-    SOLUTION["💬 Analysis & Fix"]
-    GH_API["🐙 GitHub API"]
+    # Event type conditions
+    [format("(%s)",
+      join(" || ",
+        concat(
+          var.monitor_pr_workflow_runs ? ["workflow_run.event == 'pull_request'"] : [],
+          var.monitor_push_workflow_runs ? ["workflow_run.event == 'push'"] : []
+        )
+      )
+    )]
+  )
 
-    %% Configuration Flow
-    subgraph "1️⃣ Setup Phase"
-        TF --> |"defines"| VARS
-        TF --> |"contains"| MAIN
-        VARS --> |"generates"| FORM
-        FORM --> |"fill"| CONFIG
-        CONFIG --> |"review"| PLAN
-        PLAN --> |"apply"| DEPLOY
-    end
+  webhook_filter = join(" && ", local.webhook_filter_conditions)
 
-    %% Resource Creation
-    subgraph "2️⃣ Resources"
-        DEPLOY --> |"creates"| TEAMMATE
-        DEPLOY --> |"creates"| WEBHOOK
-        DEPLOY --> |"creates"| KB
-        DEPLOY --> |"configures"| GHWH
-        DEPLOY --> |"provisions"| SECRETS
-    end
+  # GitHub organization handling
+  github_organization = trim(split("/", local.repository_list[0])[0], " ")
+}
 
-    %% Tool Sources
-    subgraph "3️⃣ Tools & Actions"
-        TOOLS --> GH_TOOLS
-        TOOLS --> DIAG_TOOLS
-        TEAMMATE --> |"uses"| TOOLS
-        SECRETS --> |"authenticates"| GH_TOOLS
-        GH_TOOLS --> |"interacts"| GH_API
-    end
+# Configure providers
+provider "github" {
+  token = var.github_token
+  owner = local.github_organization
+}
 
-    %% Event Flow
-    subgraph "4️⃣ Execution"
-        PR --> |"triggers"| GHWH
-        GHWH --> |"notifies"| WEBHOOK
-        WEBHOOK --> |"activates"| TEAMMATE
-        KB --> |"assists"| TEAMMATE
-        TEAMMATE --> |"posts"| SOLUTION
-    end
+# GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
+resource "kubiya_source" "github_tooling" {
+  url   = "https://github.com/kubiyabot/community-tools/tree/github_v2/github"
+}
 
-    %% Styling
-    classDef setup fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:black
-    classDef resource fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:black
-    classDef tools fill:#6a1b9a,stroke:#4a148c,stroke-width:2px,color:white
-    classDef event fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:black
-    
-    class TF,VARS,MAIN,FORM,CONFIG,PLAN setup
-    class DEPLOY,TEAMMATE,WEBHOOK,KB,GHWH,SECRETS resource
-    class TOOLS,GH_TOOLS,DIAG_TOOLS,GH_API tools
-    class PR,SOLUTION event
-```
+# Diagramming Tooling - Allows the CI/CD Maintainer to use Mermaid diagrams
+resource "kubiya_source" "diagramming_tooling" {
+  url   = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
+}
 
-## 🔄 Workflow Analysis Process
+# Configure the CI/CD Maintainer agent
+resource "kubiya_agent" "cicd_maintainer" {
+  name         = var.teammate_name
+  runner       = var.kubiya_runner
+  description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
+  instructions = ""
+  secrets      = var.kubiya_secrets
+  sources = [
+    kubiya_source.github_tooling.name,
+    kubiya_source.diagramming_tooling.name,
+  ]
 
-The CI/CD Maintainer follows a sophisticated analysis workflow when handling pipeline failures:
+  # Dynamic integrations based on configuration
+  integrations = ["slack"]
 
-```mermaid
-flowchart TB
-    %% Event Sources
-    WEBHOOK["📡 Incoming Webhook"]
-    WORKFLOW["❌ Failed Workflow #12308133536"]
-    PR["🔄 PR #4"]
-    
-    %% Git & Knowledge Resources
-    subgraph GIT_CLIENT ["🌟 Git Client Capabilities"]
-        CLONE["📥 Clone Repository"]
-        READ["📖 Read Files Locally"]
-        COMMIT["✍️ Create Commits"]
-        BRANCH["🌿 Manage Branches"]
-        NEW_PR["📤 Open New PRs"]
-    end
-    
-    subgraph ORG_CONTEXT ["📚 Organizational Context"]
-        STANDARDS["📋 Coding Standards"]
-        PATTERNS["🎯 Common Patterns"]
-        HISTORY["📜 Past Solutions"]
-        CONFIGS["⚙️ Standard Configs"]
-    end
+  users  = []
+  groups = var.kubiya_groups_allowed_groups
 
-    %% Analysis Tools
-    LOGS["📝 workflow_run_logs_failed"]
-    PR_VIEW["👀 github pr view"]
-    PR_FILES["📂 github pr files"]
-    PR_DIFF["↔️ github pr diff"]
-    GET_FILE["📄 github get file"]
-    
-    %% Analysis Steps
-    ERROR_ANALYSIS["🔍 Error Analysis"]
-    CODE_REVIEW["📖 Code Review"]
-    DOCKERFILE_AUDIT["🐳 Dockerfile Audit"]
-    
-    %% Findings
-    GO_ERRORS["⚠️ Go Format Errors"]
-    BUILD_ERROR["🏗️ Missing Build Command"]
-    
-    %% Root Causes
-    FMT_ISSUE["❗ fmt Package Misuse"]
-    DOCKER_ISSUE["❗ Dockerfile Modification"]
-    
-    %% Enhanced Solutions with Git
-    CODE_FIX["💡 Code Format Fix\n + Auto-fix PR"]
-    DOCKER_FIX["💡 Restore Build Command\n + Template PR"]
-    
-    %% Enhanced Output
-    PR_COMMENT["💬 Comprehensive Response\n - Analysis\n - Auto-fixes\n - Context-aware solutions"]
+  environment_variables = {
+    KUBIYA_TOOL_TIMEOUT = "500"
+  }
+  is_debug_mode = var.debug_mode
+}
 
-    %% Flow Connections
-    WEBHOOK --> WORKFLOW
-    WORKFLOW --> |"triggers analysis"| LOGS
-    PR --> |"triggers review"| PR_VIEW
-    PR --> |"examines changes"| PR_FILES
-    PR --> |"analyzes diff"| PR_DIFF
-    PR --> |"fetches content"| GET_FILE
-    
-    %% Git Client Integration
-    PR --> CLONE
-    CLONE --> READ
-    READ --> CODE_REVIEW
-    READ --> DOCKERFILE_AUDIT
-    
-    %% Knowledge Integration
-    STANDARDS --> CODE_REVIEW
-    PATTERNS --> ERROR_ANALYSIS
-    HISTORY --> |"informs"| CODE_FIX
-    CONFIGS --> |"validates"| DOCKERFILE_AUDIT
-    
-    LOGS --> |"identifies"| ERROR_ANALYSIS
-    PR_VIEW --> |"informs"| CODE_REVIEW
-    PR_FILES --> |"guides"| CODE_REVIEW
-    PR_DIFF --> |"reveals"| DOCKERFILE_AUDIT
-    GET_FILE --> |"confirms"| DOCKERFILE_AUDIT
-    
-    ERROR_ANALYSIS --> GO_ERRORS
-    ERROR_ANALYSIS --> BUILD_ERROR
-    
-    GO_ERRORS --> FMT_ISSUE
-    BUILD_ERROR --> DOCKER_ISSUE
-    
-    FMT_ISSUE --> CODE_FIX
-    DOCKER_ISSUE --> DOCKER_FIX
-    
-    %% Enhanced Solution Flow
-    CODE_FIX --> |"creates"| NEW_PR
-    DOCKER_FIX --> |"creates"| NEW_PR
-    NEW_PR --> PR_COMMENT
-```
+# Unified webhook configuration
+resource "kubiya_webhook" "source_control_webhook" {
+  filter = local.webhook_filter
+  
+  name        = "${var.teammate_name}-github-webhook"
+  source      = "GitHub"
+  prompt      = <<-EOT
+    🚀 GitHub Event Detected!
+    Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+    Workflow ID: {{.event.workflow_run.id}}
+    PR Number: {{.event.workflow_run.pull_requests[0].number}}
+    Repository: {{.event.repository.full_name}}
 
-## 🌟 Features
+    Instructions:
 
-[Previous features section remains the same]
+    1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-## 🛠️ Configuration
+    2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
-[Previous configuration section remains the same]
+    ** Recommended Actions: **
+    Fix: Specific changes needed with code examples where possible.
+    Prevention: Long-term improvements and best practices.
+    Priority Level: Impact assessment, urgency
 
-## 🚀 Getting Started
+    3. Format insights clearly with headers/bullets, including references to examined files and evidence.
 
-[Previous getting started section remains the same]
+    4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
+  EOT
+  agent       = kubiya_agent.cicd_maintainer.name
+  destination = var.pipeline_notification_channel
+}
 
-## 🎭 Enhanced Example Scenarios
+# GitHub webhook setup
+resource "github_repository_webhook" "webhook" {
+  for_each = length(local.repository_list) > 0 ? toset(local.repository_list) : []
 
-### Scenario 1: Pipeline Optimization
+  repository = try(
+    trim(split("/", each.value)[1], " "),
+    # Fallback if repository name can't be parsed
+    each.value
+  )
+  
+  configuration {
+    url          = kubiya_webhook.source_control_webhook.url
+    content_type = "json"
+    insecure_ssl = false
 
-1. **Detection**: CI/CD crew detects slow pipeline execution (>10 minutes)
-2. **Analysis**: AI analyzes bottlenecks in workflow logs
-3. **Optimization**: 
-   - Identifies parallel job opportunities
-   - Suggests caching improvements
-   - Recommends workflow splitting
-4. **Implementation**: 
-   - Creates PR with optimized workflow
-   - Adds caching configuration
-   - Updates job dependencies
-5. **Verification**: 
-   - Monitors execution time
-   - Validates cache hits
-   - Reports performance gains
+  }
 
-### Scenario 2: Security Vulnerability
+  active = true
+  events = local.github_events
+}
 
-1. **Detection**: Security scan finds dependency vulnerability
-2. **Assessment**: 
-   - Evaluates CVE severity
-   - Checks for exploit availability
-   - Reviews dependency usage
-3. **Resolution**: 
-   - Generates dependency update PR
-   - Updates lockfiles
-   - Runs compatibility tests
-4. **Review**: 
-   - Team reviews changes
-   - Validates test results
-   - Approves security patch
-5. **Implementation**: 
-   - Merges security fix
-   - Updates documentation
-   - Creates security advisory
+# Output the teammate details
+output "cicd_maintainer" {
+  sensitive = true
+  value = {
+    name                         = kubiya_agent.cicd_maintainer.name
+    repositories                 = var.repositories
+    organizational_knowledge_multiline = var.organizational_knowledge_multiline
+    debug_mode                   = var.debug_mode
+    monitor_pr_workflow_runs    = var.monitor_pr_workflow_runs
+    monitor_push_workflow_runs  = var.monitor_push_workflow_runs
+    monitor_failed_runs_only    = var.monitor_failed_runs_only
+    pipeline_notification_channel = var.pipeline_notification_channel
+  }
+}
 
-### Scenario 3: Repository Maintenance
-
-1. **Scheduled Check**:
-   - Runs dependency audits
-   - Validates workflow syntax
-   - Checks configuration files
-2. **Issue Detection**:
-   - Identifies outdated dependencies
-   - Flags deprecated actions
-   - Notes configuration drift
-3. **Automated Fixes**:
-   - Updates minor versions
-   - Migrates to newer actions
-   - Standardizes configurations
-4. **Documentation**:
-   - Updates changelog
-   - Modifies readme files
-   - Records maintenance actions
-5. **Verification**:
-   - Runs test suites
-   - Validates changes
-   - Confirms improvements
-
-## 📊 Key Benefits
-
-[Previous benefits section remains the same]
-
----
-
-Ready to revolutionize your CI/CD management? Deploy your AI crew today! 🚀
-
-**[Get Started](https://app.kubiya.ai)** | **[Documentation](https://docs.kubiya.ai)** | **[Request Demo](https://kubiya.ai)**
-
----
-
-*Let CI/CD Maintainers Crew handle your pipeline management while maintaining security! 🔐✨*
+# Add additional knowledge base
+resource "kubiya_knowledge" "pipeline_management" {
+  name             = "Organization-specific Knowledge Base for GitHub Actions"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Common issues, best practices, and solutions for GitHub Actions workflows in our organization."
+  labels           = ["github", "actions", "pipeline", "cicd", "optimization"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = var.organizational_knowledge_multiline
+}
