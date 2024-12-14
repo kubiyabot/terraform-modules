@@ -36,7 +36,7 @@ resource "kubiya_agent" "terraform_kiosk" {
   model        = "azure/gpt-4o"
   instructions = ""
 
-  sources = [kubiya_source.terraform_module_tools.id]
+  sources = [kubiya_source.terraform_module_tools.name]
 
 
   integrations = var.kubiya_integrations
