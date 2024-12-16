@@ -114,7 +114,7 @@ resource "kubiya_webhook" "source_control_webhook" {
     Prevention: Long-term improvements and best practices.
     Priority Level: Impact assessment, urgency
 
-    3. Format insights clearly with headers/bullets, including references to examined files and evidence.
+    3. Format insights clearly with headers/bullets, including references to examined files and evidence. Make sure you emphasize what matters most first - the problems found and their solutions - use clear and consise markdown format to keep it clean
 
     4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
   EOT
