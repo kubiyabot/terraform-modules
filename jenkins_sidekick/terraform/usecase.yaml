@@ -1,0 +1,6 @@
+name: "Jenkins Jobs Conversational Proxy"
+icons:
+  - "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+  - "https://raw.githubusercontent.com/jenkinsci/jenkins/master/war/src/main/webapp/images/jenkins-chat.png"
+description: "AI-powered conversational interface for Jenkins job management. Execute, monitor, and manage Jenkins jobs through natural language interactions." 
