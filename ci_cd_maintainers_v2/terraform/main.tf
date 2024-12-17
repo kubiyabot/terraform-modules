@@ -97,26 +97,37 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   prompt      = <<-EOT
-    🚀 GitHub Event Detected!
-    Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
-    Workflow ID: {{.event.workflow_run.id}}
-    PR Number: {{.event.workflow_run.pull_requests[0].number}}
-    Repository: {{.event.repository.full_name}}
+🚀 GitHub Event Detected!
+Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+Workflow ID: {{.event.workflow_run.id}}
+PR Number: {{.event.workflow_run.pull_requests[0].number}}
+Repository: {{.event.repository.full_name}}
 
-    Instructions:
+Instructions:
 
-    1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
+1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-    2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
-    ** Recommended Actions: **
-    Fix: Specific changes needed with code examples where possible.
-    Prevention: Long-term improvements and best practices.
-    Priority Level: Impact assessment, urgency
+3. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
-    3. Format insights clearly with headers/bullets, including references to examined files and evidence. Make sure you emphasize what matters most first - the problems found and their solutions - use clear and consise markdown format to keep it clean
+a. Highlights key information first:
+   - What failed
+   - Why it failed 
+   - How to fix it
 
-    4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
+b. Add a mermaid diagram showing:
+   - Workflow steps
+   - Failed step highlighted
+   - Error location
+
+c. Format using:
+   - Clear markdown headers
+   - Emojis for quick scanning
+   - Error logs in collapsible sections
+   - Footer with run details
+   - Style matters! Make sure the markdown text is very engaging and clear
+4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
