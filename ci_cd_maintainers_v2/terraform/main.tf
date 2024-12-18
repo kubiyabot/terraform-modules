@@ -97,7 +97,6 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   prompt      = <<-EOT
-🚀 GitHub Event Detected!
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
 PR Number: {{.event.workflow_run.pull_requests[0].number}}
@@ -129,6 +128,7 @@ c. Format using:
    - Style matters! Make sure the markdown text is very engaging and clear
 
 4. Use github_pr_comment to post a detailed analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include findings and evidence. Submit directly without user approval.
+
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
