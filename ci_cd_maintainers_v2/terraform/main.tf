@@ -38,7 +38,7 @@ locals {
       join(" || ",
         concat(
           var.monitor_pr_workflow_runs ? ["workflow_run.event == 'pull_request'"] : [],
-          var.monitor_push_workflow_runs ? ["workflow_run.event == 'push'"] : []
+          var.monitor_push_workflow_runs ? ["(workflow_run.event == 'push' && workflow_run.pull_requests[0] != null)"] : []
         )
       )
     )]
