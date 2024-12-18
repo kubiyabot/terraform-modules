@@ -24,16 +24,47 @@ variable "kubiya_groups_allowed_groups" {
   default     = ["Admin"]
 }
 
-variable "request_tools_sources" {
-  description = "List of source URLs for auxiliary request-related tools (AWS policy generator tool is automatically included and cannot be modified)"
-  type        = list(string)
-  default     = ["https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"]
-}
-
 variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable. Supports multiple values. \n For AWS integration, the main account must be provided."
   type        = list(string)
   default     = ["slack"]
+}
+
+variable "config_json" {
+  description = "List of Kubiya integrations to enable. Supports multiple values. For AWS integration, the main account must be provided."
+  type        = string
+  default     = <<-EOT
+    {
+        "access_configs": {
+            "DB Access to Staging": {
+                "name": "Database Access to Staging",
+                "description": "Grants access to all staging RDS databases",
+                "account_id": "***",
+                "permission_set": "ECRReadOnly",
+                "session_duration": "PT5M"
+            },
+            "Power User to SandBox": {
+                "name": "Power User Access to SandBox",
+                "description": "Grants poweruser permissions on Sandbox",
+                "account_id": "****",
+                "permission_set": "PowerUserAccess",
+                "session_duration": "PT5M"
+            }
+        },
+        "s3_configs": {
+            "Data Lake Read Access": {
+                "name": "data_lake_read 4",
+                "description": "Grants read-only access to data lake buckets",
+                "buckets": [
+                    "company-data-lake-prod",
+                    "company-data-lake-staging"
+                ],
+                "policy_template": "S3ReadOnlyPolicy",
+                "session_duration": "PT1H"
+            }
+        }
+    }
+  EOT
 }
 
 variable "kubiya_tool_timeout" {
