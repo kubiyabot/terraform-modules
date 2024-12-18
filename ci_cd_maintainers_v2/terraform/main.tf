@@ -61,11 +61,6 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/github_v2/github"
 }
 
-# Diagramming Tooling - Allows the CI/CD Maintainer to use Mermaid diagrams
-resource "kubiya_source" "diagramming_tooling" {
-  url   = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
-}
-
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
@@ -75,7 +70,6 @@ resource "kubiya_agent" "cicd_maintainer" {
   secrets      = var.kubiya_secrets
   sources = [
     kubiya_source.github_tooling.name,
-    kubiya_source.diagramming_tooling.name,
   ]
 
   # Dynamic integrations based on configuration
@@ -97,7 +91,6 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   prompt      = <<-EOT
-🚀 GitHub Event Detected!
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
 PR Number: {{.event.workflow_run.pull_requests[0].number}}
@@ -127,7 +120,9 @@ c. Format using:
    - Error logs in collapsible sections
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
-4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
+
+4. Always use github_pr_comment to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
+
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
