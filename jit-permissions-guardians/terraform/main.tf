@@ -20,11 +20,10 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access"
 }
 
-
 # Configure auxiliary request tools
-resource "kubiya_source" "request_tools" {
-  for_each = toset(var.request_tools_sources)
-  url      = each.value
+resource "kubiya_source" "aws_jit_tools" {
+  url      = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
+  dynamic_config = var.config_json
 }
 
 # Create knowledge base
@@ -88,13 +87,7 @@ resource "kubiya_agent" "jit_guardian" {
   description  = "AI-powered AWS JIT permissions guardian"
   model        = "azure/gpt-4o"
   instructions = ""
-  sources      = concat(
-    [
-      kubiya_source.jit_approval_workflow_tooling.name
-    ],
-    [for source in kubiya_source.request_tools : source.name]
-  )
-
+  sources      = [kubiya_source.jit_approval_workflow_tooling.name, kubiya_source.aws_jit_tools.name]
   integrations = var.kubiya_integrations
   users        = []
   groups       = var.kubiya_groups_allowed_groups
@@ -106,8 +99,6 @@ resource "kubiya_agent" "jit_guardian" {
     ]
   }
 }
-
-
 
 # Output the teammate details
 output "jit_guardian" {

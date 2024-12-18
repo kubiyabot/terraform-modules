@@ -2,8 +2,6 @@
 *.tflock
 *.terraform.lock.hcl
 
-# Ignore Terraform crash log files
-crash.log
 
 # Ignore Terraform plan files
 *.tfplan
