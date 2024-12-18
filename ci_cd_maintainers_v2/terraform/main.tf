@@ -61,11 +61,6 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/github_v2/github"
 }
 
-# Diagramming Tooling - Allows the CI/CD Maintainer to use Mermaid diagrams
-resource "kubiya_source" "diagramming_tooling" {
-  url   = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
-}
-
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
@@ -75,7 +70,6 @@ resource "kubiya_agent" "cicd_maintainer" {
   secrets      = var.kubiya_secrets
   sources = [
     kubiya_source.github_tooling.name,
-    kubiya_source.diagramming_tooling.name,
   ]
 
   # Dynamic integrations based on configuration
@@ -106,7 +100,7 @@ Instructions:
 
 1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - execute two tools at a time.
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
 3. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
@@ -127,7 +121,7 @@ c. Format using:
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
 
-4. Use github_pr_comment to post a detailed analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include findings and evidence. Submit directly without user approval.
+4. Always use github_pr_comment to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
 
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
