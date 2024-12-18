@@ -107,7 +107,7 @@ Instructions:
 
 1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - execute two tools at a time.
 
 3. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
@@ -127,7 +127,8 @@ c. Format using:
    - Error logs in collapsible sections
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
-4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence. Do not ask for user approval; submit your analysis directly on the PR as a comment.
+
+4. Use github_pr_comment to post a detailed analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include findings and evidence. Submit directly without user approval.
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
