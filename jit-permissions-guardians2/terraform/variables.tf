@@ -31,7 +31,7 @@ variable "kubiya_integrations" {
 }
 
 variable "config_json" {
-  description = "List of Kubiya integrations to enable. Supports multiple values. \n For AWS integration, the main account must be provided."
+  description = "List of Kubiya integrations to enable. Supports multiple values. For AWS integration, the main account must be provided."
   type        = string
   default     = <<-EOT
     {
