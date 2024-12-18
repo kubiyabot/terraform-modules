@@ -127,7 +127,7 @@ c. Format using:
    - Error logs in collapsible sections
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
-4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence.
+4. Finally, after gathering all of the needed insights and conclusions, use the `github_pr_comment` tool to provide a comprehensive analysis on PR #{{.event.workflow_run.pull_requests[0].number}} with all findings and supporting evidence. Do not ask for user approval; submit your analysis directly on the PR as a comment.
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
