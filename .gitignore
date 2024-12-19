@@ -34,3 +34,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 kubernetes-crew/terraform/.terraform.lock.hcl
+
+
+.idea
