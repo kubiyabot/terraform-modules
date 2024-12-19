@@ -115,14 +115,14 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
 resource "kubiya_source" "k8s_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes_v2"
 
-  dynamic_config = {
+  dynamic_config = jsonencode({
     namespaces   = var.watch_namespaces
     watch_pod    = tostring(var.watch_pod)
     watch_node   = tostring(var.watch_node)
     watch_event  = tostring(var.watch_event)
     namespaces   = var.watch_namespaces
     webhook_url  = kubiya_webhook.source_control_webhook.url
-  }
+})
 
   depends_on = [kubiya_webhook.source_control_webhook]
 }
