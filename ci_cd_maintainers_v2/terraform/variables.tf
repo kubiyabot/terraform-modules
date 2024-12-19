@@ -52,7 +52,7 @@ variable "monitor_pr_workflow_runs" {
 variable "monitor_push_workflow_runs" {
   description = "Listen for workflow runs triggered by push events"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "monitor_failed_runs_only" {
