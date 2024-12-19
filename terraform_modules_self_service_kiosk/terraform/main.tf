@@ -14,9 +14,9 @@ provider "kubiya" {
 resource "kubiya_source" "terraform_module_tools" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/terraform_module_tools"
   
-  dynamic_config = {
+  dynamic_config = jsonencode({
     tf_module_urls = var.tf_modules_urls
-  }
+  })
 }
 
 # Create knowledge resources for modules with provided knowledge
