@@ -10,6 +10,48 @@ variable "tf_modules_urls" {
   }
 }
 
+variable "tf_modules_config" {
+  description = "Configuration for Terraform modules, including source locations and optional manual configurations"
+  type        = string
+  default     = <<-EOT
+    {
+      "aws_vpc": {
+        "source": "terraform-aws-modules/vpc/aws",
+        "version": "5.0.0",
+        "auto_discover": true
+      },
+      "aws_eks": {
+        "source": "terraform-aws-modules/eks/aws",
+        "version": "19.15.3",
+        "auto_discover": false,
+        "instructions": "This module creates an EKS cluster. Ask for the cluster name, region, and desired number of nodes. Default to t3.medium instances if not specified.",
+        "variables": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster",
+            "type": "string",
+            "required": true
+          },
+          "cluster_version": {
+            "description": "Kubernetes version to use",
+            "type": "string",
+            "default": "1.27"
+          },
+          "instance_type": {
+            "description": "Type of EC2 instances to use",
+            "type": "string",
+            "default": "t3.medium"
+          },
+          "desired_size": {
+            "description": "Desired number of worker nodes",
+            "type": "number",
+            "default": 2
+          }
+        }
+      }
+    }
+  EOT
+}
+
 # 🤖 Teammate Configuration
 variable "teammate_name" {
   description = "🏷️ Give your IaC assistant a name! This will be used in logs, notifications, and webhooks"
