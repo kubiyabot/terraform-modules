@@ -1,15 +1,4 @@
 # 🔌 Module Configuration
-variable "tf_modules_urls" {
-  description = "🎯 List of Terraform module URLs to sync from (comma-separated). These modules will be available for self-service deployment! Eg: https://github.com/terraform-aws-modules/terraform-aws-vpc"
-  type        = string
-  default     = "https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/master"
-
-  validation {
-    condition     = can(regex("^(https://[^,]+)(,https://[^,]+)*$", var.tf_modules_urls))
-    error_message = "🚫 Module URLs must be a comma-separated list of valid HTTPS URLs. Each URL must start with 'https://'."
-  }
-}
-
 variable "tf_modules_config_json" {
   description = "Configuration for Terraform modules, including source locations and optional manual configurations"
   type        = string
