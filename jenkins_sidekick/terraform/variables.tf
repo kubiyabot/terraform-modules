@@ -82,7 +82,7 @@ variable "name" {
   default     = "jenkins-proxy"
 }
 
-variable "runner" {
+variable "kubiya_runner" {
   description = "🏃 Infrastructure runner that will execute the Jenkins operations"
   type        = string
   default     = "kubiya-hosted"
