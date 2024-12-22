@@ -10,7 +10,7 @@ variable "tf_modules_urls" {
   }
 }
 
-variable "tf_modules_config" {
+variable "tf_modules_config_json" {
   description = "Configuration for Terraform modules, including source locations and optional manual configurations"
   type        = string
   default     = <<-EOT
