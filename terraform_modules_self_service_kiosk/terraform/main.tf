@@ -13,8 +13,8 @@ provider "kubiya" {
 
 # Configure the source for the Terraform modules
 resource "kubiya_source" "terraform_modules" {
-  url           = "https://github.com/kubiyabot/community-tools/tree/main/terraform_modules"
-  dynamic_config = var.tf_modules_config
+  url           = "https://github.com/kubiyabot/community-tools/tree/main/terraform_module_tools"
+  dynamic_config = var.tf_modules_config_json
 }
 
 # Create knowledge resources for modules with provided knowledge
