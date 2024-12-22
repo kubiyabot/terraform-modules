@@ -10,13 +10,11 @@ provider "kubiya" {
   # API key is set as an environment variable KUBIYA_API_KEY
 }
 
-# Configure the source for the Terraform module tools
-resource "kubiya_source" "terraform_module_tools" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/terraform_module_tools"
-  
-  dynamic_config = {
-    tf_module_urls = var.tf_modules_urls
-  }
+
+# Configure the source for the Terraform modules
+resource "kubiya_source" "terraform_modules" {
+  url           = "https://github.com/kubiyabot/community-tools/tree/main/terraform_modules"
+  dynamic_config = var.tf_modules_config
 }
 
 # Create knowledge resources for modules with provided knowledge
