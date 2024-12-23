@@ -1,150 +1,148 @@
-# 🚀 CI/CD Maintainers Crew
+# CI/CD Maintainer V2
 
-CI/CD Maintainers Crew is your intelligent companion within the Kubiya platform, designed to revolutionize CI/CD and source control management. It provides AI-driven monitoring, optimization, and maintenance of your CI/CD pipelines and repositories across multiple platforms.
+An AI-powered teammate that helps diagnose and fix GitHub Actions workflow failures. The maintainer monitors your repositories for failed workflows, analyzes the failures, and provides detailed solutions directly in your pull requests.
 
-![image](https://github.com/user-attachments/assets/cicd-maintainers-banner.png)
+## 🎯 Overview
 
-**🎯 Transform your CI/CD management with AI-powered insights and automated maintenance! Keep your pipelines efficient and repositories well-maintained.**
+The CI/CD Maintainer is designed to:
+- Monitor GitHub Actions workflows for failures
+- Analyze logs and error patterns
+- Provide detailed root cause analysis
+- Suggest fixes with code examples
+- Comment solutions directly on PRs
 
-## 🌟 Features
-
-- 🤖 **AI Pipeline Analysis**: Intelligent analysis of CI/CD failures and bottlenecks
-- 📊 **Multi-Platform Support**: GitHub, GitLab, and other source control platforms
-- 🔄 **Automated Maintenance**: Automated dependency updates and security fixes
-- 📈 **Performance Tracking**: Pipeline performance metrics and optimization
-- 🚨 **Smart Alerts**: Real-time notifications for pipeline failures
-- 🛡️ **Security Scanning**: Continuous security assessment of pipelines
-- 🔍 **Repository Health**: Monitoring and maintenance of repository health
-
-## 🔄 User Flows
-
-### 1. 🎫 Pipeline Analysis & Optimization Flow
+## 🏗️ Architecture
 
 ```mermaid
-flowchart TD
-    A["Pipeline Event"] --> B["AI Analysis Engine"]
-    B --> C["Performance Analysis"]
-    C --> D["Optimization Queue"]
-    D --> E{"Action Required?"}
-    E -->|Yes| F["Automated Fix"]
-    E -->|No| G["Monitor"]
-    F --> H["Apply Changes"]
-    H --> I["Verify Success"]
-    G --> J["Update Metrics"]
-    I --> K["Log Results"]
+flowchart TB
+    %% Nodes with icons
+    TF["🔧 Terraform Module"]
+    VARS["📝 variables.tf"]
+    MAIN["⚙️ main.tf"]
+    FORM["✨ Kubiya UI Form"]
+    CONFIG["🎯 User Configuration"]
+    PLAN["👀 Review Changes"]
+    DEPLOY["🚀 Deploy Resources"]
+    
+    %% Kubiya Resources
+    TEAMMATE["🤖 CI/CD Maintainer"]
+    WEBHOOK["📡 Event Listener"]
+    KB["📚 Knowledge Base"]
+    
+    %% Tool Sources
+    TOOLS["⚡ Tool Sources"]
+    GH_TOOLS["🛠️ GitHub Tools"]
+    DIAG_TOOLS["📊 Diagram Tools"]
+    SECRETS["🔐 Secrets Store"]
+    
+    %% GitHub Resources
+    GHWH["🔗 GitHub Webhooks"]
+    PR["❌ Failed Workflow"]
+    SOLUTION["💬 Analysis & Fix"]
+    GH_API["🐙 GitHub API"]
 
-    style A fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
-    style B fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
-    style C fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-    style D fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
-    style E fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
-    style F fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
-    style G fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-    style H fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
-    style I fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-    style J fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-    style K fill:#666666,stroke:#333,stroke-width:2px,color:#fff
+    %% Configuration Flow
+    subgraph "1️⃣ Setup Phase"
+        TF --> |"defines"| VARS
+        TF --> |"contains"| MAIN
+        VARS --> |"generates"| FORM
+        FORM --> |"fill"| CONFIG
+        CONFIG --> |"review"| PLAN
+        PLAN --> |"apply"| DEPLOY
+    end
+
+    %% Resource Creation
+    subgraph "2️⃣ Resources"
+        DEPLOY --> |"creates"| TEAMMATE
+        DEPLOY --> |"creates"| WEBHOOK
+        DEPLOY --> |"creates"| KB
+        DEPLOY --> |"configures"| GHWH
+        DEPLOY --> |"provisions"| SECRETS
+    end
+
+    %% Tool Sources
+    subgraph "3️⃣ Tools & Actions"
+        TOOLS --> GH_TOOLS
+        TOOLS --> DIAG_TOOLS
+        TEAMMATE --> |"uses"| TOOLS
+        SECRETS --> |"authenticates"| GH_TOOLS
+        GH_TOOLS --> |"interacts"| GH_API
+    end
+
+    %% Event Flow
+    subgraph "4️⃣ Execution"
+        PR --> |"triggers"| GHWH
+        GHWH --> |"notifies"| WEBHOOK
+        WEBHOOK --> |"activates"| TEAMMATE
+        KB --> |"assists"| TEAMMATE
+        TEAMMATE --> |"posts"| SOLUTION
+    end
+
+    %% Styling
+    classDef setup fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:black
+    classDef resource fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:black
+    classDef tools fill:#6a1b9a,stroke:#4a148c,stroke-width:2px,color:white
+    classDef event fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:black
+    
+    class TF,VARS,MAIN,FORM,CONFIG,PLAN setup
+    class DEPLOY,TEAMMATE,WEBHOOK,KB,GHWH,SECRETS resource
+    class TOOLS,GH_TOOLS,DIAG_TOOLS,GH_API tools
+    class PR,SOLUTION event
 ```
 
-### 2. 🔐 Repository Maintenance Flow
+## 🚀 Quick Start
 
-```mermaid
-flowchart TD
-    A["Repository"] -->|1. Scheduled Check| B["Health Scanner"]
-    B -->|2. Analysis| C["AI Engine"]
-    C -->|3. Generates Report| D["Status Report"]
-    D -->|4. Issues Found?| E["Action System"]
-    E -->|5a. Yes| F["Auto-Fix"]
-    E -->|5b. No| G["Log Status"]
-    F -->|6. Apply| H["Repository Update"]
-    H -->|7. Verify| I["Success Check"]
-    I -->|8. Complete| J["Audit Log"]
+### Prerequisites
+- Kubiya Platform account
+- GitHub repositories with Actions workflows
+- GitHub Personal Access Token with required permissions
 
-    style A fill:#4aa1ff,stroke:#333,stroke-width:2px,color:#fff
-    style B fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
-    style C fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
-    style D fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
-    style E fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
-    style F fill:#3ebd64,stroke:#333,stroke-width:2px,color:#fff
-    style G fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-    style H fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
-    style I fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
-    style J fill:#666666,stroke:#333,stroke-width:2px,color:#fff
-```
+### Setup Steps
+1. **Access Kubiya Platform**
+   - Navigate to Use Cases
+   - Select "CI/CD Maintainer V2"
 
-## 🛠️ Configuration
+2. **Configure Settings**
+   - Provide GitHub token
+   - Select repositories to monitor
+   - Configure Slack notifications
+   - Set event monitoring preferences
 
-Below are the key variables used to configure the CI/CD Maintainers Crew:
+3. **Review & Deploy**
+   - Review the generated configuration
+   - Apply to create resources
+   - Verify webhook setup
 
-| Variable Name | Description | Type | Default |
-|---------------|-------------|------|---------|
-| `teammate_name` | Name of the CI/CD Maintainers teammate | `string` | |
-| `kubiya_runner` | Runner to use for the teammate | `string` | |
-| `repositories` | Comma-separated list of repositories to monitor | `string` | |
-| `pipeline_notification_channel` | Channel for pipeline alerts | `string` | `""` |
-| `github_token` | GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens | `string` | `""` |
-| `webhook_filter` | JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax. | `string` | `workflow_run.conclusion != null && workflow_run.conclusion != 'success'` |
-| `kubiya_groups_allowed_groups` | Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps']). | `list(string)` | `['Admin'] ` |
+## 🛠️ Features
 
-## 🚀 Getting Started
+### Automated Analysis
+- Real-time workflow failure detection
+- Log analysis and pattern recognition
+- Root cause identification
+- Performance bottleneck detection
 
-1. **Log into Kubiya Platform**:
-   - Visit [app.kubiya.ai](https://app.kubiya.ai)
-   - Log in with your credentials
+### Smart Solutions
+- Contextual fix recommendations
+- Code examples and snippets
+- Best practice suggestions
+- Security improvement tips
 
-2. **Navigate to Use Cases**:
-   - Go to "Teammates" section
-   - Click on "Use Cases"
-   - Click "Add Use Case"
-   - Select "CI/CD Maintainers Crew"
+### Integration & Tools
+- GitHub Actions integration
+- Slack notifications
+- Custom organizational knowledge base
+- Secure secrets management
 
-3. **Configure Settings**:
-   Fill in the required fields:
-   - Teammate Name (e.g., "cicd-crew")
-   - Kubiya Runner
-   - Repository List
-   - Notification Channel
-   - Github Token
-   - Webhook filter
-   - Allowd groups
+## 📚 Documentation
 
-4. **Deploy**:
-   - Review your configuration
-   - Click "Deploy Use Case"
-   - Wait for confirmation
+For detailed setup instructions and configuration options:
+- [Setup Guide](https://docs.kubiya.ai/usecases/cicd-maintainer/setup)
+- [Configuration Reference](https://docs.kubiya.ai/usecases/cicd-maintainer/config)
+- [Tool Documentation](https://docs.kubiya.ai/usecases/cicd-maintainer/tools)
 
-## 🎭 Example Scenarios
+## 🤝 Support
 
-### Scenario 1: Pipeline Optimization
-
-1. **Detection**: CI/CD crew detects slow pipeline
-2. **Analysis**: AI analyzes bottlenecks
-3. **Optimization**: Suggests improvements
-4. **Implementation**: Applies approved changes
-5. **Verification**: Monitors improvement
-
-### Scenario 2: Security Vulnerability
-
-1. **Detection**: Security scan finds vulnerability
-2. **Assessment**: AI evaluates impact
-3. **Resolution**: Generates fix
-4. **Review**: Team approves fix
-5. **Implementation**: Applies security patch
-
-## 📊 Key Benefits
-
-- ⚡ Reduced pipeline maintenance overhead
-- 🔒 Enhanced security monitoring
-- 📈 Improved pipeline performance
-- 🎯 Automated issue resolution
-- 📝 Comprehensive audit trail
-
----
-
-Ready to revolutionize your CI/CD management? Deploy your AI crew today! 🚀
-
-**[Get Started](https://app.kubiya.ai)** | **[Documentation](https://docs.kubiya.ai)** | **[Request Demo](https://kubiya.ai)**
-
----
-
-*Let CI/CD Maintainers Crew handle your pipeline management while maintaining security! 🔐✨* 
+Need help? Contact us:
+- [Kubiya Support Portal](https://support.kubiya.ai)
+- [Community Discord](https://discord.gg/kubiya)
+- Email: support@kubiya.ai
