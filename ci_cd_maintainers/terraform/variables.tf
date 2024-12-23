@@ -30,7 +30,7 @@ variable "pipeline_notification_channel" {
 }
 
 # test_secret
-variable test_secret" {
+variable "test_secret" {
   description = "test_secret"
   type        = string
   default     = ""
@@ -56,7 +56,7 @@ variable "kubiya_runner" {
 # }
 
 # secret_test
-variable secret_test" {
+variable "secret_test" {
   description = "secret_test"
   type        = string
   default     = ""
