@@ -22,11 +22,11 @@ variable "kubiya_secrets" {
   default     = ["GH_TOKEN"]
 }
 
-# Channel Configuration
+# Slack Configuration
 variable "pipeline_notification_channel" {
-  description = "Dedicated Slack channel for pipeline alerts. Falls back to notification_channel if not set (must start with #)."
+  description = "The Slack channel to send pipeline notifications to and engage with the CI/CD maintainer. Must be a valid Slack channel name (e.g., '#general' or '#engineering') and the Kubiya Slack App must be invited to the channel."
   type        = string
-  default     = ""
+  default     = "#pipeline-alerts"
 }
 
 # Access Control
@@ -36,110 +36,39 @@ variable "kubiya_groups_allowed_groups" {
   default     = ["Admin"]
 }
 
+# Kubiya Runner Configuration
 variable "kubiya_runner" {
   description = "Runner to use for the teammate. Change only if using custom runners."
   type        = string
 }
 
-# Event Monitoring Configuration
-# variable "monitor_pipeline_events" {
-#   description = "Listen for GitHub workflow failures in cases where they are attached to a PR."
-#   type        = bool
-#   default     = true
-# }
+# Webhook Filter Configuration
+variable "monitor_pr_workflow_runs" {
+  description = "Listen for workflow runs that are associated with pull requests"
+  type        = bool
+  default     = true
+}
 
-# variable "monitor_push_events" {
-#   description = "Monitor repository push events for direct commits and policy violations. Default: true"
-#   type        = bool
-#   default     = false
-# }
+variable "monitor_push_workflow_runs" {
+  description = "Listen for workflow runs triggered by push events"
+  type        = bool
+  default     = true
+}
 
-# variable "monitor_pull_requests" {
-#   description = "Monitor pull request/merge request events for reviews and CI status. Default: true"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_deployment_events" {
-#   description = "Monitor deployment events and status changes. Default: true"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_security_events" {
-#   description = "Monitor security alerts and vulnerability notifications. Default: true"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_issue_events" {
-#   description = "Monitor repository issue events and comments. Default: false"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_release_events" {
-#   description = "Monitor repository release events. Default: false"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_create_events" {
-#   description = "Monitor repository create events. Default: false"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_delete_events" {
-#   description = "Monitor repository delete events. Default: false"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_branch_protection_events" {
-#   description = "Monitor repository branch protection events. Default: false"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_check_suite_events" {
-#   description = "Monitor repository check suite events"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_code_scanning_events" {
-#   description = "Monitor repository code scanning events"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_dependabot_events" {
-#   description = "Monitor Dependabot alerts"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_deployment_status_events" {
-#   description = "Monitor deployment status events"
-#   type        = bool
-#   default     = false
-# }
-
-# variable "monitor_secret_scanning_events" {
-#   description = "Monitor secret scanning alerts and events"
-#   type        = bool
-#   default     = false
-# }
-
-variable "webhook_filter" {
-  description = "JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax."
-  type        = string
-  default     = "workflow_run.conclusion != null && workflow_run.conclusion != 'success' && (workflow_run.event == 'pull_request' || (workflow_run.event == 'push' && workflow_run.pull_requests[0] != null ))"
+variable "monitor_failed_runs_only" {
+  description = "Only monitor failed workflow runs (if false, will monitor all conclusions)"
+  type        = bool
+  default     = true
 }
 
 variable "debug_mode" {
-  description = "Debug mode allows you to see more detailed information and outputs during runtime"
+  description = "Debug mode allows you to see more detailed information and outputs during runtime (shows all outputs and logs when conversing with the teammate)"
   type        = bool
   default     = false
+}
+
+variable "organizational_knowledge_multiline" {
+  description = "Additional organizational knowledge for the CI/CD maintainer in markdown format - useful for providing context and best practices, common issues, and more to help the teammate understand the organization and its workflows."
+  type        = string
+  default     = "<no additional knowledge base content provided - please provide your own>"
 }

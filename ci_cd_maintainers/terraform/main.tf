@@ -24,20 +24,27 @@ locals {
 
   # Event configurations
   github_events = ["check_run", "workflow_run"]
-  #concat(
-   # var.monitor_pipeline_events ? ["check_run", "workflow_run"] : [],
-    #var.monitor_push_events ? ["push"] : [],
-    #var.monitor_pull_requests ? ["pull_request", "pull_request_review", "pull_request_review_comment"] : [],
-    #var.monitor_deployment_events ? ["deployment", "deployment_status"] : [],
-    #var.monitor_security_events ? ["repository_vulnerability_alert"] : [],
-    #var.monitor_issue_events ? ["issues", "issue_comment"] : [],
-    #var.monitor_release_events ? ["release"] : [],
-    #var.monitor_check_suite_events ? ["check_suite"] : [],
-    #var.monitor_code_scanning_events ? ["code_scanning_alert"] : [],
-    #var.monitor_dependabot_events ? ["dependabot_alert"] : [],
-    #var.monitor_deployment_status_events ? ["deployment_status"] : [],
-    #var.monitor_secret_scanning_events ? ["secret_scanning_alert", "secret_scanning_alert_location"] : []
-  #)
+
+  # Construct webhook filter based on variables
+  webhook_filter_conditions = concat(
+    # Base condition for workflow runs
+    ["workflow_run.conclusion != null"],
+    
+    # Failed runs condition
+    var.monitor_failed_runs_only ? ["workflow_run.conclusion != 'success'"] : [],
+    
+    # Event type conditions
+    [format("(%s)",
+      join(" || ",
+        concat(
+          var.monitor_pr_workflow_runs ? ["workflow_run.event == 'pull_request'"] : [],
+          var.monitor_push_workflow_runs ? ["(workflow_run.event == 'push' && workflow_run.pull_requests[0] != null)"] : []
+        )
+      )
+    )]
+  )
+
+  webhook_filter = join(" && ", local.webhook_filter_conditions)
 
   # GitHub organization handling
   github_organization = trim(split("/", local.repository_list[0])[0], " ")
@@ -49,6 +56,7 @@ provider "github" {
   owner = local.github_organization
 }
 
+# GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
 resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
@@ -57,12 +65,11 @@ resource "kubiya_source" "github_tooling" {
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
-  description  = "AI-powered CI/CD maintenance assistant"
-  model        = "azure/gpt-4o"
+  description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
   instructions = ""
   secrets      = var.kubiya_secrets
   sources = [
-    kubiya_source.github_tooling.name
+    kubiya_source.github_tooling.name,
   ]
 
   # Dynamic integrations based on configuration
@@ -72,35 +79,50 @@ resource "kubiya_agent" "cicd_maintainer" {
   groups = var.kubiya_groups_allowed_groups
 
   environment_variables = {
-    KUBIYA_TOOL_TIMEOUT = "300"
+    KUBIYA_TOOL_TIMEOUT = "500"
   }
   is_debug_mode = var.debug_mode
 }
 
 # Unified webhook configuration
 resource "kubiya_webhook" "source_control_webhook" {
-  filter = var.webhook_filter
+  filter = local.webhook_filter
   
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   prompt      = <<-EOT
-    Your Goal: Analyze GitHub Actions workflow logs. No user approval is required, complete the flow end to end.
-    Workflow ID: {{.event.workflow_run.id}}
-    PR Number: {{.event.workflow_run.pull_requests[0].number}}
-    Repository: {{.event.repository.full_name}}
+Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+Workflow ID: {{.event.workflow_run.id}}
+PR Number: {{.event.workflow_run.pull_requests[0].number}}
+Repository: {{.event.repository.full_name}}
 
-    Instructions:
+Instructions:
 
-    1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
+1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-    2. Analyze logs to identify:
-    Build Failure Analysis: Summarize the key errors or stack traces.
-    Root Cause: Identify the likely cause in the PR.
-    Fix Suggestions: Provide clear, actionable steps to resolve the issue.
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
-    3. Format insights clearly with headers/bullets.
+3. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
-    4. Use github_pr_comment to comment on PR #{{.event.workflow_run.pull_requests[0].number}} with these findings.
+a. Highlights key information first:
+   - What failed
+   - Why it failed 
+   - How to fix it
+
+b. Add a mermaid diagram showing:
+   - Workflow steps
+   - Failed step highlighted
+   - Error location
+
+c. Format using:
+   - Clear markdown headers
+   - Emojis for quick scanning
+   - Error logs in collapsible sections
+   - Footer with run details
+   - Style matters! Make sure the markdown text is very engaging and clear
+
+4. Always use github_pr_comment to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
+
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.pipeline_notification_channel
@@ -133,20 +155,21 @@ output "cicd_maintainer" {
   value = {
     name                         = kubiya_agent.cicd_maintainer.name
     repositories                 = var.repositories
+    organizational_knowledge_multiline = var.organizational_knowledge_multiline
+    debug_mode                   = var.debug_mode
+    monitor_pr_workflow_runs    = var.monitor_pr_workflow_runs
+    monitor_push_workflow_runs  = var.monitor_push_workflow_runs
+    monitor_failed_runs_only    = var.monitor_failed_runs_only
+    pipeline_notification_channel = var.pipeline_notification_channel
   }
 }
 
 # Add additional knowledge base
-# resource "kubiya_knowledge" "pipeline_management" {
-#   name             = "Pipeline Management Guide"
-#   groups           = var.kubiya_groups_allowed_groups
-#   description      = "Knowledge base for pipeline management and optimization"
-#   labels           = ["cicd", "pipeline", "optimization"]
-#   supported_agents = [kubiya_agent.cicd_maintainer.name]
-#   content          = data.http.pipeline_management.response_body
-# }
-
-# Add this data source near the other HTTP data sources at the top of the file
-# data "http" "pipeline_management" {
-#   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/ci_cd_maintainers/terraform/knowledge/pipeline_management.md"
-# }
+resource "kubiya_knowledge" "pipeline_management" {
+  name             = "Organization-specific Knowledge Base for GitHub Actions"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Common issues, best practices, and solutions for GitHub Actions workflows in our organization."
+  labels           = ["github", "actions", "pipeline", "cicd", "optimization"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = var.organizational_knowledge_multiline
+}
