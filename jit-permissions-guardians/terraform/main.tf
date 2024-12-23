@@ -23,7 +23,7 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
 # Configure auxiliary request tools
 resource "kubiya_source" "aws_jit_tools" {
   url      = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
-  dynamic_config = var.config_json
+  dynamic_config = jsonencode("${var.config_json}")
 }
 
 # Create knowledge base
