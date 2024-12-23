@@ -29,6 +29,13 @@ variable "pipeline_notification_channel" {
   default     = ""
 }
 
+# test_secret
+variable test_secret" {
+  description = "test_secret"
+  type        = string
+  default     = ""
+}
+
 # Access Control
 variable "kubiya_groups_allowed_groups" {
   description = "Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps'])."
@@ -47,6 +54,13 @@ variable "kubiya_runner" {
 #   type        = bool
 #   default     = true
 # }
+
+# secret_test
+variable secret_test" {
+  description = "secret_test"
+  type        = string
+  default     = ""
+}
 
 # variable "monitor_push_events" {
 #   description = "Monitor repository push events for direct commits and policy violations. Default: true"
