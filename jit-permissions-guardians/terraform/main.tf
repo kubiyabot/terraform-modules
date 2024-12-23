@@ -18,12 +18,27 @@ data "http" "jit_access_knowledge" {
 # Configure sources
 resource "kubiya_source" "jit_approval_workflow_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access"
+  runner = var.kubiya_runner
+  dynamic_config = <<-EOT
+    {
+      "opal_policy_url": "${var.opal_policy_url}",
+      "opal_policy_branch": "${var.opal_policy_branch}"${var.ssh_enabled ? "," : ""}
+      ${var.ssh_enabled ? "\"git_deploy_key\": \"${var.opal_policy_ssh}\"" : ""}${var.okta_enabled ? "," : ""}
+      ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
+      ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
+      ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
+      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}${var.dd_enabled ? "," : ""}
+      ${var.dd_enabled ? "\"dd_site\": \"${var.dd_site}\"," : ""}
+      ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"" : ""}
+    }
+  EOT
 }
 
 # Configure auxiliary request tools
 resource "kubiya_source" "aws_jit_tools" {
   url      = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
   dynamic_config = var.config_json
+  runner = var.kubiya_runner
 }
 
 # Create knowledge base
