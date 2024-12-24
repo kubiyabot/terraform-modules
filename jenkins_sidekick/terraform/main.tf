@@ -74,7 +74,7 @@ resource "kubiya_source" "jenkins_proxy" {
       long_running_timeout = var.long_running_threshold
     }
   }
-
+  runner = var.kubiya_runner
   depends_on = [null_resource.jenkins_token_secret]
 }
 
@@ -87,8 +87,8 @@ resource "kubiya_agent" "jenkins_proxy" {
   
   sources = [kubiya_source.jenkins_proxy.id]
   secrets = [var.jenkins_token_secret]
-  groups  = var.allowed_groups
-  integrations = var.integrations
+  groups  = var.kubiya_groups_allowed_groups
+  integrations = var.kubiya_integrations
 
   depends_on = [null_resource.jenkins_token_secret]
 }
