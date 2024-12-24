@@ -15,17 +15,19 @@ variable "jenkins_username" {
   default     = "admin"
 }
 
-variable "jenkins_token" {
+variable "jenkins_token_name" {
+  description = "🗝️ Name of the Kubiya secret to store the Jenkins token"
+  type        = string
+  default     = "jenkins-api-token"
+}
+
+variable "jenkins_token_secret" {
   description = "🔑 Jenkins API token for authentication (sensitive)"
   type        = string
   sensitive   = true
 }
 
-variable "jenkins_token_secret" {
-  description = "🗝️ Name of the Kubiya secret to store the Jenkins token"
-  type        = string
-  default     = "jenkins-api-token"
-}
+
 
 # 🎯 Job Configuration
 variable "sync_all_jobs" {
