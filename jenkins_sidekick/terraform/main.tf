@@ -57,8 +57,8 @@ resource "null_resource" "jenkins_token_name" {
 
 # Configure the source for Jenkins jobs proxy
 resource "kubiya_source" "jenkins_proxy" {
-  name = "jenkins-proxy"
   url  = "https://github.com/kubiyabot/community-tools/tree/jenkins-operations/jenkins_ops"
+  runner = var.kubiya_runner
   
   dynamic_config = jsonencode({
   jenkins_url = var.jenkins_url
@@ -77,7 +77,6 @@ resource "kubiya_source" "jenkins_proxy" {
     stream_logs              = tostring(var.stream_logs)
   }
 })
-  runner = var.kubiya_runner
   depends_on = [null_resource.jenkins_token_name]
 }
 
@@ -87,7 +86,6 @@ resource "kubiya_agent" "jenkins_proxy" {
   runner       = var.kubiya_runner
   description  = "Jenkins Jobs Conversational Proxy"
   instructions = "I am a Jenkins jobs execution proxy. I can help you trigger and monitor Jenkins jobs, stream logs, and manage job executions."
-  
   sources = [kubiya_source.jenkins_proxy.id]
   secrets = [var.jenkins_token_name]
   groups  = var.kubiya_groups_allowed_groups
@@ -100,8 +98,8 @@ resource "kubiya_agent" "jenkins_proxy" {
 output "jenkins_proxy_details" {
   value = {
     name         = kubiya_agent.jenkins_proxy.name
-    runner       = kubiya_agent.jenkins_proxy.kubiya_runner
-    integrations = kubiya_agent.jenkins_proxy.supported_agents
+    runner       = var.kubiya_runner
+    integrations = var.kubiya_integrations
     jenkins_url  = var.jenkins_url
   }
   description = "Details about the deployed Jenkins conversational proxy"
