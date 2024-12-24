@@ -88,13 +88,13 @@ variable "kubiya_runner" {
   default     = "kubiya-hosted"
 }
 
-variable "integrations" {
+variable "kubiya_integrations" {
   description = "🔗 Where should your Jenkins proxy be available?"
   type        = list(string)
   default     = ["slack"]
 }
 
-variable "allowed_groups" {
+variable "kubiya_groups_allowed_groups" {
   description = "🔒 Which groups should have access to the Jenkins proxy?"
   type        = list(string)
   default     = ["Admin"]

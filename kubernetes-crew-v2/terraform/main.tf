@@ -28,9 +28,11 @@ data "http" "kubernetes_ops" {
 
 resource "kubiya_source" "diagramming_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/mermaid"
+  runner = var.kubiya_runner
 }
 resource "kubiya_source" "slack_capabilities" {
   url = "https://github.com/kubiyabot/community-tools/tree/slack-tools/slack"
+  runner = var.kubiya_runner
 }
 
 resource "kubiya_agent" "kubernetes_crew" {
@@ -123,7 +125,7 @@ resource "kubiya_source" "k8s_capabilities" {
     namespaces   = var.watch_namespaces
     webhook_url  = kubiya_webhook.source_control_webhook.url
 })
-
+  runner = var.kubiya_runner
   depends_on = [kubiya_webhook.source_control_webhook]
 }
 
