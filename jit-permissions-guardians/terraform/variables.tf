@@ -41,14 +41,14 @@ variable "config_json" {
                 "description": "Grants access to all staging RDS databases",
                 "account_id": "***",
                 "permission_set": "ECRReadOnly",
-                "session_duration": "PT5M"
+                "session_duration": "PT1H"
             },
             "Power User to SandBox": {
                 "name": "Power User Access to SandBox",
                 "description": "Grants poweruser permissions on Sandbox",
                 "account_id": "****",
                 "permission_set": "PowerUserAccess",
-                "session_duration": "PT5M"
+                "session_duration": "PT1H"
             }
         },
         "s3_configs": {
