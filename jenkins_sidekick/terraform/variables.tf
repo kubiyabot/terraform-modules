@@ -15,18 +15,12 @@ variable "jenkins_username" {
   default     = "admin"
 }
 
-variable "jenkins_token_name" {
-  description = "🗝️ Name of the Kubiya secret to store the Jenkins token"
-  type        = string
-  default     = "JENKINS_API_TOKEN"
-}
 
 variable "jenkins_token_secret" {
   description = "🔑 Jenkins API token for authentication (sensitive)"
   type        = string
   sensitive   = true
 }
-
 
 
 # 🎯 Job Configuration
@@ -39,13 +33,13 @@ variable "sync_all_jobs" {
 variable "include_jobs" {
   description = "📋 List of specific Jenkins jobs to include (only used if sync_all_jobs is false)"
   type        = list(string)
-  default     = []
+  default     = ["Kubiya_Job"]
 }
 
 variable "exclude_jobs" {
   description = "🚫 List of Jenkins jobs to exclude (applied even if sync_all_jobs is true)"
   type        = list(string)
-  default     = []
+  default     = ["None"]
 }
 
 # ⚙️ Execution Settings
@@ -87,7 +81,6 @@ variable "name" {
 variable "kubiya_runner" {
   description = "🏃 Infrastructure runner that will execute the Jenkins operations"
   type        = string
-  default     = "kubiya-hosted"
 }
 
 variable "kubiya_integrations" {
