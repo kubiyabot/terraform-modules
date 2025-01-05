@@ -26,11 +26,11 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
       "runner: "${var.kubiya_runner}",
 
       ${var.dd_enabled ? "\"dd_site\": \"${var.dd_site}\"," : ""}
-      ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"" : ""}
+      ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"," : ""}
       ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
       ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
       ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
-      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}
+      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"," : ""}
     }
   EOT
 }
