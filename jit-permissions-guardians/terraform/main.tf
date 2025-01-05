@@ -26,7 +26,7 @@ resource "kubiya_source" "enforcer_source" {
   dynamic_config = jsonencode({
     org    = var.org_name
     runner = var.kubiya_runner
-    policy = data.http.opa_default_policy.request_body
+    policy = data.http.opa_default_policy.response_body
   })
   depends_on = [data.http.opa_default_policy]
 }
