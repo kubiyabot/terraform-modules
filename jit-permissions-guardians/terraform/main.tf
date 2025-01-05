@@ -30,8 +30,7 @@ resource "kubiya_source" "jit_approval_workflow_tooling" {
       ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
       ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
       ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
-      ${var.ssh_enabled ? "\"git_deploy_key\": \"${var.opal_policy_ssh}\"" : ""}${var.okta_enabled ? "," : ""}
-      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}${var.dd_enabled ? "," : ""}
+      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}
     }
   EOT
 }

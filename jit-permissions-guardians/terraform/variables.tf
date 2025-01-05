@@ -77,29 +77,6 @@ variable "config_json" {
   EOT
 }
 
-variable "opal_policy_url" {
-  description = "URL of your policy repository"
-  type        = string
-}
-
-variable "opal_policy_branch" {
-  description = "Branch to use on the policy repository"
-  type        = string
-  default     = "main"
-}
-
-variable "ssh_enabled" {
-  description = "set if the Policy reppsitory is a private one"
-  type        = bool
-  default     = false
-}
-
-variable "opal_policy_ssh" {
-  description = "SSH key for private repository access (optional)"
-  type        = string
-  default     = "ssh_key"
-}
-
 variable "okta_enabled" {
   description = "Enable Okta Integration"
   type        = bool
