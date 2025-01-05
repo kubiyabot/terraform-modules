@@ -26,7 +26,6 @@ resource "kubiya_source" "enforcer_source" {
   dynamic_config = jsonencode({
     opa_default_policy = data.http.opa_default_policy.response_body
   })
-  depends_on = [data.http.opa_default_policy.response_body]
 }
 
 # Configure auxiliary request tools
