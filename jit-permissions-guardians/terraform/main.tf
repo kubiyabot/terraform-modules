@@ -20,10 +20,10 @@ data "http" "jit_access_knowledge" {
 }
 
 # Configure sources
-resource "kubiya_source" "jit_approval_workflow_tooling" {
+resource "kubiya_source" "enforcer_source" {
   url            = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
   runner         = var.kubiya_runner
-  dynamic_config = "{\"org\":\"${var.org_name}\",\"runner\":\"${var.kubiya_runner}\",\"policy\":\"${data.http.opa_default_policy.response_body}\"}"
+  dynamic_config = "{\"org\":\"${var.org_name}\",\"runner\":\"${var.kubiya_runner}\",\"policy\":\"\"}"
 }
 
 # Configure auxiliary request tools
@@ -35,12 +35,12 @@ resource "kubiya_source" "aws_jit_tools" {
 
 # Create knowledge base
 resource "kubiya_knowledge" "jit_access" {
-  name             = "JIT Access Management Guide"
-  groups           = var.kubiya_groups_allowed_groups
-  description      = "Knowledge base for JIT access management and troubleshooting"
-  labels           = ["aws", "jit", "access-management"]
+  name        = "JIT Access Management Guide"
+  groups      = var.kubiya_groups_allowed_groups
+  description = "Knowledge base for JIT access management and troubleshooting"
+  labels = ["aws", "jit", "access-management"]
   supported_agents = [kubiya_agent.jit_guardian.name]
-  content          = data.http.jit_access_knowledge.response_body
+  content     = data.http.jit_access_knowledge.response_body
 }
 
 resource "null_resource" "runner_env_setup" {
@@ -83,7 +83,7 @@ resource "kubiya_webhook" "webhook" {
   destination = var.approvers_slack_channel
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
-  filter = ""
+  filter      = ""
 
 }
 
@@ -94,9 +94,9 @@ resource "kubiya_agent" "jit_guardian" {
   description   = "AI-powered AWS JIT permissions guardian"
   model         = "azure/gpt-4o"
   instructions  = ""
-  sources       = [kubiya_source.jit_approval_workflow_tooling.name, kubiya_source.aws_jit_tools.name]
+  sources = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
   integrations  = var.kubiya_integrations
-  users         = []
+  users = []
   groups        = var.kubiya_groups_allowed_groups
   is_debug_mode = var.debug_mode
 
