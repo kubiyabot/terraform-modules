@@ -11,6 +11,7 @@ variable "kubiya_runner" {
 variable "org_name" {
   description = "org name"
   type        = string
+  default     = "kubiya-ai"
 }
 variable "opa_policy" {
   description = "opa policy"
