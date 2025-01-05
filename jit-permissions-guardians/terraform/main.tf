@@ -21,9 +21,13 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url            = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
-  runner         = var.kubiya_runner
-  dynamic_config = "{\"org\":\"${var.org_name}\",\"runner\":\"${var.kubiya_runner}\",\"policy\":\"${data.http.opa_default_policy.request_body}\"}"
+  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
+  runner = var.kubiya_runner
+  dynamic_config = jsonencode({
+    org    = var.org_name
+    runner = var.kubiya_runner
+    policy = data.http.opa_default_policy.request_body
+  })
   depends_on = [data.http.opa_default_policy]
 }
 
