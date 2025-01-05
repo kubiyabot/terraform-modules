@@ -125,6 +125,24 @@ variable "config_json" {
     }
   EOT
 }
+
+variable "config_json_enforcer" {
+  description = "Enforcer config"
+  type        = string
+  default     = <<-EOT
+    {
+      "org": "${var.org_name}",
+      "policy": "${var.opa_policy}",
+      "runner": "${var.kubiya_runner}"${var.dd_enabled ? "," : ""}
+      ${var.dd_enabled ? "\"dd_site\": \"${var.dd_site}\"," : ""}
+      ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"" : ""}${var.okta_enabled ? "," : ""}
+      ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
+      ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
+      ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
+      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}
+    }
+  EOT
+}
 variable "okta_enabled" {
   description = "Enable Okta Integration"
   type        = bool
