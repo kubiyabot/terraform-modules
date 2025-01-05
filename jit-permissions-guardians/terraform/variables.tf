@@ -15,7 +15,7 @@ variable "org_name" {
 variable "opa_policy" {
   description = "opa policy"
   type        = string
-  default = <<-EOT
+  default     = <<-EOT
 package kubiya.tool_manager
 
 # Default deny all access
@@ -72,6 +72,7 @@ allow {
 variable "approvers_slack_channel" {
   description = "Slack channel for approval requests (must start with #)"
   type        = string
+  default     = "#mevrat-devops-oncall"
   validation {
     condition     = can(regex("^#", var.approvers_slack_channel))
     error_message = "Approvers Slack channel must start with #"
