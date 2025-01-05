@@ -10,6 +10,10 @@ provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
 
+data "http" "opa_default_policy" {
+  url = "https://raw.githubusercontent.com/Kubiya-Barak/Policy/refs/heads/main/kubiya.rego"
+}
+
 # Load knowledge sources
 data "http" "jit_access_knowledge" {
   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/jit-permissions-guardians/terraform/knowledge/jit_access.md"
@@ -19,7 +23,7 @@ data "http" "jit_access_knowledge" {
 resource "kubiya_source" "jit_approval_workflow_tooling" {
   url            = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
   runner         = var.kubiya_runner
-  dynamic_config = var.config_json_enforcer
+  dynamic_config = "{\"org\":\"${var.org_name}\",\"runner\":\"${var.kubiya_runner}\",\"policy\":\"${data.http.opa_default_policy.response_body}\"}"
 }
 
 # Configure auxiliary request tools
