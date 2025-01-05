@@ -8,11 +8,7 @@ variable "kubiya_runner" {
   description = "Runner (cluster) to use for the teammate"
   type        = string
 }
-variable "org_name" {
-  description = "org name"
-  type        = string
-  default     = "kubiya-ai"
-}
+
 variable "opa_policy" {
   description = "opa policy"
   type        = string
@@ -70,25 +66,29 @@ variable "opa_policy" {
     }
   EOT
 }
+
 variable "approvers_slack_channel" {
   description = "Slack channel for approval requests (must start with #)"
   type        = string
   default     = "#mevrat-devops-oncall"
   validation {
-    condition     = can(regex("^#", var.approvers_slack_channel))
+    condition = can(regex("^#", var.approvers_slack_channel))
     error_message = "Approvers Slack channel must start with #"
   }
 }
+
 variable "kubiya_groups_allowed_groups" {
   description = "Kubiya groups who can request access through the teammate"
-  type        = list(string)
-  default     = ["Admin"]
+  type = list(string)
+  default = ["Admin"]
 }
+
 variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable. Supports multiple values. \n For AWS integration, the main account must be provided."
-  type        = list(string)
-  default     = ["slack"]
+  type = list(string)
+  default = ["slack"]
 }
+
 variable "config_json" {
   description = "List of Kubiya integrations to enable. Supports multiple values. For AWS integration, the main account must be provided."
   type        = string
@@ -126,63 +126,54 @@ variable "config_json" {
   EOT
 }
 
-# variable "config_json_enforcer" {
-#   description = "Enforcer config"
-#   type        = string
-#   default     = <<-EOT
-#     {
-#       "org": "${var.org_name}",
-#       "policy": "${var.opa_policy}",
-#       "runner": "${var.kubiya_runner}"${var.dd_enabled ? "," : ""}
-#       ${var.dd_enabled ? "\"dd_site\": \"${var.dd_site}\"," : ""}
-#       ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"" : ""}${var.okta_enabled ? "," : ""}
-#       ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
-#       ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
-#       ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
-#       ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}
-#     }
-#   EOT
-# }
 variable "okta_enabled" {
   description = "Enable Okta Integration"
   type        = bool
   default     = false
 }
+
 variable "okta_base_url" {
   description = "Your Okta domain URL"
   type        = string
   default     = "https://org.okta.com"
 }
+
 variable "okta_client_id" {
   description = "Okta application client ID"
   type        = string
   default     = "Okta application client ID"
 }
+
 variable "okta_private_key" {
   description = "Private key for Okta authentication"
   type        = string
   default     = "Private key for Okta authentication"
 }
+
 variable "dd_enabled" {
   description = "Enable DataDog Integration"
   type        = bool
   default     = false
 }
+
 variable "dd_site" {
   description = "DataDog site"
   type        = string
   default     = "us5.datadoghq.com"
 }
+
 variable "dd_api_key" {
   description = "DataDog API key"
   type        = string
   default     = "DataDog API key"
 }
+
 variable "kubiya_tool_timeout" {
   description = "Timeout for Kubiya tools in seconds, if you have long running tools you may need to increase this"
   type        = number
   default     = 500
 }
+
 variable "debug_mode" {
   description = "Debug mode allows you to see more detailed information and outputs during runtime"
   type        = bool
