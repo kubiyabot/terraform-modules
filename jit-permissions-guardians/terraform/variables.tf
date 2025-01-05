@@ -1,3 +1,13 @@
+variable "org_name" {
+  description = "org name"
+  type        = string
+}
+
+variable "opa_policy" {
+  description = "opa policy"
+  type        = string
+}
+
 variable "teammate_name" {
   description = "Name of the virtual entity that binds the JIT permissions logic"
   type        = string
@@ -75,7 +85,7 @@ variable "opal_policy_url" {
 variable "opal_policy_branch" {
   description = "Branch to use on the policy repository"
   type        = string
-  default = "main"
+  default     = "main"
 }
 
 variable "ssh_enabled" {
@@ -87,7 +97,7 @@ variable "ssh_enabled" {
 variable "opal_policy_ssh" {
   description = "SSH key for private repository access (optional)"
   type        = string
-  default = "ssh_key"
+  default     = "ssh_key"
 }
 
 variable "okta_enabled" {
@@ -99,19 +109,19 @@ variable "okta_enabled" {
 variable "okta_base_url" {
   description = "Your Okta domain URL"
   type        = string
-  default = "https://org.okta.com"
+  default     = "https://org.okta.com"
 }
 
 variable "okta_client_id" {
   description = "Okta application client ID"
   type        = string
-  default = "Okta application client ID"
+  default     = "Okta application client ID"
 }
 
 variable "okta_private_key" {
   description = "Private key for Okta authentication"
   type        = string
-  default = "Private key for Okta authentication"
+  default     = "Private key for Okta authentication"
 }
 
 variable "dd_enabled" {
@@ -123,13 +133,13 @@ variable "dd_enabled" {
 variable "dd_site" {
   description = "DataDog site"
   type        = string
-  default = "us5.datadoghq.com"
+  default     = "us5.datadoghq.com"
 }
 
 variable "dd_api_key" {
   description = "DataDog API key"
   type        = string
-  default = "DataDog API key"
+  default     = "DataDog API key"
 }
 
 variable "kubiya_tool_timeout" {
