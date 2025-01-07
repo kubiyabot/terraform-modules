@@ -24,8 +24,17 @@ resource "kubiya_source" "enforcer_source" {
   url = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
   runner         = var.kubiya_runner
   dynamic_config = jsonencode({
+    dd_enabled          = var.dd_enabled
+    okta_enabled        = var.okta_enabled
     opa_runner_name = var.kubiya_runner
     opa_default_policy = data.http.opa_default_policy.response_body
+    dd_site             = var.dd_enabled ? var.dd_site : ""
+    dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
+    idp_provider        = var.okta_enabled ? "okta" : "kubiya"
+    okta_base_url       = var.okta_enabled ? var.okta_base_url : ""
+    okta_client_id      = var.okta_enabled ? var.okta_client_id : ""
+    okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
+    okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
   })
   depends_on = [data.http.opa_default_policy]
 }
