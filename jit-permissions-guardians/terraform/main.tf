@@ -10,10 +10,6 @@ provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
 
-data "http" "opa_default_policy" {
-  url = "https://raw.githubusercontent.com/Kubiya-Barak/Policy/refs/heads/main/kubiya.rego"
-}
-
 # Load knowledge sources
 data "http" "jit_access_knowledge" {
   url = "https://raw.githubusercontent.com/kubiyabot/terraform-modules/refs/heads/main/jit-permissions-guardians/terraform/knowledge/jit_access.md"
@@ -21,13 +17,13 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
-  runner         = var.kubiya_runner
+  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
+  runner = var.kubiya_runner
   dynamic_config = jsonencode({
+    opa_default_policy = var.opa_policy
     dd_enabled          = var.dd_enabled
     okta_enabled        = var.okta_enabled
-    opa_runner_name = var.kubiya_runner
-    opa_default_policy = data.http.opa_default_policy.response_body
+    opa_runner_name    = var.kubiya_runner
     dd_site             = var.dd_enabled ? var.dd_site : ""
     dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
     idp_provider        = var.okta_enabled ? "okta" : "kubiya"
@@ -36,7 +32,6 @@ resource "kubiya_source" "enforcer_source" {
     okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
     okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
   })
-  depends_on = [data.http.opa_default_policy]
 }
 
 # Configure auxiliary request tools
