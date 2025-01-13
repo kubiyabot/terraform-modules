@@ -9,8 +9,8 @@ variable "kubiya_runner" {
   type        = string
 }
 
-variable "kubiya_groups_opa_group_name" {
-  description = "group name for the OCP OIDC group"
+variable "kubiya_groups_approve_group_name" {
+  description = "group that approve JIT requests"
   type        = string
   default     = "Admin"
 }

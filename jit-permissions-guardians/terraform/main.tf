@@ -17,7 +17,7 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
+  url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     dd_enabled          = var.dd_enabled
@@ -36,45 +36,70 @@ package kubiya.tool_manager
 # Default deny all access
 default allow = false
 
-# List of admin-only functions and tools
-admin_tools = {
-    "approve_access_tool",
-    "describe_access_request_tool",
-    "list_active_access_requests_tool",
-    "request_access_tool",
-    "view_user_requests_tool",
-    "s3_revoke_data_lake_read_4",
-    "jit_session_revoke_database_access_to_staging",
-    "jit_session_revoke_power_user_access_to_sandbox",
-    "jit_session_revoke_database_access_to_staging"
+# Tool Categories
+tool_categories := {
+    "admin": {
+        "approve_access_tool",
+        "describe_access_request_tool",
+        "list_active_access_requests_tool",
+        "request_access_tool",
+        "view_user_requests_tool"
+    },
+    "revoke": {
+        "s3_revoke_data_lake_read_4",
+        "jit_session_revoke_database_access_to_staging",
+        "jit_session_revoke_power_user_access_to_sandbox",
+        "jit_session_revoke_database_access_to_staging"
+    },
+    "restricted": {
+        "s3_grant_data_lake_read_4",
+        "jit_session_grant_database_access_to_staging",
+        "jit_session_grant_power_user_access_to_sandbox"
+    }
 }
 
-restricted_tools = {
-    "s3_grant_data_lake_read_4",
-    "jit_session_grant_database_access_to_staging",
-    "jit_session_grant_power_user_access_to_sandbox",
+# Helper functions
+is_admin(user) {
+    user.groups[_].name == "${var.kubiya_groups_approve_group_name}"
 }
 
-# Allow Administrators to run admin tools
+is_tool_in_category(tool_name, category) {
+    tool_categories[category][tool_name]
+}
+
+# Rules
+# Allow administrators to run admin tools
 allow {
-    group := input.user.groups[_].name
-    group == "${var.opa_group_name}"
-    admin_tools[input.tool.name]
+    is_admin(input.user)
+    is_tool_in_category(input.tool.name, "admin")
 }
 
-# Allow Administrators to run revoke tools (s3_revoke_*, jit_session_revoke_*)
+# Allow administrators to run revoke tools
 allow {
-    group := input.user.groups[_].name
-    group == "${var.opa_group_name}"
-    not restricted_tools[input.tool.name]
+    is_admin(input.user)
+    is_tool_in_category(input.tool.name, "revoke")
 }
 
-# Allow everyone to run everything except:
-# - admin tools
-# - grant/revoke prefixed tools
+# Allow everyone to run non-admin, non-restricted tools
 allow {
-    not admin_tools[input.tool.name]
-    not restricted_tools[input.tool.name]
+    # Check that the tool is not in any restricted category
+    not is_tool_in_category(input.tool.name, "admin")
+    not is_tool_in_category(input.tool.name, "restricted")
+    not is_tool_in_category(input.tool.name, "revoke")
+}
+
+# Metadata for policy documentation
+metadata := {
+    "description": "Access control policy for Kubiya tool manager",
+    "roles": {
+        "admin": "Can access admin tools and revocation tools",
+        "user": "Can access general tools except admin and restricted ones"
+    },
+    "categories": {
+        "admin": "Administrative tools for managing access",
+        "revoke": "Tools for revoking access",
+        "restricted": "Tools with restricted access"
+    }
 }
 EOT
   })
