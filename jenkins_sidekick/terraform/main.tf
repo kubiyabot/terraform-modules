@@ -11,43 +11,10 @@ provider "kubiya" {
 }
 
 # Store Jenkins token in Kubiya secrets via API
-resource "null_resource" "jenkins_token" {
-  triggers = {
-    jenkins_token_name = "JENKINS_API_TOKEN"
-  }
-  
-  # Create or update secret
-  provisioner "local-exec" {
-    command = <<-EOT
-      # Check if secret exists
-      SECRET_EXISTS=$(curl -s -o /dev/null -w "%%{http_code}" \
-        -H "Authorization: UserKey $KUBIYA_API_KEY" \
-        "https://api.kubiya.ai/api/v2/secrets/${self.triggers.jenkins_token_name}")
-
-      if [ "$SECRET_EXISTS" = "200" ]; then
-        # Update existing secret
-        curl -X PUT \
-          -H "Authorization: UserKey $KUBIYA_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "value": "${var.jenkins_token_secret}"
-          }' \
-          "https://api.kubiya.ai/api/v2/secrets/${self.triggers.jenkins_token_name}"
-      else
-        # Create new secret
-        curl -X POST \
-          -H "Authorization: UserKey $KUBIYA_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "name": "${self.triggers.jenkins_token_name}",
-            "value": "${var.jenkins_token_secret}"
-          }' \
-          "https://api.kubiya.ai/api/v2/secrets"
-      fi
-    EOT
-  }
-
-
+resource "kubiya_secret" "jenkins_token" {
+    name     = "JENKINS_API_TOKEN"
+    value    = "${var.jenkins_token_secret}"
+    description = "Jenkins API token for authentication"
 }
 
 # Configure the source for Jenkins jobs proxy
@@ -88,7 +55,7 @@ resource "kubiya_agent" "jenkins_proxy" {
   groups  = var.kubiya_groups_allowed_groups
   integrations = var.kubiya_integrations
 
-  depends_on = [ kubiya_source.jenkins_source ]
+  depends_on = [kubiya_source.jenkins_source]
 }
 
 # Output the teammate jenkins_proxy 
