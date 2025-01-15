@@ -74,7 +74,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   runner       = var.kubiya_runner
   description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
   instructions = ""
-  secrets      = [kubiya_secret.github_token]
+  secrets      = [kubiya_secret.github_token.name]
   sources = [
     kubiya_source.github_tooling.name,
   ]
