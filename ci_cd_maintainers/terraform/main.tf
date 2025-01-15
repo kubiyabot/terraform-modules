@@ -52,7 +52,7 @@ locals {
 
 # Configure providers
 provider "github" {
-  token = var.github_token
+  token = var.github_token_secret
   owner = local.github_organization
 }
 
@@ -61,13 +61,20 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
+//create secret using provider
+resource "kubiya_secret" "github_token" {
+  name = "GH_TOKEN"
+  value = var.github_token_secret
+  description = "GitHub token for the CI/CD Maintainer"
+}
+
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
   instructions = ""
-  secrets      = var.kubiya_secrets
+  secrets      = [kubiya_secret.github_token]
   sources = [
     kubiya_source.github_tooling.name,
   ]
