@@ -21,6 +21,7 @@ resource "kubiya_source" "enforcer_source" {
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     opa_runner_name     = var.kubiya_runner
+    opa_default_policy  = var.admin_group_name
     dd_site             = var.dd_enabled ? var.dd_site : ""
     dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
     idp_provider        = var.okta_enabled ? "okta" : "kubiya"
@@ -28,78 +29,7 @@ resource "kubiya_source" "enforcer_source" {
     okta_client_id      = var.okta_enabled ? var.okta_client_id : ""
     okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
     okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
-    opa_default_policy  = <<-EOT
-package kubiya.tool_manager
 
-# Default deny all access
-default allow = false
-
-# Tool Categories
-tool_categories := {
-    "admin": {
-        "approve_access_tool",
-        "describe_access_request_tool",
-        "list_active_access_requests_tool",
-        "request_access_tool",
-        "view_user_requests_tool"
-    },
-    "revoke": {
-        "s3_revoke_data_lake_read_4",
-        "jit_session_revoke_database_access_to_staging",
-        "jit_session_revoke_power_user_access_to_sandbox",
-        "jit_session_revoke_database_access_to_staging"
-    },
-    "restricted": {
-        "s3_grant_data_lake_read_4",
-        "jit_session_grant_database_access_to_staging",
-        "jit_session_grant_power_user_access_to_sandbox"
-    }
-}
-
-# Helper functions
-is_admin(user) {
-    user.groups[_].name == "${var.admins_group_name}"
-}
-
-is_tool_in_category(tool_name, category) {
-    tool_categories[category][tool_name]
-}
-
-# Rules
-# Allow administrators to run admin tools
-allow {
-    is_admin(input.user)
-    is_tool_in_category(input.tool.name, "admin")
-}
-
-# Allow administrators to run revoke tools
-allow {
-    is_admin(input.user)
-    is_tool_in_category(input.tool.name, "revoke")
-}
-
-# Allow everyone to run non-admin, non-restricted tools
-allow {
-    # Check that the tool is not in any restricted category
-    not is_tool_in_category(input.tool.name, "admin")
-    not is_tool_in_category(input.tool.name, "restricted")
-    not is_tool_in_category(input.tool.name, "revoke")
-}
-
-# Metadata for policy documentation
-metadata := {
-    "description": "Access control policy for Kubiya tool manager",
-    "roles": {
-        "admin": "Can access admin tools and revocation tools",
-        "user": "Can access general tools except admin and restricted ones"
-    },
-    "categories": {
-        "admin": "Administrative tools for managing access",
-        "revoke": "Tools for revoking access",
-        "restricted": "Tools with restricted access"
-    }
-}
-EOT
   })
 }
 
