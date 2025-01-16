@@ -17,12 +17,10 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
+  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
-    dd_enabled          = var.dd_enabled
-    okta_enabled        = var.okta_enabled
-    opa_runner_name    = var.kubiya_runner
+    opa_runner_name     = var.kubiya_runner
     dd_site             = var.dd_enabled ? var.dd_site : ""
     dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
     idp_provider        = var.okta_enabled ? "okta" : "kubiya"
@@ -30,7 +28,7 @@ resource "kubiya_source" "enforcer_source" {
     okta_client_id      = var.okta_enabled ? var.okta_client_id : ""
     okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
     okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
-    opa_default_policy = <<-EOT
+    opa_default_policy  = <<-EOT
 package kubiya.tool_manager
 
 # Default deny all access
@@ -60,7 +58,7 @@ tool_categories := {
 
 # Helper functions
 is_admin(user) {
-    user.groups[_].name == "${var.kubiya_groups_approve_group_name}"
+    user.groups[_].name == "${var.admins_group_name}"
 }
 
 is_tool_in_category(tool_name, category) {
@@ -107,19 +105,19 @@ EOT
 
 # Configure auxiliary request tools
 resource "kubiya_source" "aws_jit_tools" {
-  url            = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
+  url            = "https://github.com/kubiyabot/community-tools/tree/CORE-813-align-s-3-buckets-jit-tools/aws_jit_tools"
   dynamic_config = var.config_json
   runner         = var.kubiya_runner
 }
 
 # Create knowledge base
 resource "kubiya_knowledge" "jit_access" {
-  name        = "JIT Access Management Guide"
-  groups      = var.kubiya_groups_allowed_groups
-  description = "Knowledge base for JIT access management and troubleshooting"
-  labels = ["aws", "jit", "access-management"]
+  name             = "JIT Access Management Guide"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Knowledge base for JIT access management and troubleshooting"
+  labels           = ["aws", "jit", "access-management"]
   supported_agents = [kubiya_agent.jit_guardian.name]
-  content     = data.http.jit_access_knowledge.response_body
+  content          = data.http.jit_access_knowledge.response_body
 }
 
 resource "null_resource" "runner_env_setup" {
@@ -162,7 +160,7 @@ resource "kubiya_webhook" "webhook" {
   destination = var.approvers_slack_channel
   //optional fields
   //Insert a JMESPath expression to filter by, for more information reach out to https://jmespath.org
-  filter      = ""
+  filter = ""
 
 }
 
@@ -173,9 +171,9 @@ resource "kubiya_agent" "jit_guardian" {
   description   = "AI-powered AWS JIT permissions guardian"
   model         = "azure/gpt-4o"
   instructions  = ""
-  sources = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
+  sources       = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
   integrations  = var.kubiya_integrations
-  users = []
+  users         = []
   groups        = var.kubiya_groups_allowed_groups
   is_debug_mode = var.debug_mode
 

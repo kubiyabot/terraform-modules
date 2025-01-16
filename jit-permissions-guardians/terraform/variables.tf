@@ -9,8 +9,8 @@ variable "kubiya_runner" {
   type        = string
 }
 
-variable "kubiya_groups_approve_group_name" {
-  description = "group that approve JIT requests"
+variable "admins_group_name" {
+  description = "admins group name"
   type        = string
   default     = "Admin"
 }
@@ -20,21 +20,21 @@ variable "approvers_slack_channel" {
   type        = string
   default     = "#mevrat-devops-oncall"
   validation {
-    condition = can(regex("^#", var.approvers_slack_channel))
+    condition     = can(regex("^#", var.approvers_slack_channel))
     error_message = "Approvers Slack channel must start with #"
   }
 }
 
 variable "kubiya_groups_allowed_groups" {
   description = "Kubiya groups who can request access through the teammate"
-  type = list(string)
-  default = ["Admin"]
+  type        = list(string)
+  default     = ["Admin"]
 }
 
 variable "kubiya_integrations" {
   description = "List of Kubiya integrations to enable. Supports multiple values. \n For AWS integration, the main account must be provided."
-  type = list(string)
-  default = ["slack"]
+  type        = list(string)
+  default     = ["slack"]
 }
 
 variable "config_json" {
