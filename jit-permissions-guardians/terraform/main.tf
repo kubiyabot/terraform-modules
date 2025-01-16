@@ -21,7 +21,7 @@ resource "kubiya_source" "enforcer_source" {
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     opa_runner_name     = var.kubiya_runner
-    opa_default_policy  = var.admin_group_name
+    opa_default_policy  = var.admins_group_name
     dd_site             = var.dd_enabled ? var.dd_site : ""
     dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
     idp_provider        = var.okta_enabled ? "okta" : "kubiya"
