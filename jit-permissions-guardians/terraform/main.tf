@@ -105,7 +105,7 @@ EOT
 
 # Configure auxiliary request tools
 resource "kubiya_source" "aws_jit_tools" {
-  url            = "https://github.com/kubiyabot/community-tools/tree/CORE-813-align-s-3-buckets-jit-tools/aws_jit_tools"
+  url            = "https://github.com/kubiyabot/community-tools/tree/main/aws_jit_tools"
   dynamic_config = var.config_json
   runner         = var.kubiya_runner
 }
