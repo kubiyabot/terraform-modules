@@ -9,8 +9,8 @@ variable "kubiya_runner" {
   type        = string
 }
 
-variable "admins_group_name" {
-  description = "admins group name"
+variable "approves_group_name" {
+  description = "Approves group name"
   type        = string
   default     = "Admin"
 }
