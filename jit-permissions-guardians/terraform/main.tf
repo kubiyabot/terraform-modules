@@ -17,7 +17,7 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-748-setup-jit-usecase-with-the-enforcer-being-setup-automatically-with-memory-on-cloud-policy-pulled-dynamic-config-refactor-to-opal/just_in_time_access_proactive"
+  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     aws_jit_config      = var.config_json
