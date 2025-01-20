@@ -18,7 +18,7 @@ variable "approves_group_name" {
 variable "approvers_slack_channel" {
   description = "Slack channel for approval requests (must start with #)"
   type        = string
-  default     = "#mevrat-devops-oncall"
+  default     = "#devops-oncall"
   validation {
     condition     = can(regex("^#", var.approvers_slack_channel))
     error_message = "Approvers Slack channel must start with #"
