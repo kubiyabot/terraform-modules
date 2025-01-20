@@ -9,9 +9,16 @@ variable "kubiya_runner" {
   type        = string
 }
 
+variable "approves_group_name" {
+  description = "Approves group name"
+  type        = string
+  default     = "Admin"
+}
+
 variable "approvers_slack_channel" {
   description = "Slack channel for approval requests (must start with #)"
   type        = string
+  default     = "#devops-oncall"
   validation {
     condition     = can(regex("^#", var.approvers_slack_channel))
     error_message = "Approvers Slack channel must start with #"
@@ -67,29 +74,6 @@ variable "config_json" {
   EOT
 }
 
-variable "opal_policy_url" {
-  description = "URL of your policy repository"
-  type        = string
-}
-
-variable "opal_policy_branch" {
-  description = "Branch to use on the policy repository"
-  type        = string
-  default = "main"
-}
-
-variable "ssh_enabled" {
-  description = "set if the Policy reppsitory is a private one"
-  type        = bool
-  default     = false
-}
-
-variable "opal_policy_ssh" {
-  description = "SSH key for private repository access (optional)"
-  type        = string
-  default = "ssh_key"
-}
-
 variable "okta_enabled" {
   description = "Enable Okta Integration"
   type        = bool
@@ -99,19 +83,19 @@ variable "okta_enabled" {
 variable "okta_base_url" {
   description = "Your Okta domain URL"
   type        = string
-  default = "https://org.okta.com"
+  default     = "https://org.okta.com"
 }
 
 variable "okta_client_id" {
   description = "Okta application client ID"
   type        = string
-  default = "Okta application client ID"
+  default     = "Okta application client ID"
 }
 
 variable "okta_private_key" {
   description = "Private key for Okta authentication"
   type        = string
-  default = "Private key for Okta authentication"
+  default     = "Private key for Okta authentication"
 }
 
 variable "dd_enabled" {
@@ -123,13 +107,13 @@ variable "dd_enabled" {
 variable "dd_site" {
   description = "DataDog site"
   type        = string
-  default = "us5.datadoghq.com"
+  default     = "us5.datadoghq.com"
 }
 
 variable "dd_api_key" {
   description = "DataDog API key"
   type        = string
-  default = "DataDog API key"
+  default     = "DataDog API key"
 }
 
 variable "kubiya_tool_timeout" {
@@ -137,7 +121,6 @@ variable "kubiya_tool_timeout" {
   type        = number
   default     = 500
 }
-
 
 variable "debug_mode" {
   description = "Debug mode allows you to see more detailed information and outputs during runtime"

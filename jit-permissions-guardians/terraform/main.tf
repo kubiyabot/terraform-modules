@@ -16,22 +16,22 @@ data "http" "jit_access_knowledge" {
 }
 
 # Configure sources
-resource "kubiya_source" "jit_approval_workflow_tooling" {
-  url            = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
-  runner         = var.kubiya_runner
-  dynamic_config = <<-EOT
-    {
-      "opal_policy_url": "${var.opal_policy_url}",
-      "opal_policy_branch": "${var.opal_policy_branch}"${var.ssh_enabled ? "," : ""}
-      ${var.ssh_enabled ? "\"git_deploy_key\": \"${var.opal_policy_ssh}\"" : ""}${var.okta_enabled ? "," : ""}
-      ${var.okta_enabled ? "\"okta_base_url\": \"${var.okta_base_url}\"," : ""}
-      ${var.okta_enabled ? "\"okta_client_id\": \"${var.okta_client_id}\"," : ""}
-      ${var.okta_enabled ? "\"okta_private_key\": \"${var.okta_private_key}\"," : ""}
-      ${var.okta_enabled ? "\"okta_token_endpoint\": \"${var.okta_base_url}/oauth2/v1/token\"" : ""}${var.dd_enabled ? "," : ""}
-      ${var.dd_enabled ? "\"dd_site\": \"${var.dd_site}\"," : ""}
-      ${var.dd_enabled ? "\"dd_api_key\": \"${var.dd_api_key}\"" : ""}
-    }
-  EOT
+resource "kubiya_source" "enforcer_source" {
+  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
+  runner = var.kubiya_runner
+  dynamic_config = jsonencode({
+    aws_jit_config      = var.config_json
+    opa_runner_name     = var.kubiya_runner
+    approves_group_name = var.approves_group_name
+    dd_site             = var.dd_enabled ? var.dd_site : ""
+    dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
+    idp_provider        = var.okta_enabled ? "okta" : "kubiya"
+    okta_base_url       = var.okta_enabled ? var.okta_base_url : ""
+    okta_client_id      = var.okta_enabled ? var.okta_client_id : ""
+    okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
+    okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
+
+  })
 }
 
 # Configure auxiliary request tools
@@ -102,7 +102,7 @@ resource "kubiya_agent" "jit_guardian" {
   description   = "AI-powered AWS JIT permissions guardian"
   model         = "azure/gpt-4o"
   instructions  = ""
-  sources       = [kubiya_source.jit_approval_workflow_tooling.name, kubiya_source.aws_jit_tools.name]
+  sources       = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
   integrations  = var.kubiya_integrations
   users         = []
   groups        = var.kubiya_groups_allowed_groups
@@ -123,3 +123,4 @@ output "jit_guardian" {
     request_access_webhook_url = kubiya_webhook.webhook.url
   }
 }
+
