@@ -139,7 +139,7 @@ resource "kubiya_knowledge" "kubernetes_troubleshooting" {
 # Health Check Task
 resource "kubiya_scheduled_task" "health_check" {
   count          = var.health_check_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "3m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "7m"))
   repeat         = var.health_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -153,7 +153,7 @@ resource "kubiya_scheduled_task" "health_check" {
 # Security Scan Task
 resource "kubiya_scheduled_task" "security_scan" {
   count          = var.security_scan_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "12m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "14m"))
   repeat         = var.security_scan_repeat
   channel_id     = var.security_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -171,7 +171,7 @@ resource "kubiya_scheduled_task" "security_scan" {
 # Resource Check Task
 resource "kubiya_scheduled_task" "resource_check" {
   count          = var.resource_check_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "5m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "21m"))
   repeat         = var.resource_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -185,7 +185,7 @@ resource "kubiya_scheduled_task" "resource_check" {
 # Backup Verification Task
 resource "kubiya_scheduled_task" "backup_verify" {
   count          = var.backup_verify_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "14m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "28m"))
   repeat         = var.backup_verify_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -199,7 +199,7 @@ resource "kubiya_scheduled_task" "backup_verify" {
 # Compliance Audit Task
 resource "kubiya_scheduled_task" "compliance_audit" {
   count          = var.compliance_audit_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "7m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "35m"))
   repeat         = var.compliance_audit_repeat
   channel_id     = var.compliance_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -217,7 +217,7 @@ resource "kubiya_scheduled_task" "compliance_audit" {
 # Network Check Task
 resource "kubiya_scheduled_task" "network_check" {
   count          = var.network_check_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "16m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "42m"))
   repeat         = var.network_check_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
@@ -231,7 +231,7 @@ resource "kubiya_scheduled_task" "network_check" {
 # Scaling Analysis Task
 resource "kubiya_scheduled_task" "scaling_analysis" {
   count          = var.scaling_analysis_enabled ? 1 : 0
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "10m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "49m"))
   repeat         = var.scaling_analysis_repeat
   channel_id     = var.notification_channel
   agent          = kubiya_agent.kubernetes_crew.name
