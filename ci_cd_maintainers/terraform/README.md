@@ -82,7 +82,6 @@ Below are the key variables used to configure the CI/CD Maintainers Crew:
 | `kubiya_runner` | Runner to use for the teammate | `string` | |
 | `repositories` | Comma-separated list of repositories to monitor | `string` | |
 | `pipeline_notification_channel` | Channel for pipeline alerts | `string` | `""` |
-| `github_token` | GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories. Generate at: https://github.com/settings/tokens | `string` | `""` |
 | `webhook_filter` | JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax. | `string` | `workflow_run.conclusion != null && workflow_run.conclusion != 'success'` |
 | `kubiya_groups_allowed_groups` | Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps']). | `list(string)` | `['Admin'] ` |
 
