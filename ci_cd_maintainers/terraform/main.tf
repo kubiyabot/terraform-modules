@@ -22,8 +22,6 @@ locals {
   # Repository list handling
   repository_list = compact(split(",", var.repositories))
 
-  gh_token = sensitive(env("GH_TOKEN"))
-
   # Event configurations
   github_events = ["check_run", "workflow_run"]
 
@@ -62,10 +60,17 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
+# Authentication Tokens for webhooks configuration
+variable "GH_TOKEN" {
+  type        = string
+  sensitive = true
+}
+
+
 //create secret using provider
 resource "kubiya_secret" "github_token" {
   name = "GH_TOKEN"
-  value = local.gh_token
+  value = var.GH_TOKEN
   description = "GitHub token for the CI/CD Maintainer"
 }
 
