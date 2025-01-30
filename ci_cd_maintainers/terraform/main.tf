@@ -52,7 +52,6 @@ locals {
 
 # Configure providers
 provider "github" {
-  token = var.github_token_secret
   owner = local.github_organization
 }
 
@@ -64,7 +63,7 @@ resource "kubiya_source" "github_tooling" {
 //create secret using provider
 resource "kubiya_secret" "github_token" {
   name = "GH_TOKEN"
-  value = var.github_token_secret
+  value = var.GH_TOKEN
   description = "GitHub token for the CI/CD Maintainer"
 }
 

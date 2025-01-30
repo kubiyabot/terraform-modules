@@ -10,13 +10,6 @@ variable "repositories" {
   type        = string
 }
 
-# Authentication Tokens for webhooks configuration
-variable "github_token_secret" {
-  description = "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub webhooks configuration for the provided repositories. Generate at: https://github.com/settings/tokens"
-  type        = string
-  sensitive = true
-}
-
 # Slack Configuration
 variable "pipeline_notification_channel" {
   description = "The Slack channel to send pipeline notifications to and engage with the CI/CD maintainer. Must be a valid Slack channel name (e.g., '#general' or '#engineering') and the Kubiya Slack App must be invited to the channel."
