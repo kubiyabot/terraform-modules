@@ -60,13 +60,6 @@ resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
-# Authentication Tokens for webhooks configuration
-variable "GH_TOKEN" {
-  type        = string
-  sensitive = true
-}
-
-
 //create secret using provider
 resource "kubiya_secret" "github_token" {
   name = "GH_TOKEN"
