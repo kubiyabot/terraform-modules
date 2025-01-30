@@ -50,6 +50,12 @@ locals {
   github_organization = trim(split("/", local.repository_list[0])[0], " ")
 }
 
+
+variable "GH_TOKEN" {
+  type        = string
+  sensitive = true
+}
+
 # Configure providers
 provider "github" {
   owner = local.github_organization
