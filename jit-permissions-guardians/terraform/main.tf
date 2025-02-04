@@ -20,8 +20,10 @@ resource "kubiya_source" "enforcer_source" {
   url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
+    opa_policy         = var.opa_policy
     aws_jit_config      = var.config_json
     opa_runner_name     = var.kubiya_runner
+    opa_policy_enabled = var.opa_policy_enabled
     approves_group_name = var.approves_group_name
     dd_site             = var.dd_enabled ? var.dd_site : ""
     dd_api_key          = var.dd_enabled ? var.dd_api_key : ""
@@ -43,12 +45,12 @@ resource "kubiya_source" "aws_jit_tools" {
 
 # Create knowledge base
 resource "kubiya_knowledge" "jit_access" {
-  name             = "JIT Access Management Guide"
-  groups           = var.kubiya_groups_allowed_groups
-  description      = "Knowledge base for JIT access management and troubleshooting"
-  labels           = ["aws", "jit", "access-management"]
+  name        = "JIT Access Management Guide"
+  groups      = var.kubiya_groups_allowed_groups
+  description = "Knowledge base for JIT access management and troubleshooting"
+  labels = ["aws", "jit", "access-management"]
   supported_agents = [kubiya_agent.jit_guardian.name]
-  content          = data.http.jit_access_knowledge.response_body
+  content     = data.http.jit_access_knowledge.response_body
 }
 
 resource "null_resource" "runner_env_setup" {
@@ -102,9 +104,9 @@ resource "kubiya_agent" "jit_guardian" {
   description   = "AI-powered AWS JIT permissions guardian"
   model         = "azure/gpt-4o"
   instructions  = ""
-  sources       = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
+  sources = [kubiya_source.enforcer_source.name, kubiya_source.aws_jit_tools.name]
   integrations  = var.kubiya_integrations
-  users         = []
+  users = []
   groups        = var.kubiya_groups_allowed_groups
   is_debug_mode = var.debug_mode
 

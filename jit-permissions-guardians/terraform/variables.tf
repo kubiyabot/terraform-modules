@@ -9,6 +9,18 @@ variable "kubiya_runner" {
   type        = string
 }
 
+variable "opa_policy" {
+  description = "OPA policy to enforce"
+  type        = string
+  default     = ""
+}
+
+variable "opa_policy_enabled" {
+  description = "Enable OPA policy enforcement"
+  type        = bool
+  default     = false
+}
+
 variable "approves_group_name" {
   description = "Approves group name"
   type        = string
