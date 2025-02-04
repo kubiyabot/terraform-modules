@@ -50,9 +50,14 @@ locals {
   github_organization = trim(split("/", local.repository_list[0])[0], " ")
 }
 
+
+variable "GITHUB_TOKEN" {
+  type        = string
+  sensitive = true
+}
+
 # Configure providers
 provider "github" {
-  token = var.github_token_secret
   owner = local.github_organization
 }
 
@@ -63,8 +68,8 @@ resource "kubiya_source" "github_tooling" {
 
 //create secret using provider
 resource "kubiya_secret" "github_token" {
-  name = "GH_TOKEN"
-  value = var.github_token_secret
+  name = "GITHUB_TOKEN"
+  value = var.GITHUB_TOKEN
   description = "GitHub token for the CI/CD Maintainer"
 }
 
