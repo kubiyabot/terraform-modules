@@ -51,7 +51,7 @@ locals {
 }
 
 
-variable "GH_TOKEN" {
+variable "GITHUB_TOKEN" {
   type        = string
   sensitive = true
 }
@@ -68,8 +68,8 @@ resource "kubiya_source" "github_tooling" {
 
 //create secret using provider
 resource "kubiya_secret" "github_token" {
-  name = "GH_TOKEN"
-  value = var.GH_TOKEN
+  name = "GITHUB_TOKEN"
+  value = var.GITHUB_TOKEN
   description = "GitHub token for the CI/CD Maintainer"
 }
 
