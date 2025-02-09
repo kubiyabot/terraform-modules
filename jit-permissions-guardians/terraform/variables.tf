@@ -74,22 +74,6 @@ variable "config_json" {
   EOT
 }
 
-variable "opa_policy" {
-  description = "Custom OPA Policy"
-  type = string
-  default = <<-EOT
-package kubiya.tool_manager
-
-# Default deny all access
-default allow = false
-  EOT
-}
-variable "opa_enabled" {
-  description = "Enable custom OPA Policy"
-  type = bool
-  default = false
-}
-
 variable "okta_enabled" {
   description = "Enable Okta Integration"
   type        = bool
@@ -130,6 +114,23 @@ variable "dd_api_key" {
   description = "DataDog API key"
   type        = string
   default     = "DataDog API key"
+}
+
+variable "opa_enabled" {
+  description = "Enable custom OPA Policy"
+  type = bool
+  default = false
+}
+
+variable "opa_policy" {
+  description = "Custom OPA Policy"
+  type = string
+  default = <<-EOT
+package kubiya.tool_manager
+
+# Default deny all access
+default allow = false
+  EOT
 }
 
 variable "kubiya_tool_timeout" {
