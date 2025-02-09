@@ -17,7 +17,7 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-860-fix-issue-with-enforcer-install/just_in_time_access_proactive"
+  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     opa_policy          = var.opa_policy
