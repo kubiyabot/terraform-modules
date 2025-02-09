@@ -60,14 +60,17 @@ variable "config_json" {
         },
         "s3_configs": {
             "Data Lake Read Access": {
-                "name": "data_lake_read 4",
-                "description": "Grants read-only access to data lake buckets",
-                "buckets": [
-                    "company-data-lake-prod",
-                    "company-data-lake-staging"
-                ],
-                "policy_template": "S3ReadOnlyPolicy",
-                "session_duration": "PT1H"
+              "name": "data_lake_read",
+              "description": "Grants read-only access to data lake buckets",
+              "buckets": [
+                "bucket-number-one",
+                "bucket-number-two"
+              ],
+              "session_duration": "PT1H",
+              "managed_policies": [
+                "AmazonS3FullAccess",
+                "AmazonS3ReadOnlyAccess"
+              ]
             }
         }
     }
