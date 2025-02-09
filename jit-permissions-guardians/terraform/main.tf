@@ -17,10 +17,12 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
+  url    = "https://github.com/kubiyabot/community-tools/tree/CORE-860-fix-issue-with-enforcer-install/just_in_time_access_proactive"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
+    opa_policy          = var.opa_policy
     aws_jit_config      = var.config_json
+    opa_policy_enabled  = var.opa_enabled
     opa_runner_name     = var.kubiya_runner
     approves_group_name = var.approves_group_name
     dd_site             = var.dd_enabled ? var.dd_site : ""
@@ -30,7 +32,6 @@ resource "kubiya_source" "enforcer_source" {
     okta_client_id      = var.okta_enabled ? var.okta_client_id : ""
     okta_private_key    = var.okta_enabled ? var.okta_private_key : ""
     okta_token_endpoint = var.okta_enabled ? "${var.okta_base_url}/oauth2/v1/token" : ""
-
   })
 }
 
