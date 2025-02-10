@@ -64,11 +64,12 @@ provider "github" {
 # GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
 resource "kubiya_source" "github_tooling" {
   url   = "https://github.com/kubiyabot/community-tools/tree/main/github"
+  runner = var.kubiya_runner
 }
 
 //create secret using provider
 resource "kubiya_secret" "github_token" {
-  name = "GITHUB_TOKEN"
+  name = "GH_TOKEN"
   value = var.GITHUB_TOKEN
   description = "GitHub token for the CI/CD Maintainer"
 }
