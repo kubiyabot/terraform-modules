@@ -1,22 +1,18 @@
-resource "kubiya_teammate" "teammate" {
-  email     = var.teammate_email
-  role      = var.teammate_role
-  first_name = var.teammate_first_name
-  last_name  = var.teammate_last_name
+resource "kubiya_agent" "agent" {
+  name         = var.agent_name
+  description  = var.agent_description
+  runner       = var.agent_runner
+  instructions = var.agent_instructions
 }
 
 resource "kubiya_source" "source" {
-  name        = var.source_name
-  type        = var.source_type
-  description = var.source_description
-  config      = var.source_config
+  url = var.source_url
 }
 
 resource "kubiya_webhook" "webhook" {
   name        = var.webhook_name
-  description = var.webhook_description
-  url         = var.webhook_url
-  events      = var.webhook_events
-  secret      = var.webhook_secret
-  enabled     = var.webhook_enabled
+  source      = kubiya_source.source.id
+  agent       = kubiya_agent.agent.id
+  destination = var.webhook_destination
+  prompt      = var.webhook_prompt
 } 

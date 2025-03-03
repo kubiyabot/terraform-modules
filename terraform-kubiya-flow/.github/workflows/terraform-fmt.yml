@@ -1,4 +1,4 @@
-name: 'Terraform Format and Validate'
+name: 'Terraform Format, Validate, and Lint'
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform Format and Validate'
+    name: 'Terraform Format, Validate, and Lint'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,6 +22,10 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: "1.0.0"
+
+    - name: Install tflint
+      run: |
+        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
     - name: Terraform Format
       id: fmt
@@ -38,10 +42,16 @@ jobs:
       run: terraform validate
       continue-on-error: true
 
+    - name: TFLint
+      id: tflint
+      run: tflint --format=compact
+      continue-on-error: true
+
     - name: Terraform Check
-      if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure'
+      if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.tflint.outcome == 'failure'
       run: |
         echo "Terraform format check failed. Please run 'terraform fmt' to fix formatting issues."
         echo "Terraform init failed. Please check the initialization errors."
         echo "Terraform validate failed. Please check the validation errors."
+        echo "TFLint found issues. Please check the linting errors."
         exit 1 

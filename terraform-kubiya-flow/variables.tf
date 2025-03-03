@@ -19,8 +19,34 @@ variable "teammate_last_name" {
   type        = string
 }
 
+variable "agent_name" {
+  description = "Name of the Kubiya agent"
+  type        = string
+}
+
+variable "agent_description" {
+  description = "Description of the Kubiya agent"
+  type        = string
+  default     = ""
+}
+
+variable "agent_runner" {
+  description = "Runner for the Kubiya agent"
+  type        = string
+}
+
+variable "agent_instructions" {
+  description = "Instructions for the Kubiya agent"
+  type        = string
+}
+
 variable "source_name" {
   description = "Name of the Kubiya source"
+  type        = string
+}
+
+variable "source_url" {
+  description = "URL for the Kubiya source"
   type        = string
 }
 
@@ -42,6 +68,16 @@ variable "source_config" {
 
 variable "webhook_name" {
   description = "Name of the Kubiya webhook"
+  type        = string
+}
+
+variable "webhook_destination" {
+  description = "Destination for the webhook"
+  type        = string
+}
+
+variable "webhook_prompt" {
+  description = "Prompt for the webhook"
   type        = string
 }
 

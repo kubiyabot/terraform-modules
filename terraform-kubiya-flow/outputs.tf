@@ -1,6 +1,6 @@
-output "teammate_id" {
-  description = "ID of the created Kubiya teammate"
-  value       = kubiya_teammate.teammate.id
+output "agent_id" {
+  description = "ID of the created Kubiya agent"
+  value       = kubiya_agent.agent.id
 }
 
 output "source_id" {
