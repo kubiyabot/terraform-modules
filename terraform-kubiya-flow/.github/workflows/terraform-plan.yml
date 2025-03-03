@@ -1,0 +1,30 @@
+name: 'Terraform Plan'
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform-kubiya-flow/example
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: "1.0.0"
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Plan
+      run: terraform plan -no-color
+      env:
+        KUBIYA_API_KEY: ${{ secrets.KUBIYA_API_KEY }} 

@@ -1,0 +1,47 @@
+name: 'Terraform Format and Validate'
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    name: 'Terraform Format and Validate'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform-kubiya-flow
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: "1.0.0"
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      continue-on-error: true
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate
+      continue-on-error: true
+
+    - name: Terraform Check
+      if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure'
+      run: |
+        echo "Terraform format check failed. Please run 'terraform fmt' to fix formatting issues."
+        echo "Terraform init failed. Please check the initialization errors."
+        echo "Terraform validate failed. Please check the validation errors."
+        exit 1 

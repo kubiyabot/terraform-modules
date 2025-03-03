@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "terraform"
+    directory: "/terraform-kubiya-flow"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "terraform" 

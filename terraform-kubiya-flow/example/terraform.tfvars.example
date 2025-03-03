@@ -1,0 +1,24 @@
+kubiya_api_key = "your-api-key"
+
+# Teammate configuration
+teammate_email     = "user@example.com"
+teammate_role      = "user"
+teammate_first_name = "John"
+teammate_last_name  = "Doe"
+
+# Source configuration
+source_name        = "github-source"
+source_type        = "github"
+source_description = "GitHub source for my project"
+source_config      = {
+  repository = "owner/repo"
+  branch     = "main"
+}
+
+# Webhook configuration
+webhook_name        = "notification-webhook"
+webhook_description = "Webhook for notifications"
+webhook_url         = "https://example.com/webhook"
+webhook_events      = ["event1", "event2"]
+webhook_secret      = "your-secret"
+webhook_enabled     = true 
