@@ -29,26 +29,34 @@ jobs:
 
     - name: Terraform Format
       id: fmt
-      run: terraform fmt -check
+      run: |
+        terraform fmt -check
+        echo "fmt_status=$?" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: Terraform Init
       id: init
-      run: terraform init
+      run: |
+        terraform init
+        echo "init_status=$?" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: Terraform Validate
       id: validate
-      run: terraform validate
+      run: |
+        terraform validate
+        echo "validate_status=$?" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: TFLint
       id: tflint
-      run: tflint --format=compact
+      run: |
+        tflint --format=compact
+        echo "tflint_status=$?" >> $GITHUB_ENV
       continue-on-error: true
 
     - name: Terraform Check
-      if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.tflint.outcome == 'failure'
+      if: env.fmt_status == '1' || env.init_status == '1' || env.validate_status == '1' || env.tflint_status == '1'
       run: |
         echo "Terraform format check failed. Please run 'terraform fmt' to fix formatting issues."
         echo "Terraform init failed. Please check the initialization errors."
