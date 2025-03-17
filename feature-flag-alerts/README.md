@@ -1,148 +1,108 @@
-# CI/CD Maintainer V2
+# Feature Flag Alert Analysis Module
 
-An AI-powered teammate that helps diagnose and fix GitHub Actions workflow failures. The maintainer monitors your repositories for failed workflows, analyzes the failures, and provides detailed solutions directly in your pull requests.
+This Terraform module creates an AI-powered assistant that automatically investigates the relationship between Datadog alerts and LaunchDarkly feature flag changes. It helps teams quickly identify if recent feature flag changes might be related to deployment issues or error spikes.
 
-## 🎯 Overview
+## Overview
 
-The CI/CD Maintainer is designed to:
-- Monitor GitHub Actions workflows for failures
-- Analyze logs and error patterns
-- Provide detailed root cause analysis
-- Suggest fixes with code examples
-- Comment solutions directly on PRs
+The module creates:
+- A Kubiya AI agent specialized in analyzing alerts and feature flags
+- Webhook endpoints for Datadog alerts
+- Necessary integrations with Datadog, LaunchDarkly, and Slack
+- Secure storage for API keys and sensitive data
 
-## 🏗️ Architecture
+## Use Cases
 
-```mermaid
-flowchart TB
-    %% Nodes with icons
-    TF["🔧 Terraform Module"]
-    VARS["📝 variables.tf"]
-    MAIN["⚙️ main.tf"]
-    FORM["✨ Kubiya UI Form"]
-    CONFIG["🎯 User Configuration"]
-    PLAN["👀 Review Changes"]
-    DEPLOY["🚀 Deploy Resources"]
-    
-    %% Kubiya Resources
-    TEAMMATE["🤖 CI/CD Maintainer"]
-    WEBHOOK["📡 Event Listener"]
-    KB["📚 Knowledge Base"]
-    
-    %% Tool Sources
-    TOOLS["⚡ Tool Sources"]
-    GH_TOOLS["🛠️ GitHub Tools"]
-    DIAG_TOOLS["📊 Diagram Tools"]
-    SECRETS["🔐 Secrets Store"]
-    
-    %% GitHub Resources
-    GHWH["🔗 GitHub Webhooks"]
-    PR["❌ Failed Workflow"]
-    SOLUTION["💬 Analysis & Fix"]
-    GH_API["🐙 GitHub API"]
+### 1. Deployment Failure Analysis
+When a deployment issue occurs, the system:
+- Receives the Datadog alert via webhook
+- Automatically queries LaunchDarkly for recent feature flag changes
+- Analyzes potential correlations
+- Provides actionable insights including:
+  - Recently modified feature flags
+  - Change timestamps
+  - Who made the changes
+  - Potential relationship to the deployment failure
 
-    %% Configuration Flow
-    subgraph "1️⃣ Setup Phase"
-        TF --> |"defines"| VARS
-        TF --> |"contains"| MAIN
-        VARS --> |"generates"| FORM
-        FORM --> |"fill"| CONFIG
-        CONFIG --> |"review"| PLAN
-        PLAN --> |"apply"| DEPLOY
-    end
+### 2. Error Spike Investigation
+When an error spike is detected, the system:
+- Receives the Datadog error alert
+- Compares current error metrics with historical data
+- Identifies recent feature flag changes
+- Analyzes correlations between error patterns and flag modifications
+- Provides comprehensive analysis including:
+  - Error rate comparisons
+  - Feature flag changes
+  - Temporal correlation analysis
+  - Potential mitigation strategies
 
-    %% Resource Creation
-    subgraph "2️⃣ Resources"
-        DEPLOY --> |"creates"| TEAMMATE
-        DEPLOY --> |"creates"| WEBHOOK
-        DEPLOY --> |"creates"| KB
-        DEPLOY --> |"configures"| GHWH
-        DEPLOY --> |"provisions"| SECRETS
-    end
-
-    %% Tool Sources
-    subgraph "3️⃣ Tools & Actions"
-        TOOLS --> GH_TOOLS
-        TOOLS --> DIAG_TOOLS
-        TEAMMATE --> |"uses"| TOOLS
-        SECRETS --> |"authenticates"| GH_TOOLS
-        GH_TOOLS --> |"interacts"| GH_API
-    end
-
-    %% Event Flow
-    subgraph "4️⃣ Execution"
-        PR --> |"triggers"| GHWH
-        GHWH --> |"notifies"| WEBHOOK
-        WEBHOOK --> |"activates"| TEAMMATE
-        KB --> |"assists"| TEAMMATE
-        TEAMMATE --> |"posts"| SOLUTION
-    end
-
-    %% Styling
-    classDef setup fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:black
-    classDef resource fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:black
-    classDef tools fill:#6a1b9a,stroke:#4a148c,stroke-width:2px,color:white
-    classDef event fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:black
-    
-    class TF,VARS,MAIN,FORM,CONFIG,PLAN setup
-    class DEPLOY,TEAMMATE,WEBHOOK,KB,GHWH,SECRETS resource
-    class TOOLS,GH_TOOLS,DIAG_TOOLS,GH_API tools
-    class PR,SOLUTION event
-```
-
-## 🚀 Quick Start
+## Setup Instructions
 
 ### Prerequisites
-- Kubiya Platform account
-- GitHub repositories with Actions workflows
-- GitHub Personal Access Token with required permissions
+- Datadog account with API and Application keys
+- LaunchDarkly account with API key
+- Slack workspace with Kubiya app installed
+- Terraform >= 1.0
 
-### Setup Steps
-1. **Access Kubiya Platform**
-   - Navigate to Use Cases
-   - Select "CI/CD Maintainer V2"
+### Installation
 
-2. **Configure Settings**
-   - Provide GitHub token
-   - Select repositories to monitor
-   - Configure Slack notifications
-   - Set event monitoring preferences
+1. Include the module in your Terraform configuration:
 
-3. **Review & Deploy**
-   - Review the generated configuration
-   - Apply to create resources
-   - Verify webhook setup
+```hcl
+module "feature_flag_alerts" {
+  source = "path/to/feature-flag-alerts"
+  
+  teammate_name             = "alerts-watcher"
+  alert_notification_channel = "#alerts"
+  kubiya_runner            = "your-runner"
+  
+  DD_API_KEY  = var.datadog_api_key
+  DD_APP_KEY  = var.datadog_app_key
+  DD_SITE     = "datadoghq.com"
+  LD_API_KEY  = var.launchdarkly_api_key
+  PROJECT_KEY = var.launchdarkly_project_key
+}
+```
 
-## 🛠️ Features
+2. Initialize and apply the Terraform configuration:
+```bash
+terraform init
+terraform apply
+```
 
-### Automated Analysis
-- Real-time workflow failure detection
-- Log analysis and pattern recognition
-- Root cause identification
-- Performance bottleneck detection
+### Integrating with Existing Datadog Monitors
 
-### Smart Solutions
-- Contextual fix recommendations
-- Code examples and snippets
-- Best practice suggestions
-- Security improvement tips
+This module intentionally does not create new Datadog monitors, instead providing webhook endpoints to integrate with your existing monitoring setup. To connect your monitors:
 
-### Integration & Tools
-- GitHub Actions integration
-- Slack notifications
-- Custom organizational knowledge base
-- Secure secrets management
+1. Get the webhook URLs from the Terraform outputs:
+```bash
+terraform output webhook_urls
+```
 
-## 📚 Documentation
+2. Add the webhook URL to your existing Datadog monitor notifications using the `@webhook` notation:
+```
+@webhook-{deployment_alert_webhook_url}  # For deployment monitors
+@webhook-{error_spike_webhook_url}       # For error rate monitors
+```
 
-For detailed setup instructions and configuration options:
-- [Setup Guide](https://docs.kubiya.ai/usecases/cicd-maintainer/setup)
-- [Configuration Reference](https://docs.kubiya.ai/usecases/cicd-maintainer/config)
-- [Tool Documentation](https://docs.kubiya.ai/usecases/cicd-maintainer/tools)
+## Configuration Options
 
-## 🤝 Support
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `teammate_name` | Name for the AI assistant | No | "alerts-watcher" |
+| `alert_notification_channel` | Slack channel for notifications | No | "#alerts" |
+| `kubiya_runner` | Kubiya runner to use | Yes | - |
+| `DD_API_KEY` | Datadog API Key | Yes | - |
+| `DD_APP_KEY` | Datadog Application Key | Yes | - |
+| `DD_SITE` | Datadog site (e.g., datadoghq.com) | Yes | - |
+| `LD_API_KEY` | LaunchDarkly API Key | Yes | - |
+| `PROJECT_KEY` | LaunchDarkly Project Key | Yes | - |
 
-Need help? Contact us:
-- [Kubiya Support Portal](https://support.kubiya.ai)
-- [Community Discord](https://discord.gg/kubiya)
-- Email: support@kubiya.ai
+## Security Considerations
+
+- All sensitive keys are stored securely using Kubiya's secret management
+- Communication between services uses encrypted channels
+- Access to the AI assistant can be restricted using the `kubiya_groups_allowed_groups` variable
+
+## Support
+
+For issues, questions, or contributions, please contact [support contact information].
