@@ -1,0 +1,19 @@
+name: "Alerts Watcher"
+icons:
+  - "https://cdn-icons-png.flaticon.com/512/4946/4946642.png"
+description: "" 
+env:
+  - name: PROJECT_KEY
+    description: "LaunchDarkly Project Key"
+  - name: DD_SITE 
+    description: "Datadog Site (e.g. datadoghq.com)"
+secrets:
+  - name: Datadog API Key
+    description: "Datadog API Key for monitoring and alerts"
+    to_env: DD_API_KEY
+  - name: Datadog App Key
+    description: "Datadog Application Key for monitoring and alerts"
+    to_env: DD_APP_KEY
+  - name: LaunchDarkly API Key
+    description: "LaunchDarkly API Key for feature flag management"
+    to_env: LD_API_KEY
