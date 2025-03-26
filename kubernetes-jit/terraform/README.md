@@ -1,35 +1,39 @@
-# 🔐 AWS JIT Permissions Crew
+# 🔐 Kubernetes JIT Permissions Crew
 
-AWS JIT (Just-In-Time) Permissions Crew is your intelligent companion within the Kubiya platform, designed to revolutionize AWS access management. It provides AI-driven, secure, and efficient temporary access to AWS resources, ensuring least-privilege access while maintaining operational efficiency.
+Kubernetes JIT (Just-In-Time) Permissions Crew is your intelligent companion within the Kubiya platform, designed to revolutionize Kubernetes access management. It provides AI-driven, secure, and efficient temporary access to Kubernetes resources, ensuring least-privilege access while maintaining operational efficiency.
 
-![Guardians Kubi v2 (1)](https://github.com/user-attachments/assets/64b385ab-6ded-45be-b052-d1d2a7cad276)
 
-**🎯 Transform your AWS access management with AI-powered, temporary permissions that expire automatically! Keep your AWS environment secure while maintaining developer productivity.**
+**🎯 Transform your Kubernetes access management with AI-powered, temporary permissions that expire automatically! Keep your K8s clusters secure while maintaining developer productivity.**
 
-> **📢 Important Note**: This AWS JIT solution is part of Kubiya's comprehensive permissions management suite. Kubiya provides dynamic Just-In-Time access solutions across the entire DevOps and platform engineering toolchain. Our permissions management suite offers out-of-the-box solutions for various platforms and tools. Explore our full range of use cases:
+> **📢 Important Note**: This Kubernetes JIT solution is part of Kubiya's comprehensive permissions management suite. Kubiya provides dynamic Just-In-Time access solutions across the entire DevOps and platform engineering toolchain. Our permissions management suite offers out-of-the-box solutions for various platforms and tools. Explore our full range of use cases:
 > - Browse our [official Terraform repository](https://github.com/kubiyabot/terraform-modules)
 > - Visit the Use Cases interface in the Kubiya web UI for a visual catalog of solutions that can be easily installed and configured, with or without Terraform
 
 ## 📑 Table of Contents
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [User Flows](#-user-flows)
-- [Configuration](#️-configuration)
-- [Getting Started](#-getting-started)
-- [Example Scenarios](#-example-scenarios)
-- [Key Benefits](#-key-benefits)
-- [Integration Examples](#-integration-examples)
-- [References](#-references)
+- [🔐 Kubernetes JIT Permissions Crew](#-kubernetes-jit-permissions-crew)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [🌟 Features](#-features)
+  - [🏗 Architecture](#-architecture)
+  - [🔄 User Flows](#-user-flows)
+    - [1. 🎫 Enhanced Access Request \& Approval Flow](#1--enhanced-access-request--approval-flow)
+    - [2. 🔐 Advanced Policy Lifecycle Management](#2--advanced-policy-lifecycle-management)
+  - [🛠️ Configuration](#️-configuration)
+  - [🚀 Getting Started](#-getting-started)
+  - [🎭 Example Scenarios](#-example-scenarios)
+    - [Scenario 1: Pod Access](#scenario-1-pod-access)
+    - [Scenario 2: Multiple Resource Access](#scenario-2-multiple-resource-access)
+  - [📊 Key Benefits](#-key-benefits)
+  - [📚 References](#-references)
 
 ## 🌟 Features
 
-- 🤖 **AI Policy Generation**: Intelligent creation of least-privilege policies using advanced ML models
+- 🤖 **AI Policy Generation**: Intelligent creation of least-privilege RBAC policies using advanced ML models
 - 👥 **Approval Workflow**: Seamless Slack-integrated approval process with multi-level authorization
 - ⏳ **Auto-Expiring Access**: Temporary permissions with automatic removal and configurable TTL
 - 📢 **Smart Notifications**: Real-time Slack alerts for approvals with actionable buttons
 - 📈 **Access Analytics**: Comprehensive tracking of permission patterns and usage metrics
 - 🔒 **Security Controls**: Enforced least-privilege access with audit trails
-- 🔄 **AWS Integration**: Native support for IAM, SSO, and Organizations
+- 🔄 **K8s Integration**: Native support for RBAC, ServiceAccounts, and ClusterRoles
 - 🎯 **Context-Aware**: Intelligent permission suggestions based on user roles and history
 - 🔍 **Compliance Monitoring**: Real-time tracking of access patterns and policy violations
 
@@ -50,11 +54,11 @@ graph TB
         G[Analytics Engine]
     end
 
-    subgraph "AWS Services"
-        H[IAM]
-        I[Organizations]
-        J[CloudTrail]
-        K[EventBridge]
+    subgraph "Kubernetes Services"
+        H[RBAC]
+        I[Namespaces]
+        J[Audit Logs]
+        K[Events]
     end
 
     A & B & C --> D
@@ -139,7 +143,7 @@ stateDiagram-v2
     end note
     
     note right of PolicyAnalysis
-        AI-driven policy
+        AI-driven RBAC policy
         generation
     end note
     
@@ -151,21 +155,34 @@ stateDiagram-v2
 
 ## 🛠️ Configuration
 
-Below are the key variables used to configure the AWS JIT Permissions Crew:
+Below are the key variables used to configure the Kubernetes JIT Permissions Crew:
 
 | Variable Name | Description | Type | Default | Required |
 |---------------|-------------|------|---------|-----------|
-| `teammate_name` | Name of the JIT Permissions teammate | `string` | | Yes |
+| `teammate_name` | Name of the JIT Permissions teammate | `string` | `"k8s-jit-guardian"` | Yes |
 | `kubiya_runner` | Runner to use for the teammate | `string` | | Yes |
-| `aws_region` | AWS region for operations | `string` | | Yes |
+| `k8s_context` | Kubernetes context for operations | `string` | | Yes |
 | `policy_ttl` | Default policy expiration time | `string` | `"8h"` | No |
-| `slack_notification_channel` | Slack channel for notifications | `string` | `""` | Yes |
-| `approvers` | List of authorized approvers | `list(string)` | | Yes |
-| `allowed_services` | Permitted AWS services | `list(string)` | | Yes |
+| `approves_group_name` | Name of the group that can approve requests | `string` | `"Admin"` | No |
+| `approvers_slack_channel` | Slack channel for approval requests (must start with #) | `string` | `"#devops-oncall"` | Yes |
+| `restricted_tools` | Tools to be restricted by the policy | `list(string)` | `[]` | No |
+| `tool_validation_rules` | Validation rules for specific tool parameters | `map(object)` | See variables.tf | No |
+| `kubiya_groups_allowed_groups` | Kubiya groups who can request access | `list(string)` | `["Admin"]` | No |
+| `kubiya_integrations` | List of Kubiya integrations to enable | `list(string)` | `["slack"]` | No |
+| `okta_enabled` | Enable Okta Integration | `bool` | `false` | No |
+| `okta_base_url` | Your Okta domain URL | `string` | `"https://org.okta.com"` | No |
+| `okta_client_id` | Okta application client ID | `string` | | No |
+| `okta_private_key` | Private key for Okta authentication | `string` | | No |
+| `dd_enabled` | Enable DataDog Integration | `bool` | `false` | No |
+| `dd_site` | DataDog site | `string` | `"us5.datadoghq.com"` | No |
+| `dd_api_key` | DataDog API key | `string` | | No |
+| `allowed_namespaces` | Permitted Kubernetes namespaces | `list(string)` | | Yes |
 | `max_duration` | Maximum permission duration | `string` | `"24h"` | No |
 | `risk_threshold` | Maximum allowed risk score | `number` | `0.7` | No |
 | `approval_levels` | Number of approval levels required | `number` | `1` | No |
 | `audit_log_retention` | Days to retain audit logs | `number` | `90` | No |
+| `kubiya_tool_timeout` | Timeout for Kubiya tools in seconds | `number` | `500` | No |
+| `debug_mode` | Enable detailed information during runtime | `bool` | `false` | No |
 
 ## 🚀 Getting Started
 
@@ -182,12 +199,12 @@ Below are the key variables used to configure the AWS JIT Permissions Crew:
 3. **Configure Settings**:
    Fill in the required fields:
    ```hcl
-   teammate_name        = "aws-jit"
-   aws_region          = "us-west-2"
-   slack_channel       = "#aws-access-requests"
-   approvers          = ["@securityteam", "@devops-leads"]
-   allowed_services   = ["s3", "ec2", "rds"]
-   max_duration       = "24h"
+   teammate_name        = "k8s-jit"
+   k8s_context         = "production-cluster"
+   slack_channel       = "#k8s-access-requests"
+   approvers          = ["@platform-team", "@security-leads"]
+   allowed_namespaces = ["development", "staging", "monitoring"]
+   max_duration       = "12h"
    ```
 
 4. **Deploy**:
@@ -204,40 +221,40 @@ Below are the key variables used to configure the AWS JIT Permissions Crew:
 
 ## 🎭 Example Scenarios
 
-### Scenario 1: S3 Bucket Access
+### Scenario 1: Pod Access
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
     participant Kubiya as Kubiya Platform
-    participant Approver as Security Team
-    participant AWS as AWS IAM
+    participant Approver as Platform Team
+    participant K8s as Kubernetes RBAC
     
-    Dev->>Kubiya: Request S3 access
-    Kubiya->>Kubiya: Generate policy
+    Dev->>Kubiya: Request Pod access
+    Kubiya->>Kubiya: Generate RBAC policy
     Kubiya->>Approver: Request approval
     Approver->>Kubiya: Approve request
-    Kubiya->>AWS: Create temporary policy
-    AWS->>Dev: Grant access
-    Note over Dev,AWS: Access valid for 8 hours
-    Kubiya->>AWS: Auto-remove after TTL
+    Kubiya->>K8s: Create temporary RoleBinding
+    K8s->>Dev: Grant access
+    Note over Dev,K8s: Access valid for 8 hours
+    Kubiya->>K8s: Auto-remove after TTL
 ```
 
-### Scenario 2: Multiple Service Access
+### Scenario 2: Multiple Resource Access
 ```mermaid
 sequenceDiagram
     participant DevOps as DevOps Engineer
     participant Kubiya as Kubiya Platform
     participant Approvers as Multiple Approvers
-    participant AWS as AWS Services
+    participant K8s as Kubernetes Resources
     
-    DevOps->>Kubiya: Request EC2+RDS access
+    DevOps->>Kubiya: Request Deployment+Service access
     Kubiya->>Kubiya: Risk assessment
     Kubiya->>Approvers: Multi-level approval
     Approvers->>Kubiya: Staged approvals
-    Kubiya->>AWS: Create policies
-    AWS->>DevOps: Grant access
-    Note over DevOps,AWS: Monitored access
-    Kubiya->>AWS: Continuous compliance check
+    Kubiya->>K8s: Create RBAC policies
+    K8s->>DevOps: Grant access
+    Note over DevOps,K8s: Monitored access
+    Kubiya->>K8s: Continuous compliance check
 ```
 
 ## 📊 Key Benefits
@@ -251,20 +268,20 @@ sequenceDiagram
 ## 📚 References
 
 - [Kubiya Documentation](https://docs.kubiya.ai)
-- [AWS IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [Kubernetes RBAC Best Practices](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [Terraform Kubernetes Provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs)
 - [Slack API Documentation](https://api.slack.com/docs)
 - [Just-In-Time Access Patterns](https://www.kubiya.ai/blog/jit-access-patterns)
-- [Implementation Guide](https://docs.kubiya.ai/guides/aws-jit)
+- [Implementation Guide](https://docs.kubiya.ai/guides/k8s-jit)
 - [API Reference](https://api.kubiya.ai/docs)
 - [Community Forums](https://community.kubiya.ai)
 
 ---
 
-Ready to transform your AWS access management? Deploy your AI crew today! 🚀
+Ready to transform your Kubernetes access management? Deploy your AI crew today! 🚀
 
 **[Get Started](https://app.kubiya.ai)** | **[Documentation](https://docs.kubiya.ai)** | **[Request Demo](https://kubiya.ai)**
 
 ---
 
-*Let AWS JIT Permissions Crew handle your access management while maintaining security! 🔐✨*
+*Let Kubernetes JIT Permissions Crew handle your access management while maintaining security! 🔐✨*
