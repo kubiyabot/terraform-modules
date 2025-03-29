@@ -17,7 +17,7 @@ data "http" "jit_access_knowledge" {
 
 # Configure sources
 resource "kubiya_source" "enforcer_source" {
-  url    = "https://github.com/kubiyabot/community-tools/tree/main/just_in_time_access_proactive"
+  url    = "https://github.com/kubiyabot/community-tools/tree/k8s-jit-kubecon/just_in_time_access_proactive_jit"
   runner = var.kubiya_runner
   dynamic_config = jsonencode({
     opa_policy          = local.opa_policy
@@ -35,7 +35,7 @@ resource "kubiya_source" "enforcer_source" {
 
 # Configure auxiliary request tools
 resource "kubiya_source" "k8s_jit_tools" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/kubernetes"
+  url = "https://github.com/kubiyabot/community-tools/tree/k8s-jit-kubecon/kubernetes_kubectl"
   # dynamic_config = var.config_json
   runner = var.kubiya_runner
 }
