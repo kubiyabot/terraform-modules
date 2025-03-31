@@ -70,10 +70,6 @@ variable "head_branch_filter" {
   description = "The branch name to filter webhook events on. If not set, no branch filtering will be applied."
   type        = string
   default     = "go-failure"
-  validation {
-    condition     = var.head_branch_filter == null || can(regex("^[a-zA-Z0-9-_.]+$", var.head_branch_filter))
-    error_message = "head_branch_filter must be either null or a valid branch name containing only alphanumeric characters, hyphens, underscores, and dots."
-  }
 }
 
 variable "use_github_app" {
