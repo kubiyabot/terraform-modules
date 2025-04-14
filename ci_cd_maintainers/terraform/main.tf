@@ -72,9 +72,7 @@ provider "github" {
 # GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
 resource "kubiya_source" "github_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/michael/github_v3.5/github"
-  dynamic_config = {
-    "_placeholder" = "true"
-  }
+  dynamic_config = "true"
 }
 
 //create secret using provider
