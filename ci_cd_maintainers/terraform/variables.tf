@@ -16,14 +16,14 @@ variable "notification_channel" {
   default     = "#ci-cd-maintainers-crew"
 }
 
-variable "teams_notification" {
-  description = "Wether to send notifications using MS Teams"
+variable "ms_teams_notification" {
+  description = "Wether to send notifications using MS Teams (if false, notifications will be sent to Slack)"
   type        = bool
   default     = false
 }
 
-variable "teams_team_name" {
-  description = "Teams team name"
+variable "ms_teams_team_name" {
+  description = "If MS Teams is selected, please provide the team name to send notifications to (channel is based on the notification channel variable)"
   type        = string
   default     = "TEAMS"
 }
@@ -66,10 +66,20 @@ variable "debug_mode" {
   default     = false
 }
 
+variable "enable_branch_filter" {
+  description = "Whether to enable branch filtering for webhook events"
+  type        = bool
+  default     = false
+}
+
 variable "head_branch_filter" {
-  description = "The branch name to filter webhook events on. If not set, no branch filtering will be applied."
+  description = "The branch name to filter webhook events on. Only used when enable_branch_filter is true."
   type        = string
   default     = "go-failure"
+  validation {
+    condition     = var.head_branch_filter == null || can(regex("^[a-zA-Z0-9-_.]+$", var.head_branch_filter))
+    error_message = "head_branch_filter must be either null or a valid branch name containing only alphanumeric characters, hyphens, underscores, and dots."
+  }
 }
 
 variable "use_github_app" {

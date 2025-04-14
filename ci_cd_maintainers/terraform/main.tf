@@ -43,8 +43,8 @@ locals {
       )
     )],
 
-    # Branch filtering if specified
-    var.head_branch_filter != null ? ["workflow_run.head_branch == '${var.head_branch_filter}'"] : []
+    # Branch filtering if enabled and specified
+    var.enable_branch_filter && var.head_branch_filter != null ? ["workflow_run.head_branch == '${var.head_branch_filter}'"] : []
   )
 
   webhook_filter = join(" && ", local.webhook_filter_conditions)
@@ -116,11 +116,11 @@ resource "kubiya_webhook" "source_control_webhook" {
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
   
-  # Set the communication method based on the teams_notification variable
-  method      = var.teams_notification ? "teams" : "Slack"
+  # Set the communication method based on the MS Teams notification variable
+  method      = var.ms_teams_notification ? "teams" : "Slack"
   
   # For Teams, include the team_name
-  team_name   = var.teams_notification ? var.teams_team_name : null
+  team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
   
   prompt      = <<-EOT
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
@@ -190,7 +190,7 @@ output "cicd_maintainer" {
     monitor_pr_workflow_runs           = var.monitor_pr_workflow_runs
     monitor_push_workflow_runs         = var.monitor_push_workflow_runs
     monitor_failed_runs_only           = var.monitor_failed_runs_only
-    notification_platform              = var.teams_notification ? "teams" : "slack"
+    notification_platform              = var.ms_teams_notification ? "teams" : "Slack"
     notification_channel               = var.notification_channel
   }
 }
