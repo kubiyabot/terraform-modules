@@ -1,0 +1,13 @@
+name: "ChatOps Automation Team"
+icons:
+  - "https://cdn-icons-png.flaticon.com/512/2665/2665038.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+  - "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+description: "AI-powered ChatOps for streamlined operations and developer productivity" 
+secrets:
+  - name: Github Token
+    description: "GitHub Personal Access Token with repo and admin:repo_hook permissions. Required for GitHub repositories.\nGenerate at: https://github.com/settings/tokens"
+    to_env: GITHUB_TOKEN
+  - name: Slack Token
+    description: "Slack Bot Token for ChatOps integrations.\nGenerate at: https://api.slack.com/apps"
+    to_env: SLACK_TOKEN
