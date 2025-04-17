@@ -1,3 +1,14 @@
+terraform {
+  required_providers {
+    http = {
+      source = "hashicorp/http"
+    }
+    kubiya = {
+      source = "kubiya-terraform/kubiya"
+    }
+  }
+}
+
 provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
@@ -28,7 +39,7 @@ resource "kubiya_agent" "slack_historian" {
 
 # Schedule daily summary task
 resource "kubiya_scheduled_task" "daily_summary" {
-  scheduled_time = formatdate("YYYY-MM-DD'T'21:15:00", timestamp())  # (UTC)
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "7m"))
   repeat         = "daily"
   channel_id     = var.execution_channel
   agent          = kubiya_agent.slack_historian.name
