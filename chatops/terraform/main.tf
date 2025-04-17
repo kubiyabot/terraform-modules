@@ -39,7 +39,7 @@ resource "kubiya_agent" "slack_historian" {
 
 # Schedule daily summary task
 resource "kubiya_scheduled_task" "daily_summary" {
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "65m"))
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "10m"))
   repeat         = "daily"
   channel_id     = var.execution_channel
   agent          = kubiya_agent.slack_historian.name
