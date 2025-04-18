@@ -50,3 +50,8 @@ variable "report_channel" {
   description = "Slack channel where alert investigation reports should be posted (in #channel format)"
   type        = string
 }
+
+variable "execution_channel" {
+  description = "Slack channel where scheduled tasks are executed from (in #channel format)"
+  type        = string
+}

@@ -33,6 +33,7 @@ EOT
 resource "kubiya_scheduled_task" "monitor_deployment_alerts" {
   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "15m"))
   repeat         = "hourly"
+  channel_id     = var.execution_channel
   agent          = kubiya_agent.alert_investigator.name
   description    = <<-EOT
 Monitor alert channels for Datadog deployment failure alerts and analyze feature flag correlations:
@@ -71,6 +72,7 @@ EOT
 resource "kubiya_scheduled_task" "monitor_error_alerts" {
   scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "10m"))
   repeat         = "hourly"
+  channel_id     = var.execution_channel
   agent          = kubiya_agent.alert_investigator.name
   description    = <<-EOT
 Monitor alert channels for Datadog error rate alerts and perform comprehensive analysis:
