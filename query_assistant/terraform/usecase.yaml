@@ -1,0 +1,5 @@
+name: "Query Assistant"
+icons:
+  - "https://upload.wikimedia.org/wikipedia/commons/b/b9/Slack_Technologies_Logo.svg"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+description: "AI-powered assistant that answers user queries by searching through Slack conversation history. The assistant helps teams leverage their existing knowledge base within Slack channels through natural language queries."
