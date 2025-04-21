@@ -141,12 +141,7 @@ a. Highlights key information first:
    - Why it failed 
    - How to fix it
 
-b. Add a mermaid diagram showing:
-   - Workflow steps
-   - Failed step highlighted
-   - Error location
-
-c. Format using:
+b. Format using:
    - Clear markdown headers
    - Emojis for quick scanning
    - Error logs in collapsible sections
