@@ -42,8 +42,8 @@ variable "litellm_api_base" {
   default     = "http://lite-llm.dev.kubiya.ai/"
 }
 
-variable "search_time_window" {
-  description = "Time window for searching Slack messages (e.g., '72h' for 72 hours)"
+variable "search_window" {
+  description = "Window for searching Slack messages (e.g., '72h' for 72 hours)"
   type        = string
   default     = "72h"
 }
