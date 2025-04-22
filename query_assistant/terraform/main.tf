@@ -1,3 +1,15 @@
+terraform {
+  required_providers {
+    kubiya = {
+      source = "kubiya-terraform/kubiya"
+    }
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.0"
+    }
+  }
+}
+
 provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
@@ -57,6 +69,7 @@ EOT
 
 # Output the agent details
 output "query_assistant" {
+  sensitive = true
   value = {
     name       = kubiya_agent.query_assistant.name
     debug_mode = var.debug_mode
