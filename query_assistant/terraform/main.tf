@@ -57,7 +57,6 @@ EOT
 
 # Output the agent details
 output "query_assistant" {
-  sensitive = true
   value = {
     name       = kubiya_agent.query_assistant.name
     debug_mode = var.debug_mode
