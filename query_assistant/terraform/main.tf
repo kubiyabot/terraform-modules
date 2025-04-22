@@ -42,7 +42,7 @@ Your primary role is to assist users by answering their questions using informat
 
 - Use slack_search_messages with:
   - 'channel' set to '${var.source_channel}'
-  - 'query' based on the user's question
+  - 'query' set to the user's exact query without summarizing or modifying it
   - 'oldest' set to '${var.search_window}' to search messages from the last ${var.search_window}
 - For any relevant messages that have threads, use slack_get_thread_replies to get the full context
 - Provide comprehensive answers based on the discovered content
