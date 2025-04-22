@@ -4,7 +4,20 @@ provider "kubiya" {
 
 # Slack Tooling - Allows the agent to use Slack tools
 resource "kubiya_source" "slack_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/slack"
+  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/slack_query"
+}
+
+# Create secrets for LiteLLM configuration
+resource "kubiya_secret" "litellm_api_key" {
+  name        = "LITELLM_API_KEY"
+  value       = var.litellm_api_key
+  description = "API key for LiteLLM service"
+}
+
+resource "kubiya_secret" "litellm_api_base" {
+  name        = "LITELLM_API_BASE"
+  value       = var.litellm_api_base
+  description = "Base URL for LiteLLM service"
 }
 
 # Configure the Query Assistant agent
@@ -15,8 +28,10 @@ resource "kubiya_agent" "query_assistant" {
   instructions = <<-EOT
 Your primary role is to assist users by answering their questions using information found in Slack conversations from the channel '${var.source_channel}'. You should:
 
-- Search through Slack channel messages and their associated thread replies to find relevant information
-- Use slack_get_channel_history with 'channel' set to '${var.source_channel}' and 'limit' set to 20 to fetch recent messages
+- Use slack_search_messages with:
+  - 'channel' set to '${var.source_channel}'
+  - 'query' based on the user's question
+  - 'oldest' set to '${var.search_time_window}' to search messages from the last ${var.search_time_window}
 - For any relevant messages that have threads, use slack_get_thread_replies to get the full context
 - Provide comprehensive answers based on the discovered content
 - Include context and references to the original Slack messages when possible
@@ -34,6 +49,9 @@ EOT
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
   }
+
+  secrets = ["LITELLM_API_KEY", "LITELLM_API_BASE"]
+
   is_debug_mode = var.debug_mode
 }
 

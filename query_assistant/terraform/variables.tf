@@ -28,3 +28,22 @@ variable "source_channel" {
   description = "The Slack channel ID to search for answers to user queries"
   type        = string
 }
+
+# New variables for LiteLLM configuration
+variable "litellm_api_key" {
+  description = "API key for LiteLLM service"
+  type        = string
+  sensitive   = true
+}
+
+variable "litellm_api_base" {
+  description = "Base URL for LiteLLM service"
+  type        = string
+  default     = "http://lite-llm.dev.kubiya.ai/"
+}
+
+variable "search_time_window" {
+  description = "Time window for searching Slack messages (e.g., '72h' for 72 hours)"
+  type        = string
+  default     = "72h"
+}
