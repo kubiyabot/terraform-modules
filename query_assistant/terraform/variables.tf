@@ -36,12 +36,6 @@ variable "litellm_api_key" {
   sensitive   = true
 }
 
-variable "litellm_api_base" {
-  description = "Base URL for LiteLLM service"
-  type        = string
-  default     = "http://lite-llm.dev.kubiya.ai/"
-}
-
 variable "search_window" {
   description = "Window for searching Slack messages (e.g., '72h' for 72 hours)"
   type        = string

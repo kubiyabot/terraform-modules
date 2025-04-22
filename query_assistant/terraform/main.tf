@@ -26,12 +26,6 @@ resource "kubiya_secret" "litellm_api_key" {
   description = "API key for LiteLLM service"
 }
 
-resource "kubiya_secret" "litellm_api_base" {
-  name        = "LITELLM_API_BASE"
-  value       = var.litellm_api_base
-  description = "Base URL for LiteLLM service"
-}
-
 # Configure the Query Assistant agent
 resource "kubiya_agent" "query_assistant" {
   name         = "query-assistant"
@@ -62,7 +56,7 @@ EOT
     KUBIYA_TOOL_TIMEOUT = "500"
   }
 
-  secrets = ["LITELLM_API_KEY", "LITELLM_API_BASE"]
+  secrets = ["LITELLM_API_KEY"]
 
   is_debug_mode = var.debug_mode
 }
