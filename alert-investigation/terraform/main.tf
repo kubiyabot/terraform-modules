@@ -4,7 +4,7 @@ provider "kubiya" {
 
 # Slack Tools - For channel monitoring and notifications
 resource "kubiya_source" "slack_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/slack"
+  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/slack"
 }
 
 # Configure the Alert Investigation agent
@@ -31,8 +31,8 @@ EOT
 
 # Schedule deployment alert monitoring task
 resource "kubiya_scheduled_task" "monitor_deployment_alerts" {
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "15m"))
-  repeat         = "hourly"
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "10m"))
+  repeat = "*/15 * * * *"
   channel_id     = var.execution_channel
   agent          = kubiya_agent.alert_investigator.name
   description    = <<-EOT
@@ -42,7 +42,7 @@ Monitor alert channels for Datadog deployment failure alerts and analyze feature
    - Use slack_get_channel_history to fetch recent messages (last hour)
    - Filter for Datadog alerts containing keywords like "deployment", "failed deployment", "faulty deployment"
    - For each deployment failure alert:
-     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period_hours} hours
+     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period} hours
      * Analyze potential correlations between the deployment failure and flag changes
      * Format a summary in markdown:
        ```
@@ -68,10 +68,11 @@ Focus on identifying feature flag changes that might have contributed to the dep
 EOT
 }
 
+
 # Schedule error rate alert monitoring task
 resource "kubiya_scheduled_task" "monitor_error_alerts" {
-  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "10m"))
-  repeat         = "hourly"
+  scheduled_time = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "15m"))
+  repeat = "*/15 * * * *"
   channel_id     = var.execution_channel
   agent          = kubiya_agent.alert_investigator.name
   description    = <<-EOT
@@ -82,7 +83,7 @@ Monitor alert channels for Datadog error rate alerts and perform comprehensive a
    - Filter for Datadog alerts containing keywords like "error rate", "error spike", "number of errors"
    - For each error rate alert:
      * Use the compare_error_rates tool to compare current week's error rates with previous week
-     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period_hours} hours
+     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period} hours
      * Check the '${var.deployment_channel}' channel for any ArgoCD deployment messages
      * Analyze correlations between error rates, feature flags, and deployments
      * Format a summary in markdown:
