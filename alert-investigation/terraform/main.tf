@@ -1,3 +1,14 @@
+terraform {
+  required_providers {
+    http = {
+      source = "hashicorp/http"
+    }
+    kubiya = {
+      source = "kubiya-terraform/kubiya"
+    }
+  }
+}
+
 provider "kubiya" {
   // API key is set as an environment variable KUBIYA_API_KEY
 }
