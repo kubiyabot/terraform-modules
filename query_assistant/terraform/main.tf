@@ -16,7 +16,7 @@ provider "kubiya" {
 
 # Slack Tooling - Allows the agent to use Slack tools
 resource "kubiya_source" "slack_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/slack_query"
+  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/query-assistant/query_assistant"
 }
 
 # Create secrets for LiteLLM configuration
