@@ -18,6 +18,10 @@ resource "kubiya_source" "slack_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/slack"
 }
 
+resource "kubiya_source" "datadog_tooling" {
+  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/new_tools_v2/datadog_v1"
+}
+
 # Configure the Alert Investigation agent
 resource "kubiya_agent" "alert_investigator" {
   name         = "alert-investigator"
