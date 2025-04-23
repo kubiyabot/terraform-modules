@@ -37,7 +37,7 @@ variable "litellm_api_key" {
 }
 
 variable "search_window" {
-  description = "Window for searching Slack messages (e.g., '72h' for 72 hours)"
+  description = "Window for searching Slack messages. Supports various time formats like '30m' (30 minutes), '1h' (1 hour), '2d' (2 days), '72h' (72 hours), etc."
   type        = string
   default     = "72h"
 }
