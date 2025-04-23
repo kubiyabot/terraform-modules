@@ -30,7 +30,7 @@ variable "feature_flags_channels" {
 }
 
 variable "lookback_period" {
-  description = "Duration to look back for feature flag changes (e.g., '30m', '2h', '2d')"
+  description = "Duration to look back when scanning Slack channels for alerts and related changes (feature flags, deployments). Used for both initial alert detection and correlation analysis (e.g., '30m', '2h', '2d')"
   type        = string
   default     = "30m"
 }

@@ -50,9 +50,8 @@ resource "kubiya_scheduled_task" "monitor_deployment_alerts" {
 Monitor alert channels for Datadog deployment failure alerts and analyze feature flag correlations:
 
 1. For each alert channel in ${jsonencode(var.alert_source_channels)}:
-   - Use slack_get_channel_history to fetch recent messages (last hour)
-   - Filter for Datadog alerts containing keywords like "deployment", "failed deployment", "faulty deployment"
-   - For each deployment failure alert:
+   - Use slack_get_channel_history to fetch recent messages within the last ${var.lookback_period}
+   - For each failure alert:
      * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period}
      * Analyze potential correlations between the deployment failure and flag changes
      * Format a summary in markdown:
@@ -90,12 +89,12 @@ resource "kubiya_scheduled_task" "monitor_error_alerts" {
 Monitor alert channels for Datadog error rate alerts and perform comprehensive analysis:
 
 1. For each alert channel in ${jsonencode(var.alert_source_channels)}:
-   - Use slack_get_channel_history to fetch recent messages (last hour)
+   - Use slack_get_channel_history to fetch recent messages within the last ${var.lookback_period}
    - Filter for Datadog alerts containing keywords like "error rate", "error spike", "number of errors"
    - For each error rate alert:
      * Use the compare_error_rates tool to compare current week's error rates with previous week
      * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period}
-     * Check the '${var.deployment_channel}' channel for any ArgoCD deployment messages
+     * Check the '${var.deployment_channel}' channel for any ArgoCD deployment messages within the last ${var.lookback_period}
      * Analyze correlations between error rates, feature flags, and deployments
      * Format a summary in markdown:
        ```
