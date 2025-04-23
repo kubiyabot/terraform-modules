@@ -51,6 +51,7 @@ Monitor alert channels for Datadog deployment failure alerts and analyze feature
 
 1. For each alert channel in ${jsonencode(var.alert_source_channels)}:
    - Use slack_get_channel_history to fetch recent messages within the last ${var.lookback_period}
+   - Filter for Datadog alerts containing keywords like "deployment", "failed deployment", "faulty deployment"
    - For each failure alert:
      * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period}
      * Analyze potential correlations between the deployment failure and flag changes
