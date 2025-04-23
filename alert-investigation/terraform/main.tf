@@ -42,7 +42,7 @@ Monitor alert channels for Datadog deployment failure alerts and analyze feature
    - Use slack_get_channel_history to fetch recent messages (last hour)
    - Filter for Datadog alerts containing keywords like "deployment", "failed deployment", "faulty deployment"
    - For each deployment failure alert:
-     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period} hours
+     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period}
      * Analyze potential correlations between the deployment failure and flag changes
      * Format a summary in markdown:
        ```
@@ -83,7 +83,7 @@ Monitor alert channels for Datadog error rate alerts and perform comprehensive a
    - Filter for Datadog alerts containing keywords like "error rate", "error spike", "number of errors"
    - For each error rate alert:
      * Use the compare_error_rates tool to compare current week's error rates with previous week
-     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period} hours
+     * Check all feature flag channels ${jsonencode(var.feature_flags_channels)} for changes within the last ${var.lookback_period}
      * Check the '${var.deployment_channel}' channel for any ArgoCD deployment messages
      * Analyze correlations between error rates, feature flags, and deployments
      * Format a summary in markdown:
