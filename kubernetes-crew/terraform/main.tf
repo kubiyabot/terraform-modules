@@ -86,7 +86,7 @@ resource "kubiya_agent" "kubernetes_crew" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered Kubernetes operations assistant"
-  model        = "azure/gpt-4"
+  model        = "azure/gpt-4o"
   instructions = ""
   sources      = [kubiya_source.k8s_capabilities.name, kubiya_source.diagramming_capabilities.name, kubiya_source.slack_capabilities.name]
 
