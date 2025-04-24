@@ -31,7 +31,7 @@ resource "kubiya_agent" "terraform_kiosk" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered Terraform Modules Self-Service Kiosk"
-  model        = "gpt-4"
+  model        = "gpt-4o"
   instructions = ""
 
   sources = [kubiya_source.terraform_module_tools.id]
