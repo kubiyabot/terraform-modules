@@ -141,19 +141,14 @@ a. Highlights key information first:
    - Why it failed 
    - How to fix it
 
-b. Add a mermaid diagram showing:
-   - Workflow steps
-   - Failed step highlighted
-   - Error location
-
-c. Format using:
+b. Format using:
    - Clear markdown headers
    - Emojis for quick scanning
    - Error logs in collapsible sections
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
 
-4. Always use github_pr_comment to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
+4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
 
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
