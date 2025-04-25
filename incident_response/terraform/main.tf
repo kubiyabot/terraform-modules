@@ -40,25 +40,25 @@ resource "kubiya_source" "argocd_tooling" {
 
 resource "kubiya_secret" "datadog_api_key" {
   name        = "DATADOG_API_KEY"
-  value       = var.DATADOG_API_KEY
+  value       = var.datadog_api_key
   description = "Datadog API key for monitoring and alerts"
 }
 
 resource "kubiya_secret" "datadog_app_key" {
   name        = "DATADOG_APP_KEY"
-  value       = var.DATADOG_APP_KEY
+  value       = var.datadog_app_key
   description = "Datadog application key for API access"
 }
 
 resource "kubiya_secret" "observe_api_key" {
   name        = "OBSERVE_API_KEY"
-  value       = var.OBSERVE_API_KEY
+  value       = var.observe_api_key
   description = "Observe API key for log access"
 }
 
 resource "kubiya_secret" "argocd_token" {
   name        = "ARGOCD_TOKEN"
-  value       = var.ARGOCD_TOKEN
+  value       = var.argocd_token
   description = "ArgoCD token for deployment management"
 }
 
@@ -96,8 +96,8 @@ resource "kubiya_agent" "incident_response" {
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
     DATADOG_SITE        = var.datadog_site
-    ARGOCD_DOMAIN       = var.ARGOCD_DOMAIN
-    OBSERVE_DATASET_ID  = var.OBSERVE_DATASET_ID
+    ARGOCD_DOMAIN       = var.argocd_domain
+    OBSERVE_DATASET_ID  = var.observe_dataset_id
   }
   
   is_debug_mode = var.debug_mode
@@ -165,7 +165,7 @@ output "incident_response_teammate" {
     notification_platform = var.ms_teams_notification ? "teams" : "Slack"
     notification_channel = var.notification_channel
     datadog_site         = var.datadog_site
-    observe_dataset      = var.OBSERVE_DATASET_ID
-    argocd_domain        = var.ARGOCD_DOMAIN
+    observe_dataset      = var.observe_dataset_id
+    argocd_domain        = var.argocd_domain
   }
 } 

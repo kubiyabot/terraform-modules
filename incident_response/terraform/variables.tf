@@ -44,13 +44,13 @@ variable "debug_mode" {
 }
 
 # Datadog Configuration
-variable "DATADOG_API_KEY" {
+variable "datadog_api_key" {
   type        = string
   sensitive   = true
   description = "Datadog API key for accessing monitoring data"
 }
 
-variable "DATADOG_APP_KEY" {
+variable "datadog_app_key" {
   type        = string
   sensitive   = true
   description = "Datadog application key for API access"
@@ -63,25 +63,25 @@ variable "datadog_site" {
 }
 
 # Observe Configuration
-variable "OBSERVE_API_KEY" {
+variable "observe_api_key" {
   type        = string
   sensitive   = true
   description = "Observe API key for accessing log data"
 }
 
-variable "OBSERVE_DATASET_ID" {
+variable "observe_dataset_id" {
   type        = string
   description = "Observe dataset ID for the logs to access"
 }
 
 # ArgoCD Configuration
-variable "ARGOCD_TOKEN" {
+variable "argocd_token" {
   type        = string
   sensitive   = true
   description = "ArgoCD token for accessing deployment information"
 }
 
-variable "ARGOCD_DOMAIN" {
+variable "argocd_domain" {
   type        = string
   description = "ArgoCD domain URL (e.g., 'argocd.example.com')"
 }
