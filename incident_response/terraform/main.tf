@@ -69,7 +69,6 @@ resource "kubiya_agent" "incident_response" {
   description  = "The Incident Response teammate is an AI-powered assistant that helps investigate and resolve incidents. It can correlate data from Datadog, Observe, GitHub, Kubernetes, and ArgoCD to find the root cause and provide actionable insights."
   instructions = ""
   
-  # Add secrets - GitHub token removed as we're using GitHub App
   secrets = [
     kubiya_secret.datadog_api_key.name,
     kubiya_secret.datadog_app_key.name,
