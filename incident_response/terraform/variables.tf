@@ -66,5 +66,5 @@ variable "argocd_domain" {
 variable "secrets_list" {
   type        = string
   description = "Comma-separated list of secret names to make available to the teammate"
-  default     = "DD_API_KEY,DD_APP_KEY,OBSERVE_API_KEY,ARGOCD_TOKEN"
+  default     = "DD_API_KEY,DD_APP_KEY,OBSERVE_API_KEY,ARGOCD_TOKEN,OBSERVE_CUSTOMER_ID"
 }
