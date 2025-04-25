@@ -92,6 +92,9 @@ Incident URL: {{.url}}
 Severity: {{.severity}}
 Description: {{.body}}
 
+Context:
+- Observe Dataset ID: ${var.observe_dataset_id}
+
 Instructions:
 
 1. Fetch more data about the incident using Datadog tools
