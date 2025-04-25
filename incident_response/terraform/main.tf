@@ -35,33 +35,6 @@ resource "kubiya_source" "argocd_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/argocd"
 }
 
-# Configure secrets
-# GitHub token secret removed as we're exclusively using GitHub App
-
-resource "kubiya_secret" "datadog_api_key" {
-  name        = "DATADOG_API_KEY"
-  value       = var.datadog_api_key
-  description = "Datadog API key for monitoring and alerts"
-}
-
-resource "kubiya_secret" "datadog_app_key" {
-  name        = "DATADOG_APP_KEY"
-  value       = var.datadog_app_key
-  description = "Datadog application key for API access"
-}
-
-resource "kubiya_secret" "observe_api_key" {
-  name        = "OBSERVE_API_KEY"
-  value       = var.observe_api_key
-  description = "Observe API key for log access"
-}
-
-resource "kubiya_secret" "argocd_token" {
-  name        = "ARGOCD_TOKEN"
-  value       = var.argocd_token
-  description = "ArgoCD token for deployment management"
-}
-
 # Configure the Incident Response agent
 resource "kubiya_agent" "incident_response" {
   name         = var.teammate_name
@@ -69,12 +42,7 @@ resource "kubiya_agent" "incident_response" {
   description  = "The Incident Response teammate is an AI-powered assistant that helps investigate and resolve incidents. It can correlate data from Datadog, Observe, GitHub, Kubernetes, and ArgoCD to find the root cause and provide actionable insights."
   instructions = ""
   
-  secrets = [
-    kubiya_secret.datadog_api_key.name,
-    kubiya_secret.datadog_app_key.name,
-    kubiya_secret.observe_api_key.name,
-    kubiya_secret.argocd_token.name
-  ]
+  secrets = split(",", var.secrets_list)
   
   sources = [
     kubiya_source.github_tooling.name,
@@ -105,7 +73,7 @@ resource "kubiya_agent" "incident_response" {
 
 # Webhook configuration for Datadog incidents
 resource "kubiya_webhook" "datadog_incident_webhook" {
-  filter      = "event.alert.alert_type == 'error'"
+  filter      = ""
   name        = "${var.teammate_name}-datadog-webhook"
   source      = "Datadog"
   
@@ -118,10 +86,11 @@ resource "kubiya_webhook" "datadog_incident_webhook" {
   prompt      = <<-EOT
 Your Goal: Given a Datadog incident that triggers you, use the tools you have to investigate and respond effectively.
 
-Incident ID: {{.event.alert.id}}
-Alert Type: {{.event.alert.alert_type}}
-Service: {{.event.alert.service}}
-Priority: {{.event.alert.priority}}
+Incident ID: {{.id}}
+Incident Title: {{.title}}
+Incident URL: {{.url}}
+Severity: {{.severity}}
+Description: {{.body}}
 
 Instructions:
 
@@ -149,6 +118,8 @@ Instructions:
    - What caused it? Link to specific code/deployment/configuration
    - How to fix it? Recommend concrete steps
    - Who should be involved? Tag relevant teams or individuals if known
+
+IMPORTANT: Run all necessary steps in sequence without waiting for user approval. Continue the investigation process until you have reached a conclusion and provided a full analysis.
 
 Make your response focused and actionable. Format it clearly with headers, bullet points, and code blocks where appropriate. Prioritize information that helps resolve the incident quickly.
   EOT
