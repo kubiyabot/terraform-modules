@@ -63,7 +63,7 @@ resource "kubiya_agent" "incident_response" {
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
-    DATADOG_SITE        = var.datadog_site
+    DD_SITE        = var.datadog_site
     ARGOCD_DOMAIN       = var.argocd_domain
     OBSERVE_DATASET_ID  = var.observe_dataset_id
   }
