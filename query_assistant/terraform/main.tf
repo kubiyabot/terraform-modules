@@ -16,7 +16,7 @@ provider "kubiya" {
 
 # Slack Tooling - Allows the agent to use Slack tools
 resource "kubiya_source" "slack_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/query-assistant/query_assistant"
+  url = "https://github.com/kubiyabot/community-tools/tree/michaelg/query-assistant-v2/query_assistant"
 }
 
 # Create secrets for LiteLLM configuration
@@ -38,10 +38,10 @@ Your primary role is to assist users by answering their questions using informat
   - 'channel' set to '${var.source_channel}'
   - 'query' set to the user's exact query without summarizing or modifying it
   - 'oldest' set to '${var.search_window}' to search messages from the last ${var.search_window}
-- For any relevant messages that have threads, use slack_get_thread_replies to get the full context
-- Provide comprehensive answers based on the discovered content
-- Include context and references to the original Slack messages when possible
-- Clearly communicate when relevant information cannot be found
+- The tool will automatically include thread replies for any message that has them. You do not need to call slack_get_thread_replies separately.
+- Provide comprehensive answers based on the discovered content, considering both main messages and their thread replies.
+- Include context and references to the original Slack messages when possible.
+- Clearly communicate when relevant information cannot be found.
 
 Your goal is to be a helpful bridge between users and the knowledge contained within Slack conversations in the specified channel.
 EOT
