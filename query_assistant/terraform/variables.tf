@@ -2,7 +2,7 @@
 variable "teammate_name" {
   description = "Name of your Query Assistant teammate (e.g., 'query-assistant'). Used to identify the teammate in logs and notifications."
   type        = string
-  default     = "query-assistant"
+  default     = "query-assistant-v2"
 }
 
 # Access Control
