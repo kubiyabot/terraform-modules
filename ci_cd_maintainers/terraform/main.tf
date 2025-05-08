@@ -155,6 +155,74 @@ b. Format using:
   destination = var.notification_channel
 }
 
+resource "kubiya_inline_source" "hello_world_tool" {
+  name   = "workflow_source"
+  runner = "core-testing-1"
+
+  tools = jsonencode([])
+
+  workflows = jsondecode([
+    {
+      name        = "cicd_analysis",
+      description = "Comprehensive analysis of GitHub Actions workflow failures",
+      params = {
+        WORKFLOW_ID = "123"
+        PR_NUMBER = "1"
+        REPOSITORY = ""
+      }
+      steps = [
+        {
+          name    = "failure-analysis",
+          output  = "ANALYSIS",
+          depends = ["process-data", "generate-data"],
+          executor = {
+            type = "agent",
+            config = {
+              teammate_name = kubiya_agent.cicd_maintainer.name,
+              message       = "Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+Workflow ID: $WORKFLOW_ID
+PR Number: $PR_NUMBER
+Repository: $REPOSITORY
+
+Instructions:
+
+1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID $WORKFLOW_ID. Wait until this step finishes.
+
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
+
+3. After collecting the insights, prepare to create a comment on the pull request following this structure:
+
+a. Highlights key information first:
+   - What failed
+   - Why it failed 
+   - How to fix it
+
+b. Format using:
+   - Clear markdown headers
+   - Emojis for quick scanning
+   - Error logs in collapsible sections
+   - Footer with run details
+   - Style matters! Make sure the markdown text is very engaging and clear"
+            }
+          }
+        },
+        {
+          name    = "comment-on-github",
+          output  = "COMMENT",
+          depends = ["failure-analysis"],
+          executor = {
+            type = "agent",
+            config = {
+              teammate_name = kubiya_agent.cicd_maintainer.name,
+              message       = "Based on the analysis: $ANALYSIS, use github_pr_comment_workflow_failure to post your analysis on PR $PR_NUMBER. Include your analysis in the discussed format. Always comment on the PR without user approval."
+            }
+          }
+        }
+      ]
+    }
+  ])
+}
+
 # GitHub repository webhooks
 resource "github_repository_webhook" "webhook" {
   for_each = length(local.repository_list) > 0 ? toset(local.repository_list) : []
