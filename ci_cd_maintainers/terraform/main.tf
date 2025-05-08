@@ -165,11 +165,6 @@ resource "kubiya_inline_source" "hello_world_tool" {
     {
       name        = "cicd_analysis",
       description = "Comprehensive analysis of GitHub Actions workflow failures",
-      params = {
-        WORKFLOW_ID = "123"
-        PR_NUMBER = "1"
-        REPOSITORY = ""
-      }
       steps = [
         {
           name    = "failure-analysis",
