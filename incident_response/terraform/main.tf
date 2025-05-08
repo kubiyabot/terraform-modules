@@ -35,24 +35,21 @@ resource "kubiya_source" "argocd_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/argocd"
 }
 
-# Configure the Incident Response agent
-resource "kubiya_agent" "incident_response" {
-  name         = var.teammate_name
+# Configure individual agents for each tool
+
+# GitHub Agent
+resource "kubiya_agent" "github_teammate" {
+  name         = "${var.teammate_name}-github"
   runner       = var.kubiya_runner
-  description  = "The Incident Response teammate is an AI-powered assistant that helps investigate and resolve incidents. It can correlate data from Datadog, Observe, GitHub, Kubernetes, and ArgoCD to find the root cause and provide actionable insights."
+  description  = "GitHub teammate that helps investigate code-related incidents. It can analyze repositories, PRs, issues, and code changes to identify potential causes of incidents."
   instructions = ""
   
   secrets = split(",", var.secrets_list)
   
   sources = [
-    kubiya_source.github_tooling.name,
-    kubiya_source.datadog_tooling.name,
-    kubiya_source.kubernetes_tooling.name,
-    kubiya_source.observe_tooling.name,
-    kubiya_source.argocd_tooling.name
+    kubiya_source.github_tooling.name
   ]
 
-  # Always use GitHub App integration
   integrations = [
     "github_app",
     "slack"
@@ -63,15 +60,127 @@ resource "kubiya_agent" "incident_response" {
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
-    DD_SITE        = var.datadog_site
-    ARGOCD_DOMAIN       = var.argocd_domain
+  }
+  
+  is_debug_mode = var.debug_mode
+}
+
+# Datadog Agent
+resource "kubiya_agent" "datadog_teammate" {
+  name         = "${var.teammate_name}-datadog"
+  runner       = var.kubiya_runner
+  description  = "Datadog teammate that helps investigate monitoring and alerting incidents. It can analyze metrics, logs, and alerts to identify performance issues and service disruptions."
+  instructions = ""
+  
+  secrets = split(",", var.secrets_list)
+  
+  sources = [
+    kubiya_source.datadog_tooling.name
+  ]
+
+  integrations = [
+    "github_app",
+    "slack"
+  ]
+
+  users  = []
+  groups = var.kubiya_groups_allowed_groups
+
+  environment_variables = {
+    KUBIYA_TOOL_TIMEOUT = "500"
+    DD_SITE             = var.datadog_site
+  }
+  
+  is_debug_mode = var.debug_mode
+}
+
+# Kubernetes Agent
+resource "kubiya_agent" "kubernetes_teammate" {
+  name         = "${var.teammate_name}-kubernetes"
+  runner       = var.kubiya_runner
+  description  = "Kubernetes teammate that helps investigate infrastructure incidents. It can analyze cluster health, pod status, resource utilization, and configuration issues."
+  instructions = ""
+  
+  secrets = split(",", var.secrets_list)
+  
+  sources = [
+    kubiya_source.kubernetes_tooling.name
+  ]
+
+  integrations = [
+    "github_app",
+    "slack"
+  ]
+
+  users  = []
+  groups = var.kubiya_groups_allowed_groups
+
+  environment_variables = {
+    KUBIYA_TOOL_TIMEOUT = "500"
+  }
+  
+  is_debug_mode = var.debug_mode
+}
+
+# Observe Agent
+resource "kubiya_agent" "observe_teammate" {
+  name         = "${var.teammate_name}-observe"
+  runner       = var.kubiya_runner
+  description  = "Observe teammate that helps investigate log-based incidents. It can analyze logs, events, and traces to identify errors and unusual patterns."
+  instructions = ""
+  
+  secrets = split(",", var.secrets_list)
+  
+  sources = [
+    kubiya_source.observe_tooling.name
+  ]
+
+  integrations = [
+    "github_app",
+    "slack"
+  ]
+
+  users  = []
+  groups = var.kubiya_groups_allowed_groups
+
+  environment_variables = {
+    KUBIYA_TOOL_TIMEOUT = "500"
     OBSERVE_DATASET_ID  = var.observe_dataset_id
   }
   
   is_debug_mode = var.debug_mode
 }
 
-# Webhook configuration for Datadog incidents
+# ArgoCD Agent
+resource "kubiya_agent" "argocd_teammate" {
+  name         = "${var.teammate_name}-argocd"
+  runner       = var.kubiya_runner
+  description  = "ArgoCD teammate that helps investigate deployment incidents. It can analyze deployment status, sync issues, and configuration problems."
+  instructions = ""
+  
+  secrets = split(",", var.secrets_list)
+  
+  sources = [
+    kubiya_source.argocd_tooling.name
+  ]
+
+  integrations = [
+    "github_app",
+    "slack"
+  ]
+
+  users  = []
+  groups = var.kubiya_groups_allowed_groups
+
+  environment_variables = {
+    KUBIYA_TOOL_TIMEOUT = "500"
+    ARGOCD_DOMAIN       = var.argocd_domain
+  }
+  
+  is_debug_mode = var.debug_mode
+}
+
+# Webhook configuration for Datadog incidents now routes to the Datadog teammate
 resource "kubiya_webhook" "datadog_incident_webhook" {
   filter      = ""
   name        = "${var.teammate_name}-datadog-webhook"
@@ -103,22 +212,12 @@ Instructions:
    - Check metrics and monitors related to the issue
 
 2. Investigate logs to understand the problem
-   - Use Observe to fetch logs about this service with this specific error
    - Filter logs by errors and relevant timeframes
    - Look for patterns and correlations
 
-3. Find the root cause in the codebase
-   - Access the GitHub repository to find the PR that may have caused this issue
-   - Identify the problematic code changes
-   - Check deployment information using ArgoCD
-
-4. Check Kubernetes resources if applicable
-   - Examine pod status, logs, and events
-   - Analyze resource utilization and constraints
-
-5. Summarize your findings in a clear, actionable format
+3. Summarize your findings in a clear, actionable format
    - What's the issue? Provide a concise description
-   - What caused it? Link to specific code/deployment/configuration
+   - What caused it? Link to specific metrics/logs
    - How to fix it? Recommend concrete steps
    - Who should be involved? Tag relevant teams or individuals if known
 
@@ -126,20 +225,34 @@ IMPORTANT: Run all necessary steps in sequence without waiting for user approval
 
 Make your response focused and actionable. Format it clearly with headers, bullet points, and code blocks where appropriate. Prioritize information that helps resolve the incident quickly.
   EOT
-  agent       = kubiya_agent.incident_response.name
+  agent       = kubiya_agent.datadog_teammate.name
   destination = var.notification_channel
 }
 
 # Output the teammate details
-output "incident_response_teammate" {
+output "incident_response_teammates" {
   sensitive = true
   value = {
-    name                 = kubiya_agent.incident_response.name
-    debug_mode           = var.debug_mode
+    github_teammate = {
+      name = kubiya_agent.github_teammate.name
+    }
+    datadog_teammate = {
+      name = kubiya_agent.datadog_teammate.name
+      datadog_site = var.datadog_site
+    }
+    kubernetes_teammate = {
+      name = kubiya_agent.kubernetes_teammate.name
+    }
+    observe_teammate = {
+      name = kubiya_agent.observe_teammate.name
+      observe_dataset = var.observe_dataset_id
+    }
+    argocd_teammate = {
+      name = kubiya_agent.argocd_teammate.name
+      argocd_domain = var.argocd_domain
+    }
+    debug_mode = var.debug_mode
     notification_platform = var.ms_teams_notification ? "teams" : "Slack"
     notification_channel = var.notification_channel
-    datadog_site         = var.datadog_site
-    observe_dataset      = var.observe_dataset_id
-    argocd_domain        = var.argocd_domain
   }
 } 
