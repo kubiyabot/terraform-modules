@@ -27,8 +27,8 @@ resource "kubiya_secret" "litellm_api_key" {
 }
 
 # Configure the Query Assistant agent
-resource "kubiya_agent" "query_assistant" {
-  name         = "query-assistant"
+resource "kubiya_agent" "query_assistant_v2" {
+  name         = "query-assistant-v2"
   runner       = var.kubiya_runner
   description  = "AI-powered assistant that answers user queries by searching through Slack conversation history"
   instructions = <<-EOT
@@ -36,12 +36,13 @@ Your primary role is to assist users by answering their questions using informat
 
 - Use slack_search_messages with:
   - 'channel' set to '${var.source_channel}'
-  - 'query' set to the user's exact query without summarizing or modifying it
+  - 'query' set to the user's EXACT question or query - do not modify, rephrase, summarize, or interpret it in any way
   - 'oldest' set to '${var.search_window}' to search messages from the last ${var.search_window}
-- The tool will automatically include thread replies for any message that has them. You do not need to call slack_get_thread_replies separately.
 - Provide comprehensive answers based on the discovered content, considering both main messages and their thread replies.
 - Include context and references to the original Slack messages when possible.
 - Clearly communicate when relevant information cannot be found.
+
+IMPORTANT: Always use the user's query VERBATIM as the search query. Do not attempt to improve or modify it in any way, as this could miss relevant results.
 
 Your goal is to be a helpful bridge between users and the knowledge contained within Slack conversations in the specified channel.
 EOT
@@ -54,6 +55,7 @@ EOT
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
+    LITELLM_API_USER = var.litellm_api_user
   }
 
   secrets = ["LITELLM_API_KEY"]
@@ -62,10 +64,10 @@ EOT
 }
 
 # Output the agent details
-output "query_assistant" {
+output "query_assistant_v2" {
   sensitive = true
   value = {
-    name       = kubiya_agent.query_assistant.name
+    name       = kubiya_agent.query_assistant_v2.name
     debug_mode = var.debug_mode
   }
 }
