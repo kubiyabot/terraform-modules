@@ -1,8 +1,8 @@
 # Required Core Configuration
 variable "teammate_name" {
-  description = "Name of your Query Assistant teammate (e.g., 'query-assistant'). Used to identify the teammate in logs and notifications."
+  description = "Name of your Query Assistant teammate (e.g., 'ask-kubiya'). Used to identify the teammate in logs and notifications."
   type        = string
-  default     = "query-assistant"
+  default     = "ask-kubiya"
 }
 
 # Access Control
@@ -39,5 +39,10 @@ variable "litellm_api_key" {
 variable "search_window" {
   description = "Window for searching Slack messages. Supports various time formats like '30m' (30 minutes), '1h' (1 hour), '2d' (2 days), '72h' (72 hours), etc."
   type        = string
-  default     = "72h"
+  default     = "90d"
+}
+
+variable "litellm_api_user" {
+  description = "API user for LiteLLM service"
+  type        = string
 }

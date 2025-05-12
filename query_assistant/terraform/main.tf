@@ -56,6 +56,7 @@ EOT
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
+    LITELLM_API_USER = var.litellm_api_user
   }
 
   secrets = ["LITELLM_API_KEY"]
