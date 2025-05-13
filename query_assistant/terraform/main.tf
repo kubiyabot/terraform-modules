@@ -20,12 +20,11 @@ resource "kubiya_source" "slack_tooling" {
 }
 
 # Create secrets for LiteLLM configuration
-resource "kubiya_secret" "litellm_api_key" {
-  name        = "LITELLM_API_KEY"
-  value       = var.litellm_api_key
-  description = "API key for LiteLLM service"
+resource "kubiya_secret" "llm_api_key" {
+  name        = "LLM_API_KEY"
+  value       = var.kubiya_api_key
+  description = "API key for Kubiya"
 }
-
 # Configure the Query Assistant agent
 resource "kubiya_agent" "query_assistant" {
   name         = var.teammate_name
@@ -38,7 +37,6 @@ Your primary role is to assist users by answering their questions using informat
   - 'channel' set to '${var.source_channel}'
   - 'query' set to the user's EXACT question or query - do not modify, rephrase, summarize, or interpret it in any way
   - 'oldest' set to '${var.search_window}' to search messages from the last ${var.search_window}
-- The tool will automatically include thread replies for any message that has them. You do not need to call slack_get_thread_replies separately.
 - Provide comprehensive answers based on the discovered content, considering both main messages and their thread replies.
 - Include context and references to the original Slack messages when possible.
 - Clearly communicate when relevant information cannot be found.
@@ -58,7 +56,7 @@ EOT
     KUBIYA_TOOL_TIMEOUT = "500"
   }
 
-  secrets = ["LITELLM_API_KEY"]
+  secrets = ["LLM_API_KEY"]
 
   is_debug_mode = var.debug_mode
 }
