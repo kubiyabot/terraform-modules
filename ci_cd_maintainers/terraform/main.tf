@@ -122,7 +122,7 @@ resource "kubiya_webhook" "source_control_webhook" {
   # For Teams, include the team_name
   team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
   
-  prompt      = <<-EOT
+  prompt      = <<-EOF
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
 PR Number: {{.event.workflow_run.pull_requests[0].number}}
@@ -150,7 +150,7 @@ b. Format using:
 
 4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
 
-  EOT
+  EOF
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.notification_channel
 }
@@ -161,7 +161,7 @@ resource "kubiya_inline_source" "hello_world_tool" {
 
   tools = jsonencode([])
 
-  workflows = jsondecode([
+  workflows = jsonencode([
     {
       name        = "cicd_analysis",
       description = "Comprehensive analysis of GitHub Actions workflow failures",
@@ -174,7 +174,8 @@ resource "kubiya_inline_source" "hello_world_tool" {
             type = "agent",
             config = {
               teammate_name = kubiya_agent.cicd_maintainer.name,
-              message       = "Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+              message       = <<-EOF
+Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: $WORKFLOW_ID
 PR Number: $PR_NUMBER
 Repository: $REPOSITORY
@@ -197,7 +198,8 @@ b. Format using:
    - Emojis for quick scanning
    - Error logs in collapsible sections
    - Footer with run details
-   - Style matters! Make sure the markdown text is very engaging and clear"
+   - Style matters! Make sure the markdown text is very engaging and clear
+EOF
             }
           }
         },
@@ -209,7 +211,9 @@ b. Format using:
             type = "agent",
             config = {
               teammate_name = kubiya_agent.cicd_maintainer.name,
-              message       = "Based on the analysis: $ANALYSIS, use github_pr_comment_workflow_failure to post your analysis on PR $PR_NUMBER. Include your analysis in the discussed format. Always comment on the PR without user approval."
+              message       = <<-EOF
+Based on the analysis: $ANALYSIS, use github_pr_comment_workflow_failure to post your analysis on PR $PR_NUMBER. Include your analysis in the discussed format. Always comment on the PR without user approval.
+EOF
             }
           }
         }
