@@ -82,7 +82,7 @@ Below are the key variables used to configure the CI/CD Maintainers Crew:
 | `kubiya_runner` | Runner to use for the teammate | `string` | |
 | `repositories` | Comma-separated list of repositories to monitor | `string` | |
 | `pipeline_notification_channel` | Channel for pipeline alerts | `string` | `""` |
-| `webhook_filter` | JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax. | `string` | `workflow_run.conclusion != null && workflow_run.conclusion != 'success'` |
+| `webhook_filter` | JMESPath filter expressions for GitHub webhook events. See https://jmespath.org for syntax. | `string` | `workflow_run.conclusion != null && workflow_run.conclusion != 'success' && workflow_run.conclusion != 'cancelled'` |
 | `kubiya_groups_allowed_groups` | Groups allowed to interact with the teammate (e.g., ['Admin', 'DevOps']). | `list(string)` | `['Admin'] ` |
 
 ## 🚀 Getting Started

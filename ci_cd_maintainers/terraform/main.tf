@@ -31,7 +31,7 @@ locals {
     ["workflow_run.conclusion != null"],
 
     # Failed runs condition
-    var.monitor_failed_runs_only ? ["workflow_run.conclusion != 'success'"] : [],
+    var.monitor_failed_runs_only ? ["workflow_run.conclusion != 'success' && workflow_run.conclusion != 'cancelled'"] : [],
 
     # Event type conditions
     [format("(%s)",
