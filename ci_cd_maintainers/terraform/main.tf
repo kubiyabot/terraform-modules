@@ -159,7 +159,7 @@ resource "kubiya_inline_source" "hello_world_tool" {
   name   = "workflow_source"
   runner = "core-testing-1"
 
-  tools = jsonencode([])
+  tools = ""
 
   workflows = jsonencode([
     {
