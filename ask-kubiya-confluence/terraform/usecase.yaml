@@ -1,0 +1,10 @@
+name: "Confluence Knowledge Assistant"
+icons:
+  - "https://cdn-icons-png.flaticon.com/512/5968/5968875.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+  - "https://wac-cdn.atlassian.com/assets/img/favicons/confluence/favicon-32x32.png"
+description: "AI-powered assistant that answers user queries by searching through Confluence documentation across multiple spaces. It helps teams quickly find information stored in your organization's knowledge base."
+secrets:
+  - name: Confluence API Token
+    description: "API token for Confluence authentication. Generate at: https://id.atlassian.com/manage-profile/security/api-tokens"
+    to_env: CONFLUENCE_API_TOKEN
