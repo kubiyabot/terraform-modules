@@ -118,7 +118,7 @@ node status: OK ✅
 ingress analyzer: OK ✅  
 find suspicious errors: ERROR ❌ Short, clear description of the issue.
 
-You can further investigate using Datadog, ArgoCD, Observe, or Kubernetes tools.
+Do you want me to investigate further using Datadog, ArgoCD, Observe, or Kubernetes tools?
 """
 
 IMPORTANT:  
