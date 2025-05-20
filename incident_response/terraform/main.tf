@@ -84,47 +84,48 @@ resource "kubiya_webhook" "datadog_incident_webhook" {
   team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
   
   prompt      = <<-EOT
-Your Goal: Given a Datadog incident that triggers you, use the tools you have to investigate and respond effectively.
+Your Goal:  
+When triggered by a Datadog incident, begin by running key Kubernetes operational checks. Summarize the findings clearly. If further investigation is needed, suggest follow-up actions using tools like Datadog, ArgoCD, Observe, or GitHub.
 
-Incident ID: {{.id}}
-Incident Title: {{.title}}
-Incident URL: {{.url}}
-Severity: {{.severity}}
-Description: {{.body}}
+Incident Details:  
+- Incident ID: {{.event.id}}  
+- Title: {{.event.title}}  
+- URL: {{.event.url}}  
+- Severity: {{.event.severity}}  
+- Description:  
+  {{.event.body}}
 
-Context:
-- Observe Dataset ID: ${var.observe_dataset_id}
+Investigation Instructions:
 
-Instructions:
+1. Run Kubernetes Operational Checks (Last 1–6 Hours):  
+   - Pod restarts across the cluster → use `check_pod_status`  
+   - Node health and availability → use `node_status`  
+   - Ingress controller health → use `ingress_analyzer`  
+   - Cluster logs/events for suspicious or repeated errors → use `find_suspicious_errors`
 
-1. Fetch more data about the incident using Datadog tools
-   - Get detailed alert information
-   - Analyze the affected services using the service map
-   - Check metrics and monitors related to the issue
+2. Summarize Findings:  
+   - Provide a concise summary of any anomalies or alerts.
 
-2. Investigate logs to understand the problem
-   - Use Observe to fetch logs about this service with this specific error
-   - Filter logs by errors and relevant timeframes
-   - Look for patterns and correlations
+3. Optional Deep-Dive:  
+   - If issues are detected, suggest deeper investigation using Datadog, Observe, ArgoCD, or GitHub.
 
-3. Find the root cause in the codebase
-   - Access the GitHub repository to find the PR that may have caused this issue
-   - Identify the problematic code changes
-   - Check deployment information using ArgoCD
+4. Use the Following Format:
 
-4. Check Kubernetes resources if applicable
-   - Examine pod status, logs, and events
-   - Analyze resource utilization and constraints
+"""
+Analysis Summary:
+pod restarts status: OK ✅  
+node status: OK ✅  
+ingress analyzer: OK ✅  
+find suspicious errors: ERROR ❌ Short, clear description of the issue.
 
-5. Summarize your findings in a clear, actionable format
-   - What's the issue? Provide a concise description
-   - What caused it? Link to specific code/deployment/configuration
-   - How to fix it? Recommend concrete steps
-   - Who should be involved? Tag relevant teams or individuals if known
+You can further investigate using Datadog, ArgoCD, Observe, or Kubernetes tools.
+"""
 
-IMPORTANT: Run all necessary steps in sequence without waiting for user approval. Continue the investigation process until you have reached a conclusion and provided a full analysis.
+IMPORTANT:  
+Run all steps sequentially and automatically without waiting for input. Continue the investigation until a full and clear analysis is completed.
 
-Make your response focused and actionable. Format it clearly with headers, bullet points, and code blocks where appropriate. Prioritize information that helps resolve the incident quickly.
+Tone & Focus:  
+Keep responses concise, structured, and focused on resolution.
   EOT
   agent       = kubiya_agent.incident_response.name
   destination = var.notification_channel
