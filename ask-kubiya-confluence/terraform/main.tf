@@ -28,7 +28,7 @@ resource "kubiya_source" "slack_tooling" {
 }
 
 # Configure the Query Assistant agent
-resource "kubiya_agent" "query_assistant" {
+resource "kubiya_agent" "ask_kubiya_confluence" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
   description  = "AI-powered assistant that answers user queries using knowledge imported from Confluence documentation"
@@ -57,6 +57,19 @@ EOT
   is_debug_mode = var.debug_mode
 }
 
+variable "CONFLUENCE_API_TOKEN" {
+  type        = string
+  sensitive   = true
+  description = "API token for Confluence authentication"
+}
+
+# Create secret using provider
+resource "kubiya_secret" "confluence_api_token" {
+  name        = "CONFLUENCE_API_TOKEN"
+  value       = var.CONFLUENCE_API_TOKEN
+  description = "Confluence API token for the CI/CD Maintainer"
+}
+
 # Fetch Confluence content using data source
 data "external" "confluence_content" {
   program = ["python3", "${path.module}/import_confluence.py"]
@@ -65,7 +78,7 @@ data "external" "confluence_content" {
   query = {
     CONFLUENCE_URL = var.confluence_url
     CONFLUENCE_USERNAME = var.confluence_username
-    CONFLUENCE_API_TOKEN = var.confluence_api_token
+    CONFLUENCE_API_TOKEN = var.CONFLUENCE_API_TOKEN
     space_key = var.confluence_space_key
     include_blogs = var.import_confluence_blogs ? "true" : "false"
   }
@@ -83,17 +96,17 @@ resource "kubiya_knowledge" "confluence_content" {
     each.value.type == "blog" ? ["blog"] : [],
     split(",", each.value.labels)
   )
-  supported_agents = [kubiya_agent.query_assistant.name]
+  supported_agents = [kubiya_agent.ask_kubiya_confluence.name]
   
   # Use the content directly from the Python script
   content = each.value.content
 }
 
 # Output the agent details
-output "query_assistant" {
+output "ask_kubiya_confluence" {
   sensitive = true
   value = {
-    name       = kubiya_agent.query_assistant.name
+    name       = kubiya_agent.ask_kubiya_confluence.name
     debug_mode = var.debug_mode
   }
 }

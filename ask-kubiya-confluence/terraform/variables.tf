@@ -1,6 +1,6 @@
 # Required Core Configuration
 variable "teammate_name" {
-  description = "Name of your Query Assistant teammate (e.g., 'ask-kubiya'). Used to identify the teammate in logs and notifications."
+  description = "Name of your Knowledge Assistant teammate (e.g., 'ask-kubiya'). Used to identify the teammate in logs and notifications."
   type        = string
   default     = "ask-kubiya"
 }
@@ -33,18 +33,6 @@ variable "confluence_url" {
 variable "confluence_username" {
   description = "The username or email for Confluence authentication"
   type        = string
-}
-
-variable "confluence_api_token" {
-  description = "API token for Confluence authentication"
-  type        = string
-  sensitive   = true
-}
-
-variable "kubiya_api_key" {
-  description = "API key for Kubiya"
-  type        = string
-  sensitive   = true
 }
 
 variable "confluence_space_key" {
