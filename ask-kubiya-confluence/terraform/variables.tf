@@ -50,3 +50,9 @@ variable "import_confluence_blogs" {
   type        = bool
   default     = true
 }
+
+variable "dedicated_channels" {
+  description = "List of dedicated channels for the teammate. If specified, the Teammate will be the default teammate for these channels and will always answer questions without ability to select other teammates."
+  type        = list(string)
+  default     = []
+}
