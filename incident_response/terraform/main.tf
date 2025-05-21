@@ -128,12 +128,6 @@ Run all steps sequentially and automatically without waiting for input. Continue
 
 Tone & Focus:  
 Keep responses concise, structured, and focused on resolution."""
-
-IMPORTANT:  
-Run all steps sequentially and automatically without waiting for input. Continue the investigation until a full and clear analysis is completed.
-
-Tone & Focus:  
-Keep responses concise, structured, and focused on resolution.
   EOT
   agent       = kubiya_agent.incident_response.name
   destination = var.notification_channel
