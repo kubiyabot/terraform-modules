@@ -58,6 +58,8 @@ EOT
 
   secrets = ["LLM_API_KEY"]
 
+  dedicated_channels = [var.source_channel]
+
   is_debug_mode = var.debug_mode
 }
 
