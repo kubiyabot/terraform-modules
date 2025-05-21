@@ -41,3 +41,9 @@ variable "search_window" {
   type        = string
   default     = "90d"
 }
+
+variable "dedicated_channel" {
+  description = "If true, the Teammate will be the default teammate for the source channel, and will always answer questions on this channel, wihtout abillity to select other teammates"
+  type        = bool
+  default     = true
+}
