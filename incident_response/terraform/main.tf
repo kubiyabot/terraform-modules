@@ -97,7 +97,8 @@ Incident Details:
 
 Investigation Instructions:
 
-1. Run Kubernetes Operational Checks (Last 1–6 Hours):  
+1. Run Kubernetes Operational Checks (Last 1–6 Hours):
+   - Helm package deployment list in last 1 hour → use `list_helm_release`
    - Pod restarts across the cluster → use `check_pod_status`  
    - Node health and availability → use `node_status`  
    - Ingress controller health → use `ingress_analyzer`  
@@ -113,6 +114,7 @@ Investigation Instructions:
 
 """
 Analysis Summary:
+helm package deployment list: OK ✅ - deployment 1 - deployment 2
 pod restarts status: OK ✅  
 node status: OK ✅  
 ingress analyzer: OK ✅  
@@ -120,6 +122,12 @@ find suspicious errors: ERROR ❌ Short, clear description of the issue.
 
 Do you want me to investigate further using Datadog, ArgoCD, Observe, or Kubernetes tools?
 """
+
+IMPORTANT:  
+Run all steps sequentially and automatically without waiting for input. Continue the investigation until a full and clear analysis is completed.
+
+Tone & Focus:  
+Keep responses concise, structured, and focused on resolution."""
 
 IMPORTANT:  
 Run all steps sequentially and automatically without waiting for input. Continue the investigation until a full and clear analysis is completed.
