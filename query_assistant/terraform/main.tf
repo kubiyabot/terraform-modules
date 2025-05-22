@@ -54,6 +54,7 @@ EOT
 
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
+    COMMUNICATION_CHANNELS_LISTEN = var.use_dedicated_channel ? "slack=${var.source_channel}" : ""
   }
 
   secrets = ["LLM_API_KEY"]
