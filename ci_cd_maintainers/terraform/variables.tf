@@ -16,6 +16,13 @@ variable "notification_channel" {
   default     = "#ci-cd-maintainers-crew"
 }
 
+variable "summary_channel" {
+  description = "The channel to send summary notifications to. Slack Only, use channel name."
+  type        = string
+  default     = "#ci-cd-maintainers-crew-summary"
+}
+
+
 variable "ms_teams_notification" {
   description = "Wether to send notifications using MS Teams (if false, notifications will be sent to Slack)"
   type        = bool

@@ -105,7 +105,8 @@ resource "kubiya_agent" "cicd_maintainer" {
   groups = var.kubiya_groups_allowed_groups
 
   environment_variables = {
-    KUBIYA_TOOL_TIMEOUT = "500"
+    KUBIYA_TOOL_TIMEOUT = "500",
+    DESTINATION_CHANNEL = var.summary_channel
   }
   is_debug_mode = var.debug_mode
 }
@@ -115,13 +116,9 @@ resource "kubiya_webhook" "source_control_webhook" {
   filter      = local.webhook_filter
   name        = "${var.teammate_name}-github-webhook"
   source      = "GitHub"
-  
-  # Set the communication method based on the MS Teams notification variable
-  method      = var.ms_teams_notification ? "teams" : "Slack"
-  
   # For Teams, include the team_name
+  method      = var.ms_teams_notification ? "teams" : "Slack"
   team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
-  
   prompt      = <<-EOT
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
@@ -130,25 +127,22 @@ Repository: {{.event.repository.full_name}}
 
 Instructions:
 
-1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
+1. Use slack_investigation to notify about starting the investigation.
 
-2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
+2. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-3. After collecting the insights, prepare to create a comment on the pull request following this structure:
+3. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
+
+4. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
 a. Highlights key information first:
    - What failed
    - Why it failed 
    - How to fix it
 
-b. Format using:
-   - Clear markdown headers
-   - Emojis for quick scanning
-   - Error logs in collapsible sections
-   - Footer with run details
-   - Style matters! Make sure the markdown text is very engaging and clear
+b. use slack_workflow_summary tool to send a summary to slack.
 
-4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
+5. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
 
   EOT
   agent       = kubiya_agent.cicd_maintainer.name
