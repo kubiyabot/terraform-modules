@@ -1,2 +1,0 @@
-kubiyabot/agent-costa
-kubiyabot/terraform-modules

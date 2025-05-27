@@ -6,8 +6,15 @@ variable "teammate_name" {
 }
 
 variable "repositories" {
-  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). Ensure you have appropriate permissions."
+  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). If not provided, the module will automatically discover all repositories in the organization. Leave empty for automatic discovery."
   type        = string
+  default     = ""
+}
+
+variable "github_organization" {
+  type        = string
+  description = "GitHub organization name. If not provided, will be extracted from the first repository. Required when using auto-discovery with empty repositories variable."
+  default     = ""
 }
 
 variable "notification_channel" {
@@ -86,4 +93,15 @@ variable "use_github_app" {
   type        = bool
   description = "Whether to use GitHub App integration instead of the personal token provided under secrets. if selected, make sure to set Github app integration under integrations."
   default     = true
+}
+
+variable "GITHUB_TOKEN" {
+  type      = string
+  sensitive = true
+}
+
+variable "teams_webhook_url" {
+  type        = string
+  default     = ""
+  description = "The Teams webhook URL"
 }
