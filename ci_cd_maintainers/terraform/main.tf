@@ -127,22 +127,20 @@ Repository: {{.event.repository.full_name}}
 
 Instructions:
 
-1. Use slack_investigation to notify about starting the investigation.
+1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
 
-2. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
+2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
-3. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
-
-4. After collecting the insights, prepare to create a comment on the pull request following this structure:
+3. After collecting the insights, prepare to create a comment on the pull request following this structure:
 
 a. Highlights key information first:
    - What failed
    - Why it failed 
    - How to fix it
 
-b. use slack_workflow_summary tool to send a summary to slack.
+b. ${var.enable_summary_channel ? "use slack_workflow_summary tool to send a summary to slack." : "Format using:\n   - Clear markdown headers\n   - Emojis for quick scanning\n   - Error logs in collapsible sections\n   - Footer with run details\n   - Style matters! Make sure the markdown text is very engaging and clear"}
 
-5. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
+4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
 
   EOT
   agent       = kubiya_agent.cicd_maintainer.name

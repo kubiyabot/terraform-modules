@@ -16,12 +16,17 @@ variable "notification_channel" {
   default     = "#ci-cd-maintainers-crew"
 }
 
+variable "enable_summary_channel" {
+  description = "Whether to enable summary channel notifications. Currently only supported for Slack notifications (not available for MS Teams)."
+  type        = bool
+  default     = true
+}
+
 variable "summary_channel" {
   description = "The channel to send summary notifications to. Slack Only, use channel name."
   type        = string
   default     = "#ci-cd-maintainers-crew-summary"
 }
-
 
 variable "ms_teams_notification" {
   description = "Wether to send notifications using MS Teams (if false, notifications will be sent to Slack)"
