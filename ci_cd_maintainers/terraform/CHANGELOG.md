@@ -9,6 +9,7 @@
 - Fixed issues with repository validation that caused deployment failures
 - Fixed circular dependency between GitHub provider and repository discovery
 - Replaced `github_repository` data source with more reliable HTTP-based validation to avoid license-related errors
+- Enhanced validation to gracefully handle non-existent repositories instead of failing
 
 ### Added
 - Pre-validation script `validate_github_token.sh` to check GitHub token permissions before applying Terraform
@@ -16,6 +17,7 @@
 - Comprehensive README with usage instructions and validation process
 - Better error handling for repository access issues
 - New `github_organization` variable to explicitly set organization for auto-discovery
+- Output for invalid repositories to help identify issues
 
 ### Removed
 - Complex script-based webhook management that caused reliability issues

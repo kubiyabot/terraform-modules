@@ -220,6 +220,15 @@ The module uses HTTP requests to validate access to repositories before creating
 3. Webhooks are created only for valid repositories
 4. This approach is more reliable than using the GitHub provider's data sources, as it avoids issues with repositories missing license files or other metadata
 
+### Handling Invalid Repositories
+
+When a repository in your list doesn't exist or can't be accessed:
+
+1. The module will automatically skip it and only create webhooks for valid repositories
+2. An output named `invalid_repositories` will list all repositories that failed validation
+3. This allows you to identify and fix any issues with repository names or access permissions
+4. The module will continue to operate normally with the repositories that are valid
+
 ### Pre-Validation Script
 
 The module includes a validation script that you can run before applying Terraform to check if your GitHub token has the necessary permissions:

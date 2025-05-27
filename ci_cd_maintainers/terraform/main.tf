@@ -85,14 +85,20 @@ data "http" "repo_validator" {
 locals {
   # Check which repositories are valid based on HTTP response
   valid_repositories = {
-    for repo, response in data.http.repo_validator : repo =>
-    can(jsondecode(response.body)) && response.status_code == 200
+    for repo, response in data.http.repo_validator : repo => 
+      response.status_code == 200
   }
-
+  
   # Filter repository list to only include valid repositories
   validated_repository_list = [
-    for repo in local.repository_list :
-    repo if lookup(local.valid_repositories, repo, false)
+    for repo in local.repository_list : 
+      repo if lookup(local.valid_repositories, repo, false)
+  ]
+  
+  # Identify invalid repositories for warning output
+  invalid_repositories = [
+    for repo in local.repository_list : 
+      repo if !lookup(local.valid_repositories, repo, false)
   ]
 }
 
@@ -207,7 +213,6 @@ resource "github_repository_webhook" "webhook" {
 
 # Output the teammate details
 output "cicd_maintainer" {
-  sensitive = true
   value = {
     name                       = kubiya_agent.cicd_maintainer.name
     repositories               = var.repositories == "" && length(local.validated_repository_list) > 0 ? join(",", local.validated_repository_list) : var.repositories
@@ -218,4 +223,10 @@ output "cicd_maintainer" {
     notification_platform      = var.ms_teams_notification ? "teams" : "Slack"
     notification_channel       = var.notification_channel
   }
+}
+
+# Output invalid repositories for troubleshooting
+output "invalid_repositories" {
+  description = "List of repositories that failed validation (404 Not Found)"
+  value       = local.invalid_repositories
 }
