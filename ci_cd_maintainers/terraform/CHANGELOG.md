@@ -10,6 +10,8 @@
 - Fixed circular dependency between GitHub provider and repository discovery
 - Replaced `github_repository` data source with more reliable HTTP-based validation to avoid license-related errors
 - Enhanced validation to gracefully handle non-existent repositories instead of failing
+- Simplified repository specification to only accept repository names without organization prefix
+- Made `github_organization` variable mandatory for all use cases
 
 ### Added
 - Pre-validation script `validate_github_token.sh` to check GitHub token permissions before applying Terraform

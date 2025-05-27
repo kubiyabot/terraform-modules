@@ -167,17 +167,17 @@ module "cicd_maintainer" {
 
   # Required variables
   GITHUB_TOKEN        = var.github_token
+  github_organization = "my-github-org"
   teammate_name       = "cicd-crew-myteam"
   notification_channel = "#devops"
   
   # Repository configuration - choose one of these approaches:
   
-  # Option 1: Provide specific repositories to monitor
-  repositories        = "org/repo1,org/repo2,org/repo3"
+  # Option 1: Provide specific repositories to monitor (without organization prefix)
+  repositories        = "repo1,repo2,repo3"
   
-  # Option 2: Use automatic repository discovery (requires github_organization)
+  # Option 2: Use automatic repository discovery (leave repositories empty)
   repositories        = ""
-  github_organization = "my-github-org"
   
   # Optional configuration
   kubiya_runner       = "gcp-no-vcluster"
@@ -193,14 +193,16 @@ The module handles repository management in two ways:
 ### 1. Specified Repositories
 
 When you provide the `repositories` variable as a comma-separated list:
+- Repositories should be specified without the organization prefix
+- The module will automatically add the organization prefix using the `github_organization` variable
+- Example: `"repo1,repo2,repo3"` (when `github_organization` is set to "myorg")
 - The module validates access to each repository
-- It will fail early if any repository is inaccessible
-- Webhooks are created only for the specified repositories
+- It will skip any inaccessible repositories instead of failing
+- Webhooks are created only for valid repositories
 
 ### 2. Dynamic Repository Discovery
 
-When you don't provide the `repositories` variable:
-- You must specify the `github_organization` variable
+When you don't provide the `repositories` variable (empty string):
 - The module queries the GitHub API to discover all repositories in the organization
 - Webhooks are created for all discovered repositories
 

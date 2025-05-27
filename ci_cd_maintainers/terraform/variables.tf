@@ -13,8 +13,7 @@ variable "repositories" {
 
 variable "github_organization" {
   type        = string
-  description = "GitHub organization name. If not provided, will be extracted from the first repository. Required when using auto-discovery with empty repositories variable."
-  default     = ""
+  description = "GitHub organization name. Required for both specific repository lists and auto-discovery."
 }
 
 variable "notification_channel" {

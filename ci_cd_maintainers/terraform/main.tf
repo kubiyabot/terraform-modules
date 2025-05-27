@@ -20,15 +20,14 @@ provider "kubiya" {
 }
 
 locals {
-  # GitHub organization handling
-  # Extract from the first repository if provided, otherwise use the variable
-  github_org_from_repos = var.repositories != "" ? trim(split("/", split(",", var.repositories)[0])[0], " ") : ""
-  github_organization   = var.github_organization != "" ? var.github_organization : local.github_org_from_repos
-
-  # Repository list handling - depends on organization
-  repository_list = var.repositories != "" ? compact(split(",", var.repositories)) : (
-    local.github_organization != "" ? data.github_repositories.available[0].full_names : []
-  )
+  # Repository list handling - process repository names
+  raw_repository_list = compact(split(",", var.repositories))
+  
+  # Format repository list with organization prefix
+  repository_list = [
+    for repo in local.raw_repository_list : 
+      "${var.github_organization}/${repo}"
+  ]
 
   # Event configurations
   github_events = ["check_run", "workflow_run"]
@@ -60,22 +59,34 @@ locals {
 
 # Configure providers
 provider "github" {
-  owner = local.github_organization
+  owner = var.github_organization
   token = var.GITHUB_TOKEN
 }
 
 # Fetch available repositories if no specific repositories provided
 data "github_repositories" "available" {
-  count = var.repositories == "" && local.github_organization != "" ? 1 : 0
-  query = "org:${local.github_organization} fork:true"
+  count = var.repositories == "" ? 1 : 0
+  query = "org:${var.github_organization} fork:true"
+}
+
+locals {
+  # For auto-discovery using github_repositories data source
+  discovered_repositories = var.repositories == "" ? (
+    length(data.github_repositories.available) > 0 ? 
+      [for name in data.github_repositories.available[0].names : 
+        "${var.github_organization}/${name}"] : []
+  ) : []
+    
+  # Final repository list - either specified or discovered
+  all_repositories = var.repositories != "" ? local.repository_list : local.discovered_repositories
 }
 
 # Validate repositories exist using HTTP data source (more reliable than github_repository)
 data "http" "repo_validator" {
-  for_each = toset(local.repository_list)
-
+  for_each = toset(local.all_repositories)
+  
   url = "https://api.github.com/repos/${each.value}"
-
+  
   request_headers = {
     Accept        = "application/vnd.github.v3+json"
     Authorization = "token ${var.GITHUB_TOKEN}"
@@ -91,13 +102,13 @@ locals {
   
   # Filter repository list to only include valid repositories
   validated_repository_list = [
-    for repo in local.repository_list : 
+    for repo in local.all_repositories : 
       repo if lookup(local.valid_repositories, repo, false)
   ]
   
   # Identify invalid repositories for warning output
   invalid_repositories = [
-    for repo in local.repository_list : 
+    for repo in local.all_repositories : 
       repo if !lookup(local.valid_repositories, repo, false)
   ]
 }
@@ -120,10 +131,10 @@ resource "kubiya_agent" "cicd_maintainer" {
   runner       = var.kubiya_runner
   description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
   instructions = ""
-
+  
   # Use GH_TOKEN secret if not using GitHub App
   secrets = var.use_github_app ? [] : [kubiya_secret.github_token.name]
-
+  
   sources = [
     kubiya_source.github_tooling.name,
   ]
@@ -148,13 +159,13 @@ resource "kubiya_webhook" "source_control_webhook" {
   filter = local.webhook_filter
   name   = "${var.teammate_name}-github-webhook"
   source = "GitHub"
-
+  
   # Set the communication method based on the MS Teams notification variable
   method = var.ms_teams_notification ? "teams" : "Slack"
-
+  
   # For Teams, include the team_name
   team_name = var.ms_teams_notification ? var.ms_teams_team_name : null
-
+  
   prompt      = <<-EOT
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
@@ -191,7 +202,7 @@ b. Format using:
 # GitHub repository webhooks - using for_each approach
 resource "github_repository_webhook" "webhook" {
   for_each = length(local.validated_repository_list) > 0 ? toset(local.validated_repository_list) : []
-
+  
   # This depends on repository validation
   depends_on = [data.http.repo_validator]
 
@@ -200,7 +211,7 @@ resource "github_repository_webhook" "webhook" {
     # Fallback if repository name can't be parsed
     each.value
   )
-
+  
   configuration {
     url          = kubiya_webhook.source_control_webhook.url
     content_type = "json"
@@ -213,6 +224,7 @@ resource "github_repository_webhook" "webhook" {
 
 # Output the teammate details
 output "cicd_maintainer" {
+  sensitive = true
   value = {
     name                       = kubiya_agent.cicd_maintainer.name
     repositories               = var.repositories == "" && length(local.validated_repository_list) > 0 ? join(",", local.validated_repository_list) : var.repositories
