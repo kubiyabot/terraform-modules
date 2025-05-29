@@ -6,9 +6,9 @@ variable "teammate_name" {
 }
 
 variable "repositories" {
-  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). If not provided, the module will automatically discover all repositories in the organization. Leave empty for automatic discovery."
+  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). If *, the module will automatically discover all repositories in the organization. Leave empty for automatic discovery."
   type        = string
-  default     = ""
+  default     = "*"
 }
 
 variable "github_organization" {
@@ -104,15 +104,4 @@ variable "use_github_app" {
   type        = bool
   description = "Whether to use GitHub App integration instead of the personal token provided under secrets. if selected, make sure to set Github app integration under integrations."
   default     = true
-}
-
-variable "GITHUB_TOKEN" {
-  type      = string
-  sensitive = true
-}
-
-variable "teams_webhook_url" {
-  type        = string
-  default     = ""
-  description = "The Teams webhook URL"
 }

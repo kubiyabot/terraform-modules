@@ -2,15 +2,12 @@ terraform {
   required_providers {
     kubiya = {
       source  = "kubiya-terraform/kubiya"
-      version = "~> 1.0"
     }
     github = {
       source  = "hashicorp/github"
-      version = "6.4.0"
     }
     http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
+      source  = "hashicorp/http" 
     }
   }
 }
@@ -60,18 +57,22 @@ locals {
 # Configure providers
 provider "github" {
   owner = var.github_organization
-  token = var.GITHUB_TOKEN
+}
+
+variable "GITHUB_TOKEN" {
+  type      = string
+  sensitive = true
 }
 
 # Fetch available repositories if no specific repositories provided
 data "github_repositories" "available" {
-  count = var.repositories == "" ? 1 : 0
+  count = var.repositories == "*" ? 1 : 0
   query = "org:${var.github_organization} fork:true"
 }
 
 locals {
   # For auto-discovery using github_repositories data source
-  discovered_repositories = var.repositories == "" ? (
+  discovered_repositories = var.repositories == "*" ? (
     length(data.github_repositories.available) > 0 ? 
       [for name in data.github_repositories.available[0].names : 
         "${var.github_organization}/${name}"] : []
@@ -223,7 +224,7 @@ output "cicd_maintainer" {
   sensitive = true
   value = {
     name                       = kubiya_agent.cicd_maintainer.name
-    repositories               = var.repositories == "" && length(local.validated_repository_list) > 0 ? join(",", local.validated_repository_list) : var.repositories
+    repositories               = var.repositories == "*" && length(local.validated_repository_list) > 0 ? join(",", local.validated_repository_list) : var.repositories
     debug_mode                 = var.debug_mode
     monitor_pr_workflow_runs   = var.monitor_pr_workflow_runs
     monitor_push_workflow_runs = var.monitor_push_workflow_runs
