@@ -1,15 +1,13 @@
 terraform {
   required_providers {
     kubiya = {
-      source = "kubiya-terraform/kubiya"
+      source  = "kubiya-terraform/kubiya"
     }
     github = {
       source  = "hashicorp/github"
-      version = "6.4.0"
     }
     http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
+      source  = "hashicorp/http" 
     }
   }
 }
@@ -19,8 +17,14 @@ provider "kubiya" {
 }
 
 locals {
-  # Repository list handling
-  repository_list = compact(split(",", var.repositories))
+  # Repository list handling - process repository names
+  raw_repository_list = compact(split(",", var.repositories))
+  
+  # Format repository list with organization prefix
+  repository_list = [
+    for repo in local.raw_repository_list : 
+      "${var.github_organization}/${repo}"
+  ]
 
   # Event configurations
   github_events = ["check_run", "workflow_run"]
@@ -48,9 +52,11 @@ locals {
   )
 
   webhook_filter = join(" && ", local.webhook_filter_conditions)
+}
 
-  # GitHub organization handling
-  github_organization = trim(split("/", local.repository_list[0])[0], " ")
+# Configure providers
+provider "github" {
+  owner = var.github_organization
 }
 
 variable "GITHUB_TOKEN" {
@@ -58,15 +64,54 @@ variable "GITHUB_TOKEN" {
   sensitive = true
 }
 
-variable "teams_webhook_url" {
-  type        = string
-  default     = ""
-  description = "The Teams webhook URL"
+# Fetch available repositories if no specific repositories provided
+data "github_repositories" "available" {
+  count = var.repositories == "*" ? 1 : 0
+  query = "org:${var.github_organization} fork:true"
 }
 
-# Configure providers
-provider "github" {
-  owner = local.github_organization
+locals {
+  # For auto-discovery using github_repositories data source
+  discovered_repositories = var.repositories == "*" ? (
+    length(data.github_repositories.available) > 0 ? 
+      [for name in data.github_repositories.available[0].names : 
+        "${var.github_organization}/${name}"] : []
+  ) : []
+    
+  # Final repository list - either specified or discovered
+  all_repositories = var.repositories != "" ? local.repository_list : local.discovered_repositories
+}
+
+# Validate repositories exist using HTTP data source (more reliable than github_repository)
+data "http" "repo_validator" {
+  for_each = toset(local.all_repositories)
+  
+  url = "https://api.github.com/repos/${each.value}"
+  
+  request_headers = {
+    Accept        = "application/vnd.github.v3+json"
+    Authorization = "token ${var.GITHUB_TOKEN}"
+  }
+}
+
+locals {
+  # Check which repositories are valid based on HTTP response
+  valid_repositories = {
+    for repo, response in data.http.repo_validator : repo => 
+      response.status_code == 200
+  }
+  
+  # Filter repository list to only include valid repositories
+  validated_repository_list = [
+    for repo in local.all_repositories : 
+      repo if lookup(local.valid_repositories, repo, false)
+  ]
+  
+  # Identify invalid repositories for warning output
+  invalid_repositories = [
+    for repo in local.all_repositories : 
+      repo if !lookup(local.valid_repositories, repo, false)
+  ]
 }
 
 # GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
@@ -74,7 +119,7 @@ resource "kubiya_source" "github_tooling" {
   url = "https://github.com/kubiyabot/community-tools/tree/main/github"
 }
 
-//create secret using provider
+# Create secret using provider
 resource "kubiya_secret" "github_token" {
   name        = "GH_TOKEN"
   value       = var.GITHUB_TOKEN
@@ -89,7 +134,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   instructions = ""
   
   # Use GH_TOKEN secret if not using GitHub App
-  secrets      = var.use_github_app ? [] : [kubiya_secret.github_token.name]
+  secrets = var.use_github_app ? [] : [kubiya_secret.github_token.name]
   
   sources = [
     kubiya_source.github_tooling.name,
@@ -113,12 +158,16 @@ resource "kubiya_agent" "cicd_maintainer" {
 
 # Unified webhook configuration for both Slack and Teams
 resource "kubiya_webhook" "source_control_webhook" {
-  filter      = local.webhook_filter
-  name        = "${var.teammate_name}-github-webhook"
-  source      = "GitHub"
+  filter = local.webhook_filter
+  name   = "${var.teammate_name}-github-webhook"
+  source = "GitHub"
+  
+  # Set the communication method based on the MS Teams notification variable
+  method = var.ms_teams_notification ? "teams" : "Slack"
+  
   # For Teams, include the team_name
-  method      = var.ms_teams_notification ? "teams" : "Slack"
-  team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
+  team_name = var.ms_teams_notification ? var.ms_teams_team_name : null
+  
   prompt      = <<-EOT
 Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
 Workflow ID: {{.event.workflow_run.id}}
@@ -147,9 +196,12 @@ b. ${var.enable_summary_channel ? "use slack_workflow_summary tool to send a sum
   destination = var.notification_channel
 }
 
-# GitHub repository webhooks
+# GitHub repository webhooks - using for_each approach
 resource "github_repository_webhook" "webhook" {
-  for_each = length(local.repository_list) > 0 ? toset(local.repository_list) : []
+  for_each = length(local.validated_repository_list) > 0 ? toset(local.validated_repository_list) : []
+  
+  # This depends on repository validation
+  depends_on = [data.http.repo_validator]
 
   repository = try(
     trim(split("/", each.value)[1], " "),
@@ -171,13 +223,19 @@ resource "github_repository_webhook" "webhook" {
 output "cicd_maintainer" {
   sensitive = true
   value = {
-    name                               = kubiya_agent.cicd_maintainer.name
-    repositories                       = var.repositories
-    debug_mode                         = var.debug_mode
-    monitor_pr_workflow_runs           = var.monitor_pr_workflow_runs
-    monitor_push_workflow_runs         = var.monitor_push_workflow_runs
-    monitor_failed_runs_only           = var.monitor_failed_runs_only
-    notification_platform              = var.ms_teams_notification ? "teams" : "Slack"
-    notification_channel               = var.notification_channel
+    name                       = kubiya_agent.cicd_maintainer.name
+    repositories               = var.repositories == "*" && length(local.validated_repository_list) > 0 ? join(",", local.validated_repository_list) : var.repositories
+    debug_mode                 = var.debug_mode
+    monitor_pr_workflow_runs   = var.monitor_pr_workflow_runs
+    monitor_push_workflow_runs = var.monitor_push_workflow_runs
+    monitor_failed_runs_only   = var.monitor_failed_runs_only
+    notification_platform      = var.ms_teams_notification ? "teams" : "Slack"
+    notification_channel       = var.notification_channel
   }
+}
+
+# Output invalid repositories for troubleshooting
+output "invalid_repositories" {
+  description = "List of repositories that failed validation (404 Not Found)"
+  value       = local.invalid_repositories
 }
