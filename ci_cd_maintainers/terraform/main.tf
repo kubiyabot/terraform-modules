@@ -93,6 +93,7 @@ resource "kubiya_agent" "cicd_maintainer" {
   
   sources = [
     kubiya_source.github_tooling.name,
+    kubiya_inline_source.cicd_analysis.name,
   ]
 
   # Dynamic integrations based on configuration
@@ -123,66 +124,77 @@ resource "kubiya_webhook" "source_control_webhook" {
   team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
   
   prompt      = <<-EOF
-Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
-Workflow ID: {{.event.workflow_run.id}}
-PR Number: {{.event.workflow_run.pull_requests[0].number}}
-Repository: {{.event.repository.full_name}}
-
-Instructions:
-
-1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
-
-2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
-
-3. After collecting the insights, prepare to create a comment on the pull request following this structure:
-
-a. Highlights key information first:
-   - What failed
-   - Why it failed 
-   - How to fix it
-
-b. Format using:
-   - Clear markdown headers
-   - Emojis for quick scanning
-   - Error logs in collapsible sections
-   - Footer with run details
-   - Style matters! Make sure the markdown text is very engaging and clear
-
-4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
-
-  EOF
+Trigger workflow_cicd_analysis with the following parameters:
+WORKFLOW_ID: {{.event.workflow_run.id}}
+PR_NUMBER: {{.event.workflow_run.pull_requests[0].number}}
+REPOSITORY: {{.event.repository.full_name}}
+EOF 
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.notification_channel
 }
 
-resource "kubiya_inline_source" "hello_world_tool" {
-  name   = "workflow_source"
+resource "kubiya_inline_source" "cicd_analysis" {
+  name   = "cicd_analysis"
   runner = "core-testing-1"
 
-  tools = ""
+  # tools = jsonencode([])
 
   workflows = jsonencode([
     {
       name        = "cicd_analysis",
       description = "Comprehensive analysis of GitHub Actions workflow failures",
+      params = [
+        {
+          key = "WORKFLOW_ID"
+        },
+        {
+          key = "PR_NUMBER"
+        },
+        {
+          key = "REPOSITORY"
+        }
+      ],
       steps = [
+        {
+          name = "fetch-failed-logs",
+          description = "Fetch failed logs for the GitHub Actions workflow",
+          output = "FAILED_LOGS",
+          executor = {
+            type = "tool",
+            config = {
+              tool_def = {
+                name = "workflow-logs-fetcher",
+                description = "Fetches failed logs from GitHub Actions workflow using GitHub CLI",
+                secrets = ["GH_TOKEN"],
+                type = "docker",
+                image = "maniator/gh:latest",
+                with_files = [
+                  {
+                    destination = "/tmp/fetch_logs.sh",
+                    content = "#!/bin/sh\nset -e\n\n# Install jq if not available\ncommand -v jq || apk add --quiet jq\n\n# Configuration\nRUN_ID=\"$$WORKFLOW_ID\"\nREPO=\"$$REPOSITORY\"\n\necho \"📊 Fetching failed job logs for run ID: $$RUN_ID\"\n\n# Get all jobs for the run\necho \"🔍 Getting jobs for run...\"\nJOBS_INFO=$$(gh api /repos/$$REPO/actions/runs/$$RUN_ID/jobs)\n\necho \"✅ Successfully retrieved jobs information\"\n\n# Extract failed job IDs and names\nFAILED_JOBS=$$(echo \"$$JOBS_INFO\" | jq -r '.jobs[] | select(.conclusion == \"failure\") | \"\\(.id):\\(.name)\"')\n\nif [ -z \"$$FAILED_JOBS\" ]; then\n    echo \"🎉 No failed jobs found in this run!\"\n    echo \"📋 All job statuses:\"\n    echo \"$$JOBS_INFO\" | jq -r '.jobs[] | \"- \\(.name): \\(.conclusion // .status)\"'\n    exit 0\nfi\n\necho \"❌ Found failed jobs:\"\necho \"$$FAILED_JOBS\" | while IFS=: read -r job_id job_name; do\n    echo \"  - $$job_name (ID: $$job_id)\"\ndone\n\necho \"\"\necho \"🔍 Fetching logs for failed jobs...\"\n\n# Process each failed job\necho \"$$FAILED_JOBS\" | while IFS=: read -r job_id job_name; do\n    echo \"\"\n    echo \"==================== $$job_name (ID: $$job_id) ====================\"\n    \n    JOB_LOGS=$$(gh api /repos/$$REPO/actions/jobs/$$job_id/logs || echo \"Failed to fetch logs\")\n    \n    if [ \"$$JOB_LOGS\" = \"Failed to fetch logs\" ]; then\n        echo \"⚠️ Failed to fetch logs for job $$job_name\"\n        continue\n    fi\n    \n    if [ -z \"$$JOB_LOGS\" ]; then\n        echo \"⚠️ No logs available for job: $$job_name\"\n        continue\n    fi\n    \n    echo \"📄 Logs for $$job_name:\"\n    echo \"----------------------------------------\"\n    \n    # Filter for error-related content\n    FILTERED_LOGS=$$(echo \"$$JOB_LOGS\" | grep -i -E \"(error|fail|exception|fatal|panic|abort)\" || echo \"$$JOB_LOGS\" | tail -n 50)\n    \n    echo \"🎯 Key log content:\"\n    echo \"$$FILTERED_LOGS\"\n    \n    echo \"----------------------------------------\"\ndone\n\necho \"\"\necho \"✅ Completed fetching logs for all failed jobs\""
+                  }
+                ],
+                content = "chmod +x /tmp/fetch_logs.sh; /tmp/fetch_logs.sh"
+              }
+            }
+          }
+        },
         {
           name    = "failure-analysis",
           output  = "ANALYSIS",
-          depends = ["process-data", "generate-data"],
+          depends = ["fetch-failed-logs"],
           executor = {
             type = "agent",
             config = {
-              teammate_name = kubiya_agent.cicd_maintainer.name,
+              teammate_name = var.teammate_name,
               message       = <<-EOF
-Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
+Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow using the fetched logs. No user approval is required, complete the flow end to end.
 Workflow ID: $WORKFLOW_ID
 PR Number: $PR_NUMBER
 Repository: $REPOSITORY
-
 Instructions:
 
-1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID $WORKFLOW_ID. Wait until this step finishes.
+1. The failed logs have already been fetched.
 
 2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
 
@@ -199,6 +211,8 @@ b. Format using:
    - Error logs in collapsible sections
    - Footer with run details
    - Style matters! Make sure the markdown text is very engaging and clear
+
+Failed Logs: $FAILED_LOGS
 EOF
             }
           }
@@ -210,10 +224,8 @@ EOF
           executor = {
             type = "agent",
             config = {
-              teammate_name = kubiya_agent.cicd_maintainer.name,
-              message       = <<-EOF
-Based on the analysis: $ANALYSIS, use github_pr_comment_workflow_failure to post your analysis on PR $PR_NUMBER. Include your analysis in the discussed format. Always comment on the PR without user approval.
-EOF
+              agent_name = "cicd-crew",
+              message = "Based on the analysis: $ANALYSIS, use github_pr_comment_workflow_failure to post your analysis on PR $PR_NUMBER. Include your analysis in the discussed format. Always comment on the PR without user approval."
             }
           }
         }
