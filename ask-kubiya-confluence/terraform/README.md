@@ -7,12 +7,13 @@ Confluence Knowledge Assistant is your intelligent companion within the Kubiya p
 ## 🌟 Features
 
 - 🤖 **AI-Powered Search**: Natural language processing for intelligent query understanding
-- 📊 **Comprehensive Search**: Searches across multiple Confluence spaces
+- 📊 **Comprehensive Search**: Searches across multiple Confluence spaces simultaneously
 - 🔄 **Context Preservation**: Maintains documentation context in responses
 - 📈 **Relevance Ranking**: Prioritizes most relevant information
 - 🚨 **Clear Communication**: Indicates when information cannot be found
 - 🛡️ **Source References**: Links back to original Confluence pages
 - 🔍 **Content Analysis**: Deep dive into documentation content
+- 📚 **Multi-Space Support**: Search across one or multiple Confluence spaces
 
 ## 🔄 User Flows
 
@@ -55,7 +56,7 @@ Below are the key variables used to configure the Confluence Knowledge Assistant
 | `confluence_url` | URL of your Confluence instance | `string` | |
 | `confluence_username` | Username for Confluence authentication | `string` | |
 | `confluence_api_token` | API token for Confluence authentication | `string` | |
-| `confluence_space_key` | Key of the Confluence space to search | `string` | |
+| `confluence_space_keys` | List of Confluence space keys to search (e.g., `["DOCS", "TECH"]` or `["SINGLE"]`) | `list(string)` | |
 | `kubiya_groups_allowed_groups` | Groups allowed to interact with the teammate | `list(string)` | `['Admin', 'Users']` |
 | `import_confluence_blogs` | Whether to import blog posts from Confluence | `bool` | `true` |
 | `debug_mode` | Enable detailed debugging output | `bool` | `true` |
@@ -79,7 +80,9 @@ Below are the key variables used to configure the Confluence Knowledge Assistant
    - Confluence URL
    - Confluence Username
    - Confluence API Token
-   - Confluence Space Key
+   - **Confluence Space Keys** (can specify one or multiple spaces):
+     - Single space: `["DOCS"]`
+     - Multiple spaces: `["DOCS", "TECH", "POLICIES"]`
    - Allowed Groups
    - Debug Mode
 
@@ -90,27 +93,41 @@ Below are the key variables used to configure the Confluence Knowledge Assistant
 
 ## 🎭 Example Scenarios
 
-### Scenario 1: Technical Documentation Query
+### Scenario 1: Single Space Search
+
+**Configuration**: `confluence_space_keys = ["TECH"]`
 
 1. **Query**: User asks "How do we deploy to production?"
-2. **Search**: Assistant searches Confluence documentation
+2. **Search**: Assistant searches the TECH Confluence space
 3. **Analysis**: Finds relevant deployment documentation
 4. **Response**: Provides answer with links to original Confluence pages
 
-### Scenario 2: Policy Question
+### Scenario 2: Multi-Space Policy Search
+
+**Configuration**: `confluence_space_keys = ["HR", "POLICIES", "LEGAL"]`
 
 1. **Query**: "What's our policy on remote work?"
-2. **Search**: Searches for policy documentation
-3. **Analysis**: Compiles information from multiple pages
-4. **Response**: Delivers comprehensive policy summary
+2. **Search**: Searches across HR, POLICIES, and LEGAL spaces
+3. **Analysis**: Compiles information from multiple spaces and pages
+4. **Response**: Delivers comprehensive policy summary with sources from different spaces
+
+### Scenario 3: Comprehensive Documentation Search
+
+**Configuration**: `confluence_space_keys = ["DOCS", "TECH", "ONBOARDING", "FAQ"]`
+
+1. **Query**: "How do I set up my development environment?"
+2. **Search**: Searches across all specified spaces for setup information
+3. **Analysis**: Finds setup guides, FAQs, and troubleshooting info
+4. **Response**: Provides comprehensive setup instructions with references
 
 ## 📊 Key Benefits
 
-- ⚡ Quick access to documentation
+- ⚡ Quick access to documentation across multiple spaces
 - 🔒 Preserved documentation context
 - 📈 Improved team knowledge sharing
-- 🎯 Accurate answer finding
-- 📝 Source references included
+- 🎯 Accurate answer finding across all your knowledge sources
+- 📝 Source references included with space identification
+- 🚀 Flexible configuration (single or multiple spaces)
 
 ---
 
@@ -120,4 +137,4 @@ Ready to transform your team's knowledge discovery? Deploy your Confluence Knowl
 
 ---
 
-*Let Confluence Knowledge Assistant help your team find the answers they need! 🔍✨*
+*Let Confluence Knowledge Assistant help your team find the answers they need across all your spaces! 🔍✨*

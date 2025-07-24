@@ -35,9 +35,9 @@ variable "confluence_username" {
   type        = string
 }
 
-variable "confluence_space_key" {
-  description = "The key of the Confluence space to search for content"
-  type        = string
+variable "confluence_space_keys" {
+  description = "List of Confluence space keys to search for content. Can be a single space or multiple spaces (e.g., ['SPACE1', 'SPACE2'])"
+  type        = list(string)
 }
 
 variable "kubiya_user_email" {
