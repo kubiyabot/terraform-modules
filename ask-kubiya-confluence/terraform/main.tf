@@ -53,10 +53,7 @@ EOT
   environment_variables = {
     KUBIYA_TOOL_TIMEOUT = "500"
   }
-
-  # Only set dedicated_channels if the list is not empty
-  dedicated_channels = length(var.dedicated_channels) > 0 ? var.dedicated_channels : null
-
+  
   is_debug_mode = var.debug_mode
 }
 
