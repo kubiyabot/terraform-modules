@@ -70,35 +70,29 @@ resource "kubiya_secret" "confluence_api_token" {
   description = "Confluence API token for the CI/CD Maintainer"
 }
 
-# Fetch Confluence content for each space using data source
+# Fetch Confluence content using data source
 data "external" "confluence_content" {
-  for_each = toset(var.confluence_space_keys)
-  program  = ["python3", "${path.module}/import_confluence.py"]
+  program = ["python3", "${path.module}/import_confluence.py"]
 
   # Set parameters for the Python script
   query = {
     CONFLUENCE_URL = var.confluence_url
     CONFLUENCE_USERNAME = var.confluence_username
     CONFLUENCE_API_TOKEN = var.CONFLUENCE_API_TOKEN
-    space_key = each.value
+    space_key = var.confluence_space_key
     include_blogs = var.import_confluence_blogs ? "true" : "false"
   }
 }
 
-# Create knowledge items for each piece of content from all spaces
+# Create knowledge items for each piece of content
 resource "kubiya_knowledge" "confluence_content" {
-  for_each = merge([
-    for space_key in var.confluence_space_keys : {
-      for item in jsondecode(data.external.confluence_content[space_key].result.items) : 
-      "${space_key}-${item.id}" => merge(item, { space_key = space_key })
-    }
-  ]...)
+  for_each = { for item in jsondecode(data.external.confluence_content.result.items) : item.id => item }
 
   name             = each.value.title
   groups           = var.kubiya_groups_allowed_groups
-  description      = "Imported from Confluence space: ${each.value.space_key}"
+  description      = "Imported from Confluence space: ${var.confluence_space_key}"
   labels           = concat(
-    ["confluence", "space-${each.value.space_key}"],
+    ["confluence", "space-${var.confluence_space_key}"],
     each.value.type == "blog" ? ["blog"] : [],
     split(",", each.value.labels)
   )
@@ -114,6 +108,5 @@ output "ask_kubiya_confluence" {
   value = {
     name       = kubiya_agent.ask_kubiya_confluence.name
     debug_mode = var.debug_mode
-    spaces     = var.confluence_space_keys
   }
 }
