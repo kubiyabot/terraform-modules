@@ -1,0 +1,130 @@
+name: "Datadog Incident Response Automation"
+description: "End-to-end automated incident response system integrating Datadog webhooks with Kubiya AI agents for intelligent cluster investigation and Slack notifications"
+
+category: "incident-management"
+tags:
+  - "datadog"
+  - "incident-response" 
+  - "automation"
+  - "kubernetes"
+  - "monitoring"
+  - "slack"
+  - "ai-investigation"
+
+use_cases:
+  - "Automated incident triage and investigation"
+  - "Real-time cluster health assessment"
+  - "TLS certificate issue detection"
+  - "Service dependency analysis"
+  - "Executive incident summaries"
+  - "Slack-based incident communication"
+
+features:
+  - "AI-powered cluster investigation using kubectl"
+  - "Automatic TLS/certificate issue detection"
+  - "Context-aware investigation based on cluster topology"
+  - "Multi-region deployment support (NA, EU)"
+  - "Real-time Slack notifications and interactive buttons"
+  - "Executive summary generation for stakeholders"
+  - "Datadog service catalog integration"
+  - "Configurable investigation timeouts and retry logic"
+
+prerequisites:
+  - "Datadog account with API access"
+  - "Kubiya account with configured agent"
+  - "Kubernetes cluster access for the agent"
+  - "Slack workspace integration"
+
+configuration:
+  required_variables:
+    - "datadog_api_key"
+    - "datadog_app_key" 
+    - "kubiya_api_key"
+    - "region"
+    - "agent_uuid"
+  
+  optional_variables:
+    - "notification_channels"
+    - "escalation_channel"
+    - "investigation_timeout"
+    - "cluster_topology_context"
+    - "incident_owner"
+    - "team_name"
+
+regions:
+  - "na"
+  - "eu"
+
+architecture:
+  components:
+    - "Datadog Webhook"
+    - "Kubiya Workflow Engine"
+    - "AI Investigation Agent"
+    - "Slack Integration"
+    - "Kubernetes Cluster Access"
+  
+  flow:
+    - "Datadog incident triggers webhook"
+    - "Kubiya receives incident payload"
+    - "AI agent investigates cluster health"
+    - "TLS/certificate validation performed"
+    - "Executive summary generated"
+    - "Results posted to Slack with follow-up options"
+
+outputs:
+  - "webhook_id: Datadog webhook identifier"
+  - "webhook_url: Kubiya workflow endpoint"
+  - "service_definition_id: Datadog service catalog ID"
+  - "workflow_name: Generated workflow identifier"
+
+examples:
+  basic_usage: |
+    module "incident_response" {
+      source = "./terraform-modules/datadog_incident_response/terraform"
+      
+      datadog_api_key = var.datadog_api_key
+      datadog_app_key = var.datadog_app_key
+      kubiya_api_key  = var.kubiya_api_key
+      region          = "na"
+      agent_uuid      = "your-agent-uuid"
+      
+      notification_channels = "#incident-alerts"
+      escalation_channel   = "#sre-escalation"
+    }
+
+  multi_region: |
+    module "incident_response_na" {
+      source = "./terraform-modules/datadog_incident_response/terraform"
+      region = "na"
+      # ... configuration
+    }
+    
+    module "incident_response_eu" {
+      source = "./terraform-modules/datadog_incident_response/terraform"
+      region = "eu" 
+      # ... configuration
+    }
+
+troubleshooting:
+  common_issues:
+    - issue: "Webhook not triggering"
+      solution: "Verify Datadog API keys and webhook configuration"
+    
+    - issue: "Agent investigation timeout"
+      solution: "Increase investigation_timeout value or check agent connectivity"
+    
+    - issue: "Missing Slack notifications"
+      solution: "Verify agent Slack integration and channel permissions"
+    
+    - issue: "JSON parsing errors"
+      solution: "Ensure cluster_topology_context is single-line format"
+
+maintenance:
+  - "Monitor webhook execution logs in Datadog"
+  - "Review agent investigation results for accuracy"
+  - "Update cluster topology context as infrastructure evolves"
+  - "Rotate API keys according to security policies"
+
+version: "1.0.0"
+last_updated: "2024-01-27"
+author: "Kubiya Platform Team"
