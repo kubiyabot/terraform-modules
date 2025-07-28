@@ -1,0 +1,268 @@
+{
+  "name": "${workflow_name}",
+  "description": "${workflow_description}",
+  "params": {
+    "incident_id": "$INCIDENT_PUBLIC_ID",
+    "incident_title": "$INCIDENT_TITLE",
+    "incident_severity": "$INCIDENT_SEVERITY",
+    "incident_priority": "${incident_priority}",
+    "incident_body": "$INCIDENT_MSG",
+    "incident_url": "$INCIDENT_URL",
+    "incident_source": "datadog",
+    "incident_owner": "${incident_owner}",
+    "slack_channel_id": "#inc-$INCIDENT_PUBLIC_ID-$INCIDENT_TITLE",
+    "notification_channels": "${notification_channels}",
+    "escalation_channel": "${escalation_channel}",
+    "investigation_timeout": "${investigation_timeout}",
+    "max_retries": "${max_retries}",
+    "customer_impact": "UNKNOWN",
+    "affected_services": "NA",
+    "dd_environment": "${dd_environment}",
+    "k8s_environment": "${k8s_environment}",
+    "region": "${region}",
+    "agent_uuid": "${agent_uuid}",
+    "normalize_channel_name": "true"
+  },
+  "env": {
+    "KUBIYA_USER_EMAIL": "$${KUBIYA_USER_EMAIL}",
+    "KUBIYA_API_KEY": "${kubiya_api_key}",
+    "KUBIYA_USER_ORG": "$${KUBIYA_USER_ORG}",
+    "KUBIYA_AUTOMATION": "1",
+    "INCIDENT_SEVERITY": "${default_incident_severity}",
+    "INCIDENT_PRIORITY": "${default_incident_priority}"
+  },
+  "steps": [
+    {
+      "name": "normalize-channel-name",
+      "description": "Normalize the channel name by replacing spaces with underscores and converting to lower case",
+      "command": "if [ \"$${normalize_channel_name:-true}\" = \"true\" ]; then\n  # Replace spaces with underscores, then convert to lower case\n  echo \"$${slack_channel_id}\" | sed 's/ /_/g' | tr '[:upper:]' '[:lower:]'\nelse\n  # Only convert to lower case\n  echo \"$${slack_channel_id}\" | tr '[:upper:]' '[:lower:]'\nfi\n",
+      "depends": [],
+      "executor": {
+        "type": "command",
+        "config": {}
+      },
+      "output": "NORMALIZED_CHANNEL_NAME",
+      "continueOn": {
+        "failure": true
+      }
+    },
+    {
+      "name": "setup-slack-integration",
+      "description": "Initialize Slack integration for incident communications",
+      "executor": {
+        "type": "kubiya",
+        "config": {
+          "url": "api/v1/integration/slack/token/1",
+          "method": "GET",
+          "silent": false
+        }
+      },
+      "depends": [
+        "normalize-channel-name"
+      ],
+      "output": "slack_token"
+    },
+    {
+      "name": "post-investigation-start",
+      "command": "echo 'WORKFLOW STARTED - posting start message'; if [ -z \"$${slack_token}\" ] || [ \"$${slack_token}\" = \"null\" ]; then echo 'No Slack token - skipping notification'; exit 0; fi; echo 'Slack token available, posting message...'; RESPONSE=$(curl -s -X POST https://slack.com/api/chat.postMessage -H \"Authorization: Bearer $${slack_token.token}\" -H \"Content-Type: application/json\" -d \"{\\\"channel\\\":\\\"$${NORMALIZED_CHANNEL_NAME}\\\",\\\"text\\\":\\\"🚀 WORKFLOW STARTED: AI investigation started for incident $${incident_id}: $${incident_title} (Severity: $${incident_severity})\\\"}\" -w 'HTTP_CODE:%%{http_code}'); echo \"Response: $$RESPONSE\"; echo 'Start notification step completed'",
+      "description": "Send investigation start notification to Slack",
+      "executor": {
+        "type": "command",
+        "config": {}
+      },
+      "depends": [
+        "setup-slack-integration"
+      ],
+      "output": "investigation_start_message",
+      "continueOn": {
+        "failure": true
+      }
+    },
+    {
+      "name": "prepare-investigator-prompt",
+      "command": "echo '🔍 PREPARING INVESTIGATOR AGENT INTERACTIVE PROMPT'\necho '==============================================='\nREGION_UPPER=$(echo '$${region}' | tr '[:lower:]' '[:upper:]')\nREGION_LOWER=$(echo '$${region}' | tr '[:upper:]' '[:lower:]')\nINVESTIGATOR_INTERACTIVE_PROMPT=\"You are an INCIDENT RESPONDER AGENT focusing on $$REGION_UPPER PRODUCTION. INCIDENT: $${incident_id} - $${incident_title}. Region: $$REGION_UPPER. Environment: $${dd_environment}. I have access to kubectl ($${k8s_environment} cluster) and monitoring tools. Let me gather $$REGION_LOWER-specific logs and metrics first... What aspect of the $$REGION_UPPER cluster would you like me to investigate?\"\necho \"INVESTIGATOR_INTERACTIVE_PROMPT=$$INVESTIGATOR_INTERACTIVE_PROMPT\"\necho '✅ Investigator interactive prompt prepared successfully'\n",
+      "description": "Prepare interactive prompt for follow-up agent investigation",
+      "executor": {
+        "type": "command",
+        "config": {}
+      },
+      "depends": [
+        "setup-slack-integration"
+      ],
+      "output": "investigator_interactive_prompt"
+    },
+    {
+      "name": "investigate-cluster-health",
+      "description": "AI-powered cluster investigation for production incident response",
+      "executor": {
+        "type": "agent",
+        "config": {
+          "agent_id": "${agent_uuid}",
+          "use_cli": true,
+          "message": "🚨 URGENT PRODUCTION INCIDENT INVESTIGATION - ${region} REGION 🚨\n\n⚠️ CRITICAL: This is a $${incident_severity} severity incident requiring IMMEDIATE investigation!\n📝 INCIDENT: $${incident_id} - $${incident_title}\n🎯 AFFECTED SERVICES: $${affected_services}\n🌍 REGION: ${region}\n🔧 ENVIRONMENT: $${dd_environment}\n\n⏰ URGENCY NOTICE:\n- This investigation must be completed ASAP\n- Production systems are potentially impacted\n- Time is critical for resolution\n\n💡 INVESTIGATION APPROACH:\n- Use available tools intelligently (kubectl, monitoring, logs)\n- Apply advanced filtering and querying to avoid context overload\n- Focus on ERROR, WARN, FAIL, TLS, SSL, Certificate patterns\n- Limit outputs to essential information only\n\n${cluster_topology_context}\n\n## FOCUSED INVESTIGATION PRIORITIES:\n\n### 1. AFFECTED SERVICES ANALYSIS\n- Check health and status of: $${affected_services}\n- Investigate recent errors and warnings\n- Verify service connectivity and endpoints\n\n### 2. TLS & CERTIFICATE INVESTIGATION\n- Check certificate expiration and validity\n- Investigate TLS handshake issues\n- Verify certificate chain and SAN fields\n- Look for SSL/TLS related errors in logs\n\n### 3. CORE DEPENDENCIES\n- Validate connectivity to databases, caches, APIs\n- Check service mesh and ingress configurations\n- Investigate DNS resolution issues\n\n### 4. QUICK DIAGNOSTICS\n- Recent events and errors related to affected services\n- Resource constraints (CPU, memory, storage)\n- Network connectivity between services\n- Configuration changes or rollouts\n\n## INVESTIGATION GUIDELINES:\n- Be precise and targeted in your analysis\n- Use intelligent filtering to show only relevant information\n- Focus on actionable findings\n- Prioritize TLS/certificate issues as they're common failure points\n\n## OUTPUT FORMAT:\nProvide structured findings with:\n- Executive summary (2-3 sentences)\n- Critical TLS/certificate issues found\n- Affected services status\n- Root cause analysis if identifiable\n- Immediate remediation steps\n",
+          "vars": {
+            "incident_id": "$${incident_id}",
+            "incident_title": "$${incident_title}",
+            "incident_severity": "$${incident_severity}",
+            "affected_services": "$${affected_services}",
+            "customer_impact": "$${customer_impact}",
+            "incident_priority": "$${incident_priority}"
+          }
+        }
+      },
+      "depends": [
+        "post-investigation-start",
+        "prepare-investigator-prompt"
+      ],
+      "output": "cluster_results",
+      "continueOn": {
+        "failure": true,
+        "output": [
+          "ERROR: Sorry, I had an issue",
+          "Agent-manager not found",
+          "Stream error",
+          "INTERNAL_ERROR",
+          "stream ID",
+          "received from peer",
+          "re:stream error.*INTERNAL_ERROR",
+          "exit code 1",
+          "API key",
+          "command failed",
+          "Kubiya CLI"
+        ],
+        "markSuccess": false
+      }
+    },
+    {
+      "name": "create-executive-summary",
+      "description": "Create executive summary and TLDR from investigation results using inline agent",
+      "executor": {
+        "type": "agent",
+        "config": {
+          "agent_id": "${agent_uuid}",
+          "use_cli": true,
+          "message": "You are an expert incident response analyst specializing in production incidents. Create a comprehensive executive summary from the cluster investigation results.\n\n## INCIDENT DETAILS:\n- ID: $${incident_id}\n- Title: $${incident_title}\n- Severity: $${incident_severity}\n- Affected Services: $${affected_services}\n- Region: ${region}\n- Environment: $${dd_environment}\n\n## CLUSTER INVESTIGATION RESULTS:\n$${cluster_results}\n\n## TASK:\nCreate a comprehensive executive summary that includes:\n\n1. **Executive Summary** (2-3 sentences overview)\n2. **Key Findings** (3-5 bullet points of main issues)\n3. **Root Cause Analysis** (if identifiable)\n4. **Impact Assessment** (business/customer impact)\n5. **Immediate Actions** (what needs to be done now)\n6. **Regional Context** (specific to ${region} region)\n7. **Recommendations** (short and long term)\n\nFormat as clean markdown suitable for Slack. End with:\n**SLACK_SUMMARY:** [3-5 line summary for Slack notification using plain language]\n\nFocus on being concise, actionable, and highlighting business impact for the ${region} production environment."
+        }
+      },
+      "depends": [
+        "investigate-cluster-health"
+      ],
+      "output": "executive_summary",
+      "continueOn": {
+        "failure": true
+      }
+    },
+    {
+      "name": "upload-investigation-results",
+      "description": "Upload investigation results and post completion summary to Slack with buttons",
+      "depends": [
+        "create-executive-summary",
+        "investigate-cluster-health"
+      ],
+      "executor": {
+        "type": "tool",
+        "config": {
+          "tool_def": {
+            "name": "investigation-markdown-reporter",
+            "description": "Generate markdown reports and upload investigation results with proper Slack formatting",
+            "type": "docker",
+            "image": "python:3.11-slim",
+            "with_files": [
+              {
+                "destination": "/tmp/upload_results.py",
+                "content": "#!/usr/bin/env python3\nimport os\nimport json\nimport requests\nfrom datetime import datetime\n\ndef create_markdown_report(executive_summary, cluster_results, incident_id, incident_title, incident_severity, affected_services, region, dd_environment):\n    \"\"\"Create a beautifully formatted markdown report\"\"\"\n    timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')\n    \n    # Handle agent failure cases\n    if 'ERROR: Sorry, I had an issue' in executive_summary or 'Session id:' in executive_summary:\n        executive_summary = f'''# Investigation Agent Issues\n\nThe automated investigation agent experienced technical difficulties during the analysis phase. This appears to be related to agent session timeout or connectivity issues.\n\n## Key Information\n- **Incident ID:** {incident_id}\n- **Title:** {incident_title}\n- **Severity:** {incident_severity}\n- **Affected Services:** {affected_services}\n- **Region:** {region}\n- **Environment:** {dd_environment}\n\n## Immediate Actions Required\n1. Manual investigation needed due to agent timeout\n2. Check cluster health and application status\n3. Review error patterns in monitoring systems\n4. Monitor resource utilization\n5. Escalate to on-call engineering team\n\n## Recommendations\n- Implement manual health checks\n- Review application logs for detailed error context\n- Check infrastructure metrics\n- Validate service dependencies\n'''\n        cluster_results = 'Agent investigation failed due to timeout or connectivity issues.'\n    \n    markdown_content = f'''# 🚨 Incident Investigation Report\n\n**Generated by Kubiya AI-Powered Investigation System**  \n*Report created: {timestamp}*\n\n---\n\n## 📋 Incident Overview\n\n| Field | Value |\n|-------|-------|\n| **Incident ID** | {incident_id} |\n| **Title** | {incident_title} |\n| **Severity** | {incident_severity} |\n| **Affected Services** | {affected_services} |\n| **Region** | {region} |\n| **Environment** | {dd_environment} |\n| **Investigation Time** | {timestamp} |\n\n---\n\n## 📊 Executive Summary\n\n{executive_summary}\n\n---\n\n## 🔍 Technical Investigation Results\n\n{cluster_results}\n\n---\n\n## 📝 Report Metadata\n\n- **Generated by:** Kubiya Agentic Workflow Automation\n- **Investigation Type:** Automated AI-powered cluster analysis\n- **Report Format:** Markdown\n- **System:** Production Incident Response Pipeline\n\n---\n\n*This report was automatically generated by the Kubiya AI incident response system. For questions or support, contact your platform team.*\n'''\n    \n    return markdown_content\n\ndef upload_file(headers, channel, filepath, title):\n    \"\"\"Upload a file to Slack\"\"\"\n    try:\n        print(f\"📤 Attempting to upload {filepath} to channel {channel}\")\n        with open(filepath, 'rb') as file:\n            files = {'file': file}\n            data = {\n                'channels': channel,\n                'title': title,\n                'filename': os.path.basename(filepath)\n            }\n            print(f\"📡 Making request to Slack files.upload API...\")\n            response = requests.post('https://slack.com/api/files.upload', \n                                   headers=headers, data=data, files=files)\n            \n            print(f\"📊 Response status: {response.status_code}\")\n            print(f\"📝 Response content: {response.text}\")\n            \n            if response.status_code == 200:\n                result = response.json()\n                if result.get('ok'):\n                    file_url = result.get('file', {}).get('permalink', '#')\n                    print(f\"✅ File uploaded successfully: {file_url}\")\n                    return file_url\n                else:\n                    print(f\"❌ Slack API error: {result.get('error', 'Unknown error')}\")\n                    return None\n            else:\n                print(f\"❌ HTTP error: {response.status_code}\")\n                return None\n    except Exception as e:\n        print(f\"❌ Upload exception: {e}\")\n        import traceback\n        traceback.print_exc()\n        return None\n\ndef extract_slack_summary(text):\n    \"\"\"Extract SLACK_SUMMARY from investigation text\"\"\"\n    import re\n    try:\n        # Look for SLACK_SUMMARY section\n        pattern = r'SLACK_SUMMARY:(.*?)(?=\\n\\n|$)'\n        match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)\n        if match:\n            summary = match.group(1).strip()\n            # Clean up the summary\n            summary = ' '.join(summary.split())\n            return summary\n        return 'Investigation completed - see detailed reports'\n    except:\n        return 'Investigation completed - see detailed reports'\n\ndef main():\n    # Get environment variables\n    slack_token = os.getenv('slack_token')\n    channel = os.getenv('channel')\n    incident_id = os.getenv('incident_id')\n    incident_title = os.getenv('incident_title')\n    incident_severity = os.getenv('incident_severity')\n    affected_services = os.getenv('affected_services')\n    agent_uuid = os.getenv('agent_uuid', '2e5681c4-e4cd-43fe-8d5d-2f14216adf92')\n    region = os.getenv('region', 'unknown')\n    dd_environment = os.getenv('dd_environment', 'production')\n    k8s_environment = os.getenv('k8s_environment', 'cluster')\n    \n    executive_summary_text = os.getenv('executive_summary', 'Executive summary generation failed - agent may have timed out or encountered an error. Please review the cluster investigation results below for technical details.')\n    cluster_results = os.getenv('cluster_results', 'No cluster investigation results available - agent may have failed or timed out.')\n    investigator_prompt_output = os.getenv('investigator_interactive_prompt', '')\n    \n    print(f'🔄 Processing investigation results for incident {incident_id}')\n    \n    # Create markdown report\n    markdown_content = create_markdown_report(\n        executive_summary_text, cluster_results, incident_id, incident_title, \n        incident_severity, affected_services, region, dd_environment\n    )\n    \n    # Write markdown file\n    markdown_file = f'/tmp/incident_report_{incident_id}.md'\n    with open(markdown_file, 'w', encoding='utf-8') as f:\n        f.write(markdown_content)\n    \n    print(f'✅ Created markdown report: {markdown_file}')\n    \n    # Extract TLDR for Slack\n    tldr_summary = extract_slack_summary(executive_summary_text)\n    \n    # No file upload needed - we'll send the content directly in Slack\n    headers = {'Authorization': f'Bearer {slack_token}'}\n    print('📝 Preparing to send markdown report directly in Slack message...')\n    \n    # Prepare investigation prompt for follow-up\n    investigation_prompt = f'You are an INCIDENT RESPONDER AGENT focusing on {region.upper()} PRODUCTION. INCIDENT: {incident_id} - {incident_title}. Region: {region.upper()}. Environment: {dd_environment}. I have access to kubectl ({k8s_environment} cluster) and monitoring tools. What aspect of the {region.upper()} cluster would you like me to investigate?'\n    \n    # Try to extract INVESTIGATOR_INTERACTIVE_PROMPT from the output\n    import re\n    if investigator_prompt_output:\n        match = re.search(r'INVESTIGATOR_INTERACTIVE_PROMPT=(.+)', investigator_prompt_output)\n        if match:\n            investigation_prompt = match.group(1).strip()\n    \n    # Post completion message to Slack\n    print(f'🔍 Slack token status: {\"Available\" if slack_token and slack_token != \"null\" else \"Missing\"}')\n    print(f'📋 Channel: {channel}')\n    print(f'📊 Executive summary length: {len(executive_summary_text)}')\n    print(f'🔧 Cluster results length: {len(cluster_results)}')\n    \n    if slack_token and slack_token != 'null':\n        print('📨 Posting completion message to Slack...')\n        \n        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')\n        \n        blocks = [\n            {\n                'type': 'header',\n                'text': {\n                    'type': 'plain_text',\n                    'text': '✅ AI INVESTIGATION COMPLETE',\n                    'emoji': True\n                }\n            },\n            {\n                'type': 'section',\n                'fields': [\n                    {\n                        'type': 'mrkdwn',\n                        'text': f'*Incident:* {incident_id}'\n                    },\n                    {\n                        'type': 'mrkdwn',\n                        'text': f'*Severity:* {incident_severity}'\n                    },\n                    {\n                        'type': 'mrkdwn',\n                        'text': f'*Services:* {affected_services}'\n                    },\n                    {\n                        'type': 'mrkdwn',\n                        'text': f'*Region:* {region}'\n                    }\n                ]\n            },\n            {\n                'type': 'section',\n                'text': {\n                    'type': 'mrkdwn',\n                    'text': f'**{incident_title}**'\n                }\n            },\n            {\n                'type': 'divider'\n            },\n            {\n                'type': 'section',\n                'text': {\n                    'type': 'mrkdwn',\n                    'text': f'*📊 Executive Summary:*\\n{executive_summary_text[:800]}...' if len(executive_summary_text) > 800 else f'*📊 Executive Summary:*\\n{executive_summary_text}'\n                }\n            },\n            {\n                'type': 'divider'\n            },\n            {\n                'type': 'section',\n                'text': {\n                    'type': 'mrkdwn',\n                    'text': f'*🔍 Technical Investigation:*\\n{cluster_results[:800]}...' if len(cluster_results) > 800 else f'*🔍 Technical Investigation:*\\n{cluster_results}'\n                }\n            },\n            {\n                'type': 'divider'\n            },\n            {\n                'type': 'section',\n                'text': {\n                    'type': 'mrkdwn',\n                    'text': '*🔍 Need More Investigation?*\\nUse the button below to continue investigating specific findings'\n                }\n            },\n            {\n                'type': 'actions',\n                'elements': [\n                    {\n                        'type': 'button',\n                        'text': {\n                            'type': 'plain_text',\n                            'text': f'🔍 Investigate {region.upper()} Further',\n                            'emoji': True\n                        },\n                        'style': 'primary',\n                        'value': json.dumps({\n                            'agent_uuid': agent_uuid,\n                            'message': investigation_prompt\n                        }),\n                        'action_id': 'agent.process_message_1'\n                    }\n                ]\n            },\n            {\n                'type': 'context',\n                'elements': [\n                    {\n                        'type': 'mrkdwn',\n                        'text': f'_Investigation completed at {timestamp}_'\n                    }\n                ]\n            }\n        ]\n        \n        payload = {\n            'channel': channel,\n            'text': '✅ AI Investigation Complete',\n            'blocks': blocks\n        }\n        \n        response = requests.post('https://slack.com/api/chat.postMessage', \n                               headers=headers, json=payload)\n        \n        if response.status_code == 200 and response.json().get('ok'):\n            print('✅ Investigation completion message posted successfully to Slack')\n        else:\n            print(f'⚠️ Failed to post completion message to Slack: {response.text}')\n    \n    print('🎉 Investigation report generation and upload completed!')\n\nif __name__ == '__main__':\n    main()\n"
+              }
+            ],
+            "content": "pip install --no-cache-dir requests && python /tmp/upload_results.py",
+            "args": [
+              {
+                "name": "slack_token",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "channel",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "incident_id",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "incident_title",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "incident_severity",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "affected_services",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "executive_summary",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "cluster_results",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "agent_uuid",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "investigator_interactive_prompt",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "region",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "dd_environment",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "k8s_environment",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          "args": {
+            "slack_token": "$${slack_token.token}",
+            "channel": "$${NORMALIZED_CHANNEL_NAME}",
+            "incident_id": "$${incident_id}",
+            "incident_title": "$${incident_title}",
+            "incident_severity": "$${incident_severity}",
+            "affected_services": "$${affected_services}",
+            "executive_summary": "$${executive_summary}",
+            "cluster_results": "$${cluster_results}",
+            "agent_uuid": "$${agent_uuid}",
+            "investigator_interactive_prompt": "$${investigator_interactive_prompt}",
+            "region": "$${region}",
+            "dd_environment": "$${dd_environment}",
+            "k8s_environment": "$${k8s_environment}"
+          }
+        }
+      },
+      "output": "upload_summary_status",
+      "continueOn": {
+        "failure": true
+      }
+    }
+  ]
+}
