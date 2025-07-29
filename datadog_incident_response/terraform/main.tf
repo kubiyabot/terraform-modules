@@ -227,6 +227,40 @@ resource "datadog_webhook" "kubiya_incident_response" {
   encode_as = "json"
 }
 
+# Datadog Monitor for Environment-Based Incident Detection
+# This creates a monitor that will trigger the webhook when incidents occur with specific environment tags
+resource "datadog_monitor" "incident_environment_monitor" {
+  count = var.create_notification_rule ? 1 : 0
+  
+  name    = "${var.region}-incident-environment-monitor"
+  type    = "event-v2 alert"
+  message = "Incident detected in ${var.region}-${var.dd_environment} environment @webhook-${datadog_webhook.kubiya_incident_response.name}"
+  
+  # Query for incidents with specific environment tags
+  query = "events(\"sources:datadog priority:all env:${var.dd_environment}\").rollup(\"count\").last(\"5m\") > 0"
+  
+  # Monitor configuration
+  monitor_thresholds {
+    critical = 0
+  }
+  
+  # Notification settings
+  notify_no_data           = false
+  notify_audit             = false
+  timeout_h                = 0
+  include_tags             = true
+  require_full_window      = false
+  
+  # Tag the monitor
+  tags = [
+    "env:${var.dd_environment}",
+    "team:${var.team_name}",
+    "service:incident-response",
+    "automation:kubiya",
+    "region:${var.region}"
+  ]
+}
+
 # Optional: Create a Datadog Service for the webhook
 resource "datadog_service_definition_yaml" "kubiya_incident_service" {
   count           = var.create_service_definition ? 1 : 0
@@ -239,7 +273,7 @@ resource "datadog_service_definition_yaml" "kubiya_incident_service" {
     type           = "automation"
     languages      = ["terraform"]
     tags = [
-      "env:${var.environment}",
+      "env:${var.dd_environment}",
       "team:${var.team_name}",
       "service:incident-response",
       "automation:kubiya"
