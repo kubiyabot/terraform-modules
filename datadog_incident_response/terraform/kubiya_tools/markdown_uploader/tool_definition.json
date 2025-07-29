@@ -1,0 +1,93 @@
+{
+  "name": "investigation-markdown-reporter",
+  "description": "Generate markdown reports and upload investigation results with proper Slack formatting",
+  "type": "docker",
+  "image": "python:3.11-slim",
+  "with_files": [
+    {
+      "destination": "/tmp/upload_results.py",
+      "content": "FILE_CONTENT_PLACEHOLDER"
+    }
+  ],
+  "content": "pip install --no-cache-dir requests && python /tmp/upload_results.py",
+  "args": [
+    {
+      "name": "slack_token",
+      "type": "string",
+      "required": true,
+      "description": "Slack bot token for API access"
+    },
+    {
+      "name": "channel",
+      "type": "string",
+      "required": true,
+      "description": "Slack channel to post results to"
+    },
+    {
+      "name": "incident_id",
+      "type": "string",
+      "required": true,
+      "description": "Incident identifier"
+    },
+    {
+      "name": "incident_title",
+      "type": "string",
+      "required": false,
+      "description": "Title of the incident"
+    },
+    {
+      "name": "incident_severity",
+      "type": "string",
+      "required": true,
+      "description": "Severity level of the incident"
+    },
+    {
+      "name": "affected_services",
+      "type": "string",
+      "required": true,
+      "description": "Services affected by the incident"
+    },
+    {
+      "name": "executive_summary",
+      "type": "string",
+      "required": false,
+      "description": "Executive summary of the investigation"
+    },
+    {
+      "name": "cluster_results",
+      "type": "string",
+      "required": false,
+      "description": "Technical cluster investigation results"
+    },
+    {
+      "name": "agent_uuid",
+      "type": "string",
+      "required": false,
+      "description": "Agent UUID for follow-up investigations"
+    },
+    {
+      "name": "investigator_interactive_prompt",
+      "type": "string",
+      "required": false,
+      "description": "Interactive prompt for further investigation"
+    },
+    {
+      "name": "region",
+      "type": "string",
+      "required": false,
+      "description": "Regional deployment identifier"
+    },
+    {
+      "name": "dd_environment",
+      "type": "string",
+      "required": false,
+      "description": "Datadog environment identifier"
+    },
+    {
+      "name": "k8s_environment",
+      "type": "string",
+      "required": false,
+      "description": "Kubernetes environment identifier"
+    }
+  ]
+}

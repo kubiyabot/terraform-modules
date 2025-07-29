@@ -205,6 +205,13 @@ variable "cluster_topology_context" {
   default     = "CLUSTER TOPOLOGY CONTEXT: Production Kubernetes cluster architecture - External Gateway: ingress-nginx namespace (NGINX Ingress Controller), Application Layer: default/app namespaces with microservices, Core Infrastructure: kube-system for DNS/metrics, Observability: monitoring/logging namespaces, Supporting: cert-manager, argocd, kafka. Triage Guidelines: API/Gateway Issues → check ingress-nginx namespace, Application Issues → focus on app namespaces, Infrastructure Issues → DNS in kube-system, certificates in cert-manager, Performance Issues → analyze metrics and ingress latencies. Be proactive with tools, reference actual pod names and metrics, use cluster topology knowledge for intelligent investigation."
 }
 
+# Notification Rule Configuration
+variable "create_notification_rule" {
+  description = "Whether to create a Datadog webhook integration for environment-based incident triggering"
+  type        = bool
+  default     = true
+}
+
 # Additional Configuration
 variable "tags" {
   description = "Additional tags to apply to resources"
