@@ -33,10 +33,10 @@ variable "region" {
   }
 }
 
-variable "kubiya_webhook_url" {
-  description = "Kubiya API webhook URL for workflow execution"
+variable "kubiya_runner" {
+  description = "Kubiya runner for webhook execution"
   type        = string
-  default     = "https://api.kubiya.ai/api/v1/workflow?runner=gke-integration&operation=execute_workflow"
+  default     = "runner"
 }
 
 variable "kubiya_api_key" {
@@ -44,7 +44,7 @@ variable "kubiya_api_key" {
   type        = string
   sensitive   = true
   default     = null
-  
+
   validation {
     condition     = var.kubiya_api_key != null && var.kubiya_api_key != ""
     error_message = "Kubiya API key is required. Set it via the kubiya_api_key variable or KUBIYA_API_KEY environment variable."
