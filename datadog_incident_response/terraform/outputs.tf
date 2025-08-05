@@ -1,17 +1,17 @@
 # Webhook Outputs
 output "webhook_id" {
-  description = "The ID of the created Datadog webhook"
-  value       = datadog_webhook.kubiya_incident_response.id
+  description = "The ID of the created Kubiya webhook"
+  value       = kubiya_webhook.datadog_incident_response.id
 }
 
 output "webhook_name" {
-  description = "The name of the created Datadog webhook"
-  value       = datadog_webhook.kubiya_incident_response.name
+  description = "The name of the created Kubiya webhook"
+  value       = kubiya_webhook.datadog_incident_response.name
 }
 
 output "webhook_url" {
   description = "The URL of the Kubiya webhook endpoint"
-  value       = datadog_webhook.kubiya_incident_response.url
+  value       = kubiya_webhook.datadog_incident_response.url
 }
 
 # Service Definition Outputs
