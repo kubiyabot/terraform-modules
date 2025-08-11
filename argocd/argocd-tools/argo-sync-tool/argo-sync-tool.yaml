@@ -1,0 +1,41 @@
+tools:
+- name: argocd-sync-tool
+  image: argoproj/argocd
+  description: "Sync a live argocd state and a specified revision. assume current revision if no revision is passed."
+  type: docker
+  alias: argocd-sync
+  content: | 
+    argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD  --insecure  --plaintext
+    IFS=","
+    read  -r approving << EOF
+    $APPROVING_USERS
+    EOF
+    approving_users_list=$APPROVING_USERS
+    # Checking if KUBIYA_USER_EMAIL is in approving_users_list
+    user_allowed=false
+    for email in $approving_users_list[@]; do
+        if [ "$email" = "$KUBIYA_USER_EMAIL" ]; then
+            argocd app sync "{{ .app_name }}" --revision "{{ .revision }}" --insecure 
+            user_allowed=true
+            break
+        fi
+    done
+
+    if [ "$user_allowed" = false ]; then
+        echo "Sorry, you are not allowed to sync."
+    fi
+  args:
+    app_name:
+      description: 'The name of the live app to sync. Use default value if no other is specified'
+      required: false
+      default: ""
+    revision:
+      description: 'The name of the revision to sync with. Use default value if no other is specified'
+      required: false
+      default: ""
+  env:
+    - "ARGOCD_SERVER"
+    - "ARGOCD_USERNAME"
+    - "ARGOCD_PASSWORD"
+    - "KUBIYA_USER_EMAIL"
+    - "APPROVING_USERS"
