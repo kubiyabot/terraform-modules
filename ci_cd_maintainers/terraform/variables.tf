@@ -6,8 +6,14 @@ variable "teammate_name" {
 }
 
 variable "repositories" {
-  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). Ensure you have appropriate permissions."
+  description = "Comma-separated list of repositories to monitor in 'org/repo' format (e.g., 'mycompany/backend-api,mycompany/frontend-app'). If *, the module will automatically discover all repositories in the organization. Leave empty for automatic discovery."
   type        = string
+  default     = "*"
+}
+
+variable "github_organization" {
+  type        = string
+  description = "GitHub organization name. Required for both specific repository lists and auto-discovery."
 }
 
 variable "notification_channel" {
