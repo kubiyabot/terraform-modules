@@ -1,0 +1,6 @@
+name: "Simple PR Review Assistant"
+icons:
+  - "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+  - "https://cdn-icons-png.flaticon.com/512/25/25231.png"
+description: "Automated PR reviewer that analyzes GitHub pull requests for security and quality issues, posts recommendations, and sends Slack notifications"
