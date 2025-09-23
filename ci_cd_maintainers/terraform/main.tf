@@ -1,11 +1,12 @@
 terraform {
   required_providers {
     kubiya = {
-      source = "kubiya-terraform/kubiya"
+      source  = "kubiya-terraform/kubiya"
+      version = "~> 1.0"
     }
     github = {
       source  = "hashicorp/github"
-      version = "6.4.0"
+      version = "~> 6.4"
     }
     http = {
       source  = "hashicorp/http"
@@ -54,14 +55,15 @@ locals {
 }
 
 variable "GITHUB_TOKEN" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
+  description = "GitHub Personal Access Token for repository access. Required when not using GitHub App integration."
 }
 
 variable "teams_webhook_url" {
   type        = string
   default     = ""
-  description = "The Teams webhook URL"
+  description = "Microsoft Teams webhook URL for notifications (optional)"
 }
 
 # Configure providers
@@ -71,113 +73,148 @@ provider "github" {
 
 # GitHub Tooling - Allows the CI/CD Maintainer to use GitHub tools
 resource "kubiya_source" "github_tooling" {
-  url = "https://github.com/kubiyabot/community-tools/tree/main/github"
+  url         = "https://github.com/kubiyabot/community-tools/tree/main/github"
+  description = "GitHub community tools for CI/CD operations"
 }
 
-//create secret using provider
+# Optional: Additional tooling sources for enhanced capabilities
+resource "kubiya_source" "git_tooling" {
+  url         = "https://github.com/kubiyabot/community-tools/tree/main/git"
+  description = "Git tools for repository operations"
+}
+
+resource "kubiya_source" "docker_tooling" {
+  url         = "https://github.com/kubiyabot/community-tools/tree/main/docker"
+  description = "Docker tools for containerized CI/CD workflows"
+}
+
+# Create secret for GitHub token when not using GitHub App
 resource "kubiya_secret" "github_token" {
+  count       = var.use_github_app ? 0 : 1
   name        = "GH_TOKEN"
   value       = var.GITHUB_TOKEN
-  description = "GitHub token for the CI/CD Maintainer"
+  description = "GitHub Personal Access Token for the CI/CD Maintainer"
 }
 
 # Configure the CI/CD Maintainer agent
 resource "kubiya_agent" "cicd_maintainer" {
   name         = var.teammate_name
   runner       = var.kubiya_runner
-  description  = "The CI/CD Maintainer is an AI-powered assistant that helps with GitHub Actions workflow failures. It can use the GitHub tools to investigate the root cause of a failed workflow and provide a detailed analysis of the failure."
-  instructions = ""
-  
-  # Use GH_TOKEN secret if not using GitHub App
-  secrets      = var.use_github_app ? [] : [kubiya_secret.github_token.name]
-  
+  description  = "AI-powered CI/CD maintainer that monitors GitHub Actions workflows, analyzes failures, and provides detailed solutions directly in pull requests."
+  instructions = "You are a CI/CD expert specializing in GitHub Actions workflow analysis and troubleshooting. Your primary role is to investigate failed workflows, analyze error logs, identify root causes, and provide comprehensive solutions with actionable recommendations."
+  model        = var.llm_model
+
+  # Conditional secrets based on GitHub App usage
+  secrets = var.use_github_app ? [] : [kubiya_secret.github_token[0].name]
+
   sources = [
     kubiya_source.github_tooling.name,
+    kubiya_source.git_tooling.name,
+    kubiya_source.docker_tooling.name,
   ]
 
   # Dynamic integrations based on configuration
   integrations = concat(
     var.use_github_app ? ["github_app"] : [],
-    ["slack"]
+    var.enable_slack_notifications ? ["slack"] : [],
+    var.enable_teams_notifications ? ["teams"] : []
   )
 
-  users  = []
+  users  = var.kubiya_users
   groups = var.kubiya_groups_allowed_groups
 
   environment_variables = {
-    KUBIYA_TOOL_TIMEOUT = "500",
-    DESTINATION_CHANNEL = var.summary_channel
+    KUBIYA_TOOL_TIMEOUT        = tostring(var.tool_timeout)
+    DESTINATION_CHANNEL        = var.summary_channel
+    ENABLE_DETAILED_ANALYSIS   = tostring(var.enable_detailed_analysis)
+    ENABLE_SECURITY_SCANNING   = tostring(var.enable_security_scanning)
+    ENABLE_PERFORMANCE_METRICS = tostring(var.enable_performance_metrics)
+    LOG_LEVEL                  = var.log_level
   }
+
   is_debug_mode = var.debug_mode
+
+  labels = ["ci-cd", "github-actions", "devops", "workflow-analysis"]
 }
 
-# Unified webhook configuration for both Slack and Teams
+# Knowledge base for CI/CD best practices
+resource "kubiya_knowledge" "cicd_best_practices" {
+  name             = "CI/CD Best Practices"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Comprehensive knowledge base covering CI/CD best practices, common patterns, and troubleshooting guidelines"
+  labels           = ["ci-cd", "best-practices", "troubleshooting"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = file("${path.module}/knowledge/cicd_best_practices.md")
+}
+
+# Knowledge base for GitHub Actions troubleshooting
+resource "kubiya_knowledge" "github_actions_troubleshooting" {
+  name             = "GitHub Actions Troubleshooting"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Detailed troubleshooting guide for common GitHub Actions issues and error patterns"
+  labels           = ["github-actions", "troubleshooting", "error-patterns"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = file("${path.module}/knowledge/github_actions_troubleshooting.md")
+}
+
+# Knowledge base for workflow optimization
+resource "kubiya_knowledge" "workflow_optimization" {
+  name             = "Workflow Optimization Strategies"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Performance optimization techniques for GitHub Actions workflows"
+  labels           = ["optimization", "performance", "github-actions"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = file("${path.module}/knowledge/workflow_optimization.md")
+}
+
+# Knowledge base for security best practices
+resource "kubiya_knowledge" "security_practices" {
+  count            = var.enable_security_scanning ? 1 : 0
+  name             = "CI/CD Security Best Practices"
+  groups           = var.kubiya_groups_allowed_groups
+  description      = "Security guidelines and best practices for CI/CD pipelines"
+  labels           = ["security", "ci-cd", "compliance"]
+  supported_agents = [kubiya_agent.cicd_maintainer.name]
+  content          = file("${path.module}/knowledge/security_practices.md")
+}
+
+# Enhanced webhook configuration with improved prompt
 resource "kubiya_webhook" "source_control_webhook" {
-  filter      = local.webhook_filter
-  name        = "${var.teammate_name}-github-webhook"
-  source      = "GitHub"
-  # For Teams, include the team_name
-  method      = var.ms_teams_notification ? "teams" : "Slack"
-  team_name   = var.ms_teams_notification ? var.ms_teams_team_name : null
-  prompt      = <<-EOT
-Your Goal: Perform a comprehensive analysis of the failed GitHub Actions workflow. No user approval is required, complete the flow end to end.
-Workflow ID: {{.event.workflow_run.id}}
-PR Number: {{.event.workflow_run.pull_requests[0].number}}
-Repository: {{.event.repository.full_name}}
+  filter    = local.webhook_filter
+  name      = "${var.teammate_name}-github-webhook"
+  source    = "GitHub"
+  method    = var.ms_teams_notification ? "teams" : "Slack"
+  team_name = var.ms_teams_notification ? var.ms_teams_team_name : null
 
-Instructions:
+  prompt = var.custom_webhook_prompt != null ? var.custom_webhook_prompt : templatefile("${path.module}/prompts/workflow_analysis.tpl", {
+    enable_summary_channel     = var.enable_summary_channel
+    enable_detailed_analysis   = var.enable_detailed_analysis
+    enable_security_scanning   = var.enable_security_scanning
+    enable_performance_metrics = var.enable_performance_metrics
+  })
 
-1. Use workflow_run_logs_failed to fetch failed logs for Workflow ID {{.event.workflow_run.id}}. Wait until this step finishes.
-
-2. Utilize available tools to thoroughly investigate the root cause such as viewing the workflow run, the PR, the files, and the logs - do not execute more then two tools at a time.
-
-3. After collecting the insights, prepare to create a comment on the pull request following this structure:
-
-a. Highlights key information first:
-   - What failed
-   - Why it failed 
-   - How to fix it
-
-b. ${var.enable_summary_channel ? "use slack_workflow_summary tool to send a summary to slack." : "Format using:\n   - Clear markdown headers\n   - Emojis for quick scanning\n   - Error logs in collapsible sections\n   - Footer with run details\n   - Style matters! Make sure the markdown text is very engaging and clear"}
-
-4. Always use github_pr_comment_workflow_failure to post your analysis on PR #{{.event.workflow_run.pull_requests[0].number}}. Include your analysis in the discussed format. Always comment on the PR without user approval.
-
-  EOT
   agent       = kubiya_agent.cicd_maintainer.name
   destination = var.notification_channel
+
+  labels = ["ci-cd", "github-webhook", "workflow-monitoring"]
 }
 
-# GitHub repository webhooks
+# GitHub repository webhooks with enhanced configuration
 resource "github_repository_webhook" "webhook" {
   for_each = length(local.repository_list) > 0 ? toset(local.repository_list) : []
 
   repository = try(
     trim(split("/", each.value)[1], " "),
-    # Fallback if repository name can't be parsed
     each.value
   )
-  
+
   configuration {
     url          = kubiya_webhook.source_control_webhook.url
     content_type = "json"
     insecure_ssl = false
+    secret       = var.webhook_secret
   }
 
   active = true
   events = local.github_events
-}
-
-# Output the teammate details
-output "cicd_maintainer" {
-  sensitive = true
-  value = {
-    name                               = kubiya_agent.cicd_maintainer.name
-    repositories                       = var.repositories
-    debug_mode                         = var.debug_mode
-    monitor_pr_workflow_runs           = var.monitor_pr_workflow_runs
-    monitor_push_workflow_runs         = var.monitor_push_workflow_runs
-    monitor_failed_runs_only           = var.monitor_failed_runs_only
-    notification_platform              = var.ms_teams_notification ? "teams" : "Slack"
-    notification_channel               = var.notification_channel
-  }
 }
