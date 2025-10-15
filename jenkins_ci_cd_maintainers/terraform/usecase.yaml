@@ -1,0 +1,16 @@
+name: "Jenkins CI/CD Maintainer"
+icons:
+  - "https://cdn-icons-png.flaticon.com/512/4946/4946642.png"
+  - "https://kubiya-public-20221113173935726800000003.s3.us-east-1.amazonaws.com/botArtboard+4.png"
+  - "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
+description: "AI-powered Jenkins CI/CD maintainer that monitors Jenkins jobs and pipelines, analyzes failures, and provides detailed solutions to help resolve issues quickly."
+secrets:
+  - name: Jenkins URL
+    description: "Jenkins server URL (e.g., https://jenkins.company.com)"
+    to_env: JENKINS_URL
+  - name: Jenkins Username
+    description: "Jenkins username for API access"
+    to_env: JENKINS_USERNAME
+  - name: Jenkins API Token
+    description: "Jenkins API token for authentication. Generate from Jenkins user settings: Manage Jenkins > Manage Users > [Your User] > Configure > API Token"
+    to_env: JENKINS_API_TOKEN
