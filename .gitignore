@@ -35,3 +35,8 @@ override.tf.json
 terraform.rc
 kubernetes-crew/terraform/.terraform.lock.hcl
 .idea
+
+# Added by Maturity Check
+.DS_Store
+.idea/
+.vscode/
