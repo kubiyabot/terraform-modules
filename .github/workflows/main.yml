@@ -18,13 +18,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1  # Fetches all history for all branches and tags
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v39
+        uses: tj-actions/changed-files@v47
         with:
           json: true
           dir_names: true
@@ -50,10 +50,10 @@ jobs:
       matrix: ${{ fromJSON(needs.changed-files.outputs.matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.0.0'
 
@@ -63,7 +63,7 @@ jobs:
           echo "ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY_TFSTATE }}" >> $GITHUB_ENV
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.0.0'
 
