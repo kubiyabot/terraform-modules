@@ -1,0 +1,25 @@
+tools:
+- name: argocd-set-tool
+  image: argoproj/argocd
+  description: "Set a live argocd app to a specified revision."
+  type: docker
+  alias: argocd-set
+  content: |
+    # Login first
+    argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD  --insecure  --plaintext
+    # Set the app to a different revision
+     argocd app set "{{ .app_name }}" --revision "{{ .revision }}"
+    return 0
+  args:
+    app_name:
+      description: 'The name of the live app to set to a new revision. Use default value if no other is specified'
+      required: false
+      default: ""
+    revision:
+      description: 'The name of the revision to set the app to. Use default value if no other is specified'
+      required: false
+      default: ""
+  env:
+    - "ARGOCD_SERVER"
+    - "ARGOCD_USERNAME"
+    - "ARGOCD_PASSWORD"
